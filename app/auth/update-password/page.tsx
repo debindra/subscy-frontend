@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/Card';
 
 type Step = 'checking' | 'ready' | 'completed' | 'error';
 
-export default function UpdatePasswordPage() {
+function UpdatePasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { updatePassword } = useAuth();
@@ -239,6 +239,23 @@ export default function UpdatePasswordPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function UpdatePasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Card className="max-w-md w-full text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600" />
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </Card>
+      </div>
+    }>
+      <UpdatePasswordContent />
+    </Suspense>
   );
 }
 

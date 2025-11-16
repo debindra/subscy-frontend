@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
@@ -9,7 +9,7 @@ import { businessApi } from '@/lib/api/business';
 
 type Status = 'loading' | 'success' | 'error';
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<Status>('loading');
@@ -92,31 +92,16 @@ export default function AuthCallbackPage() {
         }
 
         // If no session, try to verify the token manually
-        // Supabase email confirmation tokens can be in different formats
-        // Try verifyOtp with token_hash first
+        // Supabase email confirmation tokens use token_hash format
         let verifyError = null;
         let verifyData = null;
 
-        try {
-          const result = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: type as 'email',
-          });
-          verifyData = result.data;
-          verifyError = result.error;
-        } catch (err: any) {
-          // If token_hash doesn't work, try with token directly
-          try {
-            const result = await supabase.auth.verifyOtp({
-              token: token,
-              type: type as 'email',
-            });
-            verifyData = result.data;
-            verifyError = result.error;
-          } catch (err2: any) {
-            verifyError = err2;
-          }
-        }
+        const result = await supabase.auth.verifyOtp({
+          token_hash: token,
+          type: type as 'email',
+        });
+        verifyData = result.data;
+        verifyError = result.error;
 
         if (!isActive) {
           return;
@@ -366,6 +351,23 @@ export default function AuthCallbackPage() {
         )}
       </Card>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Card className="max-w-md w-full text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">Processing authentication...</p>
+        </Card>
+      </div>
+    }>
+      <AuthCallbackContent />
+    </Suspense>
   );
 }
 
