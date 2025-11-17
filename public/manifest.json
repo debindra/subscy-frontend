@@ -1,6 +1,6 @@
 {
-  "name": "SubTracker - Subscription Management",
-  "short_name": "SubTracker",
+  "name": "Subsy - Subscription Management",
+  "short_name": "Subsy",
   "description": "Track and manage all your subscriptions in one place",
   "start_url": "/dashboard",
   "display": "standalone",

@@ -60,7 +60,7 @@ export default function LoginPage() {
             <span className="text-5xl">💳</span>
           </div>
           <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white mb-2">
-            SubTracker
+           Subsy
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">Welcome back! Sign in to continue</p>
         </div>

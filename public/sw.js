@@ -1,4 +1,4 @@
-const CACHE_NAME = 'subtracker-v1';
+const CACHE_NAME = 'subsy-v1';
 const urlsToCache = [
   '/',
   '/dashboard',

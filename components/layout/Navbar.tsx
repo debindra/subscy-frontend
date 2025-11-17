@@ -49,7 +49,7 @@ export const Navbar: React.FC = () => {
                 <span className="text-xl">💳</span>
               </div>
               <span className="ml-3 text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
-                SubTracker
+                Subsy
               </span>
             </Link>
           </div>
