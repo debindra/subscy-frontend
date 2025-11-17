@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../supabase';
 import { businessApi } from '../api/business';
+import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '../utils/passwordRules';
 
 type AccountType = 'personal' | 'business';
 
@@ -48,6 +49,9 @@ export function useAuth() {
   }: SignUpParams) => {
     if (accountType === 'business' && !companyName) {
       throw new Error('Company name is required for business accounts.');
+    }
+    if (!isPasswordStrong(password)) {
+      throw new Error(PASSWORD_ERROR_MESSAGE);
     }
 
     const redirectTo =
@@ -146,6 +150,9 @@ export function useAuth() {
   };
 
   const updatePassword = async (newPassword: string) => {
+    if (!isPasswordStrong(newPassword)) {
+      throw new Error(PASSWORD_ERROR_MESSAGE);
+    }
     const { data, error } = await supabase.auth.updateUser({
       password: newPassword,
     });
