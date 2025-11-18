@@ -34,27 +34,30 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
 
       <div className="relative">
         {/* Header with Subscription Icon */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-4">
-            <div className={`p-4 rounded-2xl ${iconClasses} transition-transform group-hover:scale-110 [&_svg]:!text-current [&_svg]:h-8 [&_svg]:w-8`}>
-              {subscriptionIcon}
+        <div className="flex items-center space-x-4 mb-4">
+          <div className={`p-3.5 rounded-xl ${iconClasses} transition-transform group-hover:scale-105 shrink-0 [&_svg]:!text-current [&_svg]:h-10 [&_svg]:w-10`}>
+            {subscriptionIcon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{subscription.name}</h3>
+              {subscription.isTrial && (
+                <span className="px-2 py-0.5 text-xs rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium shrink-0">
+                  TRIAL
+                </span>
+              )}
+              {!subscription.isActive && (
+                <span className="px-2 py-0.5 text-xs rounded-md bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium shrink-0">
+                  Inactive
+                </span>
+              )}
+              {isUpcoming && (
+                <span className="px-2 py-0.5 text-xs rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-medium shrink-0">
+                  Soon
+                </span>
+              )}
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{subscription.name}</h3>
-                {!subscription.isActive && (
-                  <span className="px-2 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium">
-                    Inactive
-                  </span>
-                )}
-                {isUpcoming && (
-                  <span className="px-2 py-1 text-xs rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-medium animate-pulse">
-                    Soon
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{subscription.category}</p>
-            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{subscription.category}</p>
           </div>
         </div>
 
