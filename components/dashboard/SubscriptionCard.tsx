@@ -3,7 +3,7 @@
 import React from 'react';
 import { Subscription } from '@/lib/api/subscriptions';
 import { formatCurrency, formatDate, getDaysUntil } from '@/lib/utils/format';
-import { getCategoryIcon, getCategoryColor } from '@/lib/utils/icons';
+import { getSubscriptionIcon, getSubscriptionColor, getCategoryIcon } from '@/lib/utils/icons';
 import { Card } from '../ui/Card';
 
 interface SubscriptionCardProps {
@@ -20,6 +20,8 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
   const daysUntilRenewal = getDaysUntil(subscription.nextRenewalDate);
   const isUpcoming = daysUntilRenewal <= 7 && daysUntilRenewal >= 0;
   const isOverdue = daysUntilRenewal < 0;
+  const iconClasses = getSubscriptionColor(subscription.name, subscription.category);
+  const subscriptionIcon = getSubscriptionIcon(subscription.name, subscription.category);
 
   return (
     <Card className="hover:shadow-xl dark:hover:shadow-gray-900/50 transition-all duration-300 transform hover:-translate-y-1 animate-fade-in relative overflow-hidden group">
@@ -31,14 +33,14 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
       </div>
 
       <div className="relative">
-        {/* Header with Category Icon */}
+        {/* Header with Subscription Icon */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className={`p-3 rounded-xl ${getCategoryColor(subscription.category)} transition-transform group-hover:scale-110`}>
-              {getCategoryIcon(subscription.category)}
+          <div className="flex items-center space-x-4">
+            <div className={`p-4 rounded-2xl ${iconClasses} transition-transform group-hover:scale-110 [&_svg]:!text-current [&_svg]:h-8 [&_svg]:w-8`}>
+              {subscriptionIcon}
             </div>
             <div>
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{subscription.name}</h3>
                 {!subscription.isActive && (
                   <span className="px-2 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium">

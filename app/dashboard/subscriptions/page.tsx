@@ -15,7 +15,7 @@ export default function SubscriptionsPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | undefined>();
-  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('active');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<string>('all');
   const [billing, setBilling] = useState<'all' | Subscription['billingCycle']>('all');
@@ -25,6 +25,7 @@ export default function SubscriptionsPage() {
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
   const [currency, setCurrency] = useState<string>('all');
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const { showToast } = useToast();
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
@@ -242,128 +243,150 @@ export default function SubscriptionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search name, category, description..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        />
-
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg transition-colors ${
-            filter === 'all'
-              ? 'bg-primary-600 dark:bg-primary-500 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-        >
-          All ({subscriptions.length})
-        </button>
-        <button
-          onClick={() => setFilter('active')}
-          className={`px-4 py-2 rounded-lg transition-colors ${
-            filter === 'active'
-              ? 'bg-primary-600 dark:bg-primary-500 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-        >
-          Active ({subscriptions.filter((s) => s.isActive).length})
-        </button>
-        <button
-          onClick={() => setFilter('inactive')}
-          className={`px-4 py-2 rounded-lg transition-colors ${
-            filter === 'inactive'
-              ? 'bg-primary-600 dark:bg-primary-500 text-white'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-        >
-          Inactive ({subscriptions.filter((s) => !s.isActive).length})
-        </button>
-      </div>
-
-      {/* Advanced Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          <option value="all">All Categories</option>
-          {Array.from(new Set(subscriptions.map((s) => s.category))).sort().map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
-
-        <select
-          value={billing}
-          onChange={(e) => setBilling(e.target.value as any)}
-          className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          <option value="all">All Billing Cycles</option>
-          <option value="monthly">Monthly</option>
-          <option value="quarterly">Quarterly</option>
-          <option value="yearly">Yearly</option>
-          <option value="weekly">Weekly</option>
-        </select>
-
-        <select
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-          className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          <option value="all">All Currencies</option>
-          {currencyOptions.map((code) => (
-            <option key={code} value={code}>{code}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Enhanced Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          {/* Search */}
           <input
-            type="number"
-            placeholder="Min price"
-            value={priceMin}
-            onChange={(e) => setPriceMin(e.target.value)}
+            type="text"
+            placeholder="Search name, category, description..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-          <input
-            type="number"
-            placeholder="Max price"
-            value={priceMax}
-            onChange={(e) => setPriceMax(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
+
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              filter === 'all'
+                ? 'bg-primary-600 dark:bg-primary-500 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            All ({subscriptions.length})
+          </button>
+          <button
+            onClick={() => setFilter('active')}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              filter === 'active'
+                ? 'bg-primary-600 dark:bg-primary-500 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            Active ({subscriptions.filter((s) => s.isActive).length})
+          </button>
+          <button
+            onClick={() => setFilter('inactive')}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              filter === 'inactive'
+                ? 'bg-primary-600 dark:bg-primary-500 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            Inactive ({subscriptions.filter((s) => !s.isActive).length})
+          </button>
         </div>
-        <select
-          value={trial}
-          onChange={(e) => setTrial(e.target.value as any)}
-          className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+
+        {/* Expand/Collapse Filters Button */}
+        <button
+          onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
-          <option value="all">All Trials</option>
-          <option value="trial">Trials only</option>
-          <option value="nontrial">Non-trials</option>
-        </select>
-        <div className="grid grid-cols-2 gap-3">
-          <input
-            type="date"
-            placeholder="From"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-          <input
-            type="date"
-            placeholder="To"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
+          <span>{isFiltersExpanded ? 'Hide' : 'Show'} Advanced Filters</span>
+          <svg
+            className={`w-5 h-5 transition-transform ${isFiltersExpanded ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {/* Advanced Filters - Only shown when expanded */}
+        {isFiltersExpanded && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="all">All Categories</option>
+                {Array.from(new Set(subscriptions.map((s) => s.category))).sort().map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+
+              <select
+                value={billing}
+                onChange={(e) => setBilling(e.target.value as any)}
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="all">All Billing Cycles</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+                <option value="weekly">Weekly</option>
+              </select>
+
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="all">All Currencies</option>
+                {currencyOptions.map((code) => (
+                  <option key={code} value={code}>{code}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Enhanced Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="number"
+                  placeholder="Min price"
+                  value={priceMin}
+                  onChange={(e) => setPriceMin(e.target.value)}
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <input
+                  type="number"
+                  placeholder="Max price"
+                  value={priceMax}
+                  onChange={(e) => setPriceMax(e.target.value)}
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <select
+                value={trial}
+                onChange={(e) => setTrial(e.target.value as any)}
+                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="all">All Trials</option>
+                <option value="trial">Trials only</option>
+                <option value="nontrial">Non-trials(paid)</option>
+              </select>
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="date"
+                  placeholder="From"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <input
+                  type="date"
+                  placeholder="To"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Subscriptions Grid */}
