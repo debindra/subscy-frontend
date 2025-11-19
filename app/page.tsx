@@ -243,22 +243,12 @@ export default function Home() {
     url: 'https://subsy.com',
     logo: 'https://subsy.com/logo.png',
     description: 'Subscription finance platform for modern finance operations',
-    email: 'hello@subsy.com',
+    email: 'hello@subsy.tech',
     contactPoint: [
       {
         '@type': 'ContactPoint',
-        email: 'hello@subsy.com',
+        email: 'hello@subsy.tech',
         contactType: 'General Inquiries',
-      },
-      {
-        '@type': 'ContactPoint',
-        email: 'support@subsy.com',
-        contactType: 'Customer Support',
-      },
-      {
-        '@type': 'ContactPoint',
-        email: 'sales@subsy.com',
-        contactType: 'Sales',
       },
     ],
     sameAs: [
@@ -699,7 +689,7 @@ export default function Home() {
               Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 max-w-4xl mx-auto">
+          <div className="flex justify-center max-w-4xl mx-auto">
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 mb-4">
                 <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -707,36 +697,14 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-slate-900 mb-2">Email Us</h3>
-              <a href="mailto:hello@subsy.com" className="text-primary-600 hover:text-primary-700 transition-colors font-medium">
-                hello@subsy.com
-              </a>
-            </div>
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 mb-4">
-                <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Support</h3>
-              <a href="mailto:support@subsy.com" className="text-primary-600 hover:text-primary-700 transition-colors font-medium">
-                support@subsy.com
-              </a>
-            </div>
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 mb-4">
-                <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Sales</h3>
-              <a href="mailto:sales@subsy.com" className="text-primary-600 hover:text-primary-700 transition-colors font-medium">
-                sales@subsy.com
+              <a href="mailto:hello@subsy.tech" className="text-primary-600 hover:text-primary-700 transition-colors font-medium">
+                hello@subsy.tech
               </a>
             </div>
           </div>
           <div className="mt-12 text-center">
             <Link
-              href="mailto:hello@subsy.com"
+              href="mailto:hello@subsy.tech"
               className="inline-flex items-center justify-center rounded-full bg-primary-600 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-primary-700 hover:shadow-xl hover:scale-105"
             >
               Send us a message
@@ -755,11 +723,8 @@ export default function Home() {
             <Link href="/terms" className="text-base transition hover:text-primary-600 hover:underline">
               Terms
             </Link>
-            <Link href="mailto:hello@subsy.com" className="text-base transition hover:text-primary-600 hover:underline">
+            <Link href="mailto:hello@subsy.tech" className="text-base transition hover:text-primary-600 hover:underline">
               Contact
-            </Link>
-            <Link href="mailto:support@subsy.com" className="text-base transition hover:text-primary-600 hover:underline">
-              Support
             </Link>
           </nav>
         </div>
