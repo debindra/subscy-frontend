@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -56,11 +57,19 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-block p-4 bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 rounded-2xl shadow-2xl mb-4 transform hover:scale-110 transition-transform duration-300">
-            <span className="text-5xl">💳</span>
-          </div>
-          <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white mb-2">
-           Subsy
+          <Link href="/" className="inline-flex items-center justify-center rounded-2xl bg-white/80 px-6 py-4 shadow-2xl ring-1 ring-primary-100/80 dark:bg-white/10 dark:ring-white/10 transition-transform duration-300 hover:scale-105">
+            <span className="sr-only">Subsy Home</span>
+            <Image
+              src="/subsy-full-logo-2.png"
+              alt="Subsy logo"
+              width={220}
+              height={220}
+              priority
+              className="h-14 w-auto"
+            />
+          </Link>
+          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mt-4 mb-2">
+            Welcome back
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">Welcome back! Sign in to continue</p>
         </div>
