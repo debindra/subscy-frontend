@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/lib/hooks/useAuth';
 import Script from 'next/script';
 
@@ -240,8 +241,8 @@ export default function Home() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Subsy',
-    url: 'https://subsy.com',
-    logo: 'https://subsy.com/logo.png',
+    url: 'https://subsy.tech',
+    logo: 'https://subsy.tech/logo.png',
     description: 'Subscription finance platform for modern finance operations',
     email: 'hello@subsy.tech',
     contactPoint: [
@@ -295,8 +296,16 @@ export default function Home() {
 
         <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5" aria-label="Main navigation">
-          <Link href="/" className="text-xl font-bold tracking-tight text-primary-600 transition hover:text-primary-700" aria-label="Subsy Home">
-            Subsy
+          <Link href="/" className="flex items-center gap-3" aria-label="Subsy Home">
+            <span className="sr-only">Subsy</span>
+            <Image
+              src="/subsy-logo-full-logo-2.png"
+              alt="Subsy logo"
+              width={200}
+              height={300}
+              priority
+              className="h-16 w-auto"
+            />
           </Link>
           <div className="flex items-center gap-4 text-sm font-medium text-slate-700">
             {user ? (
@@ -335,7 +344,7 @@ export default function Home() {
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-primary-900/40 via-transparent to-transparent" />
             <div className="relative mx-auto grid max-w-6xl gap-12 px-6 pb-12 pt-16 sm:px-10 lg:grid-cols-[1.1fr,0.9fr] lg:gap-16 lg:px-16 lg:pt-20">
               <div className="space-y-8">
-                <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs uppercase tracking-[0.35em] text-white/80">
+                <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs uppercase tracking-[0.2em] md:tracking-[0.35em] text-white/80">
                   Modern finance ops
                 </span>
                 <div className="space-y-6">
@@ -380,7 +389,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col gap-5 rounded-[36px] border border-white/20 bg-white/10 p-8 backdrop-blur">
+              <div className="flex flex-col gap-5 rounded-[36px] border border-white/20 bg-white/10 p-6 md:p-8 backdrop-blur">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.35em] text-white/70">Monthly spend</p>
@@ -401,7 +410,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-white/70">
+                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] md:tracking-[0.35em] text-white/70">
                     <span>Vendor health</span>
                     <span>92%</span>
                   </div>
@@ -714,9 +723,9 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-slate-200/80 bg-white/95 backdrop-blur-sm pt-10 pb-20 md:pb-24" role="contentinfo">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 text-sm text-slate-500 md:flex-row">
+        <div className="mx-auto flex max-w-6xl flex-col items-start md:items-center justify-between gap-6 px-6 text-sm text-slate-500 md:flex-row">
           <p className="text-base">© {new Date().getFullYear()} Subsy. All rights reserved.</p>
-          <nav className="flex flex-wrap items-center justify-center gap-6" aria-label="Footer navigation">
+          <nav className="flex flex-wrap items-center justify-start md:justify-center gap-6" aria-label="Footer navigation">
             <Link href="/privacy" className="text-base transition hover:text-primary-600 hover:underline">
               Privacy
             </Link>
