@@ -28,9 +28,9 @@ const FEATURES = [
 ];
 
 const METRICS = [
-  { label: 'Average ROI in Year One', value: '212%', trend: '▲ 27% vs industry', trendColor: 'text-primary-400' },
-  { label: 'Hours Saved Each Month', value: '18 hrs', trend: 'Finance + Ops teams', trendColor: 'text-primary-400' },
-  { label: 'Compliance Coverage', value: 'SOC 2, GDPR', trend: 'Audit-ready exports', trendColor: 'text-primary-400' },
+  { label: 'Average ROI in Year One', value: '212%', trend: '▲ 27% vs industry', trendColor: 'text-brand-accent-500' },
+  { label: 'Hours Saved Each Month', value: '18 hrs', trend: 'Finance + Ops teams', trendColor: 'text-brand-accent-500' },
+  { label: 'Compliance Coverage', value: 'SOC 2, GDPR', trend: 'Audit-ready exports', trendColor: 'text-brand-accent-500' },
 ];
 
 const STEPS = [
@@ -162,7 +162,7 @@ export default function Home() {
         height * 0.35,
         320 + Math.sin(t) * 40,
       );
-      gradientA.addColorStop(0, 'rgba(99, 102, 241, 0.45)');
+      gradientA.addColorStop(0, 'rgba(20, 184, 166, 0.45)'); // teal-500
       gradientA.addColorStop(1, 'rgba(15, 23, 42, 0)');
 
       const gradientB = ctx.createRadialGradient(
@@ -173,7 +173,7 @@ export default function Home() {
         height * 0.65,
         360 + Math.cos(t * 0.9) * 50,
       );
-      gradientB.addColorStop(0, 'rgba(129, 140, 248, 0.35)');
+      gradientB.addColorStop(0, 'rgba(45, 212, 191, 0.35)'); // teal-400
       gradientB.addColorStop(1, 'rgba(15, 23, 42, 0)');
 
       ctx.fillStyle = 'rgba(15, 23, 42, 0)';
@@ -299,7 +299,7 @@ export default function Home() {
           <Link href="/" className="flex items-center gap-3" aria-label="Subsy Home">
             <span className="sr-only">Subsy</span>
             <Image
-              src="/subsy-logo-full-logo-2.png"
+              src="/subsy-full-logo.png"
               alt="Subsy logo"
               width={200}
               height={300}
@@ -311,7 +311,7 @@ export default function Home() {
             {user ? (
                   <Link
                     href="/dashboard"
-                    className="rounded-full bg-primary-600 px-5 py-2.5 text-white font-semibold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] transition-all hover:bg-primary-700 hover:shadow-[0_6px_20px_0_rgba(79,70,229,0.5)] hover:scale-105"
+                    className="rounded-full bg-primary-600 px-5 py-2.5 text-white font-semibold shadow-[0_4px_14px_0_rgba(13,148,136,0.39)] transition-all hover:bg-primary-700 hover:shadow-[0_6px_20px_0_rgba(13,148,136,0.5)] hover:scale-105"
                   >
                     Dashboard
                   </Link>
@@ -325,7 +325,7 @@ export default function Home() {
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="rounded-full bg-primary-600 px-6 py-2.5 text-white font-semibold shadow-[0_4px_14px_0_rgba(79,70,229,0.39)] transition-all hover:bg-primary-700 hover:shadow-[0_6px_20px_0_rgba(79,70,229,0.5)] hover:scale-105"
+                  className="rounded-full bg-brand-accent-500 px-6 py-2.5 text-white font-semibold shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] transition-all hover:bg-brand-accent-600 hover:shadow-[0_6px_20px_0_rgba(249,115,22,0.5)] hover:scale-105"
                 >
                   Start Free
                 </Link>
@@ -336,11 +336,12 @@ export default function Home() {
       </header>
 
       <main className="relative z-10">
-        <section className="pb-12 md:pb-16 lg:pb-20 pt-6 md:pt-8 lg:pt-12" aria-labelledby="hero-heading">
-          <div className="relative overflow-hidden border-y border-primary-100/60 bg-gradient-to-br from-primary-700 via-primary-600 to-primary-700 text-white shadow-[0_40px_120px_-32px_rgba(79,70,229,0.55)]">
+        {/* <section className="pb-12 md:pb-16 lg:pb-20 pt-6 md:pt-8 lg:pt-12" aria-labelledby="hero-heading"> */}
+        <section className="pb-12 md:pb-16 lg:pb-20" aria-labelledby="hero-heading">
+          <div className="relative overflow-hidden border-y border-primary-100/60 bg-gradient-to-br from-primary-700 via-primary-600 to-primary-700 text-white shadow-[0_40px_120px_-32px_rgba(13,148,136,0.55)]">
             <canvas ref={heroCanvasRef} className="absolute inset-0 -z-10 h-full w-full" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.28),transparent_68%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(79,70,229,0.28),transparent_62%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.28),transparent_68%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(13,148,136,0.28),transparent_62%)]" />
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-primary-900/40 via-transparent to-transparent" />
             <div className="relative mx-auto grid max-w-6xl gap-12 px-6 pb-12 pt-16 sm:px-10 lg:grid-cols-[1.1fr,0.9fr] lg:gap-16 lg:px-16 lg:pt-20">
               <div className="space-y-8">
@@ -358,7 +359,7 @@ export default function Home() {
                 <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                   <Link
                     href={user ? '/dashboard' : '/auth/signup'}
-                    className="group rounded-full bg-white px-8 py-4 text-base font-semibold text-primary-600 shadow-[0_20px_45px_-20px_rgba(244,244,255,0.9)] transition-all hover:scale-105 hover:bg-primary-50 hover:shadow-[0_25px_55px_-20px_rgba(244,244,255,1)]"
+                    className="group rounded-full bg-brand-accent-500 px-8 py-4 text-base font-semibold text-white shadow-[0_20px_45px_-20px_rgba(249,115,22,0.4)] transition-all hover:scale-105 hover:bg-brand-accent-600 hover:shadow-[0_25px_55px_-20px_rgba(249,115,22,0.5)]"
                     aria-label={user ? 'Go to dashboard' : 'Start free trial'}
                   >
                     {user ? 'Dashboard' : 'Get Started'}
@@ -610,7 +611,7 @@ export default function Home() {
                 }`}
               >
                 {tier.highlighted ? (
-                  <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary-600 to-primary-700 px-4 py-1.5 text-xs font-bold text-white shadow-lg">
+                  <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-4 py-1.5 text-xs font-bold text-white shadow-lg">
                     Most popular
                   </span>
                 ) : null}
@@ -632,7 +633,7 @@ export default function Home() {
                   href="/auth/signup"
                   className={`mt-10 inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-base font-semibold transition-all hover:scale-105 ${
                     tier.highlighted
-                      ? 'bg-primary-600 text-white shadow-lg hover:bg-primary-700 hover:shadow-xl'
+                      ? 'bg-brand-accent-500 text-white shadow-lg hover:bg-brand-accent-600 hover:shadow-xl'
                       : 'border-2 border-primary-300 text-primary-600 hover:border-primary-400 hover:bg-primary-50'
                   }`}
                   aria-label={`Get started with ${tier.name} plan`}
@@ -645,7 +646,7 @@ export default function Home() {
         </section>
 
         <section className="mx-auto max-w-5xl px-6 py-12 md:py-16 lg:py-20" aria-labelledby="cta-heading">
-          <div className="rounded-[40px] bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 p-10 md:p-12 text-center text-white shadow-[0_32px_90px_-45px_rgba(79,70,229,0.6)]">
+          <div className="rounded-[40px] bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 p-10 md:p-12 text-center text-white shadow-[0_32px_90px_-45px_rgba(13,148,136,0.6)]">
             <h2 id="cta-heading" className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">Cut subscription waste in days, not quarters.</h2>
             <p className="mt-5 text-lg leading-relaxed text-white/90 md:text-xl">
               Join thousands of finance leaders orchestrating every recurring dollar with confidence.
@@ -653,7 +654,7 @@ export default function Home() {
             <div className="mt-8 flex flex-col items-center justify-center gap-4 md:flex-row">
               <Link
                 href="/auth/signup"
-                className="group inline-flex items-center justify-center rounded-full bg-white px-8 py-4 text-base font-semibold text-slate-900 shadow-lg transition-all hover:scale-105 hover:bg-slate-100 hover:shadow-xl"
+                className="group inline-flex items-center justify-center rounded-full bg-brand-accent-500 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:scale-105 hover:bg-brand-accent-600 hover:shadow-xl"
                 aria-label="Create your free account"
               >
                 Sign Up Free
@@ -714,7 +715,7 @@ export default function Home() {
           <div className="mt-12 text-center">
             <Link
               href="mailto:hello@subsy.tech"
-              className="inline-flex items-center justify-center rounded-full bg-primary-600 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-primary-700 hover:shadow-xl hover:scale-105"
+              className="inline-flex items-center justify-center rounded-full bg-brand-accent-500 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-brand-accent-600 hover:shadow-xl hover:scale-105"
             >
               Send us a message
             </Link>

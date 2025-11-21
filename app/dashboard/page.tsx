@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { SubscriptionCard } from '@/components/dashboard/SubscriptionCard';
+import { BudgetWidget } from '@/components/dashboard/BudgetWidget';
+import { BudgetSettingsModal } from '@/components/dashboard/BudgetSettingsModal';
 import { subscriptionsApi, Subscription } from '@/lib/api/subscriptions';
 import { analyticsApi, CurrencySpendingSummary, CategorySpending, MonthlyTrend } from '@/lib/api/analytics';
 import { formatCurrency } from '@/lib/utils/format';
@@ -21,6 +23,8 @@ export default function DashboardPage() {
   const [months, setMonths] = useState<number>(6);
   const [plan, setPlan] = useState<PlanResponse | null>(null);
   const [planLoading, setPlanLoading] = useState(true);
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
   const { showToast } = useToast();
   const router = useRouter();
 
@@ -85,6 +89,27 @@ export default function DashboardPage() {
 
     return Array.from(new Set(allowed)).sort((a, b) => a - b);
   }, [plan]);
+
+  // Calculate total monthly spending for budget widget
+  // Prefer USD if available, otherwise use first currency
+  const monthlySpending = useMemo(() => {
+    if (currencySummaries.length === 0) return 0;
+    
+    // Try to find USD first
+    const usdSummary = currencySummaries.find(s => s.currency === 'USD');
+    if (usdSummary) {
+      return usdSummary.monthlyTotal;
+    }
+    
+    // Otherwise use first currency's monthly total
+    return currencySummaries[0]?.monthlyTotal || 0;
+  }, [currencySummaries]);
+
+  const handleBudgetSettingsSave = () => {
+    // Force budget widget to refresh by updating the key
+    setBudgetRefreshKey(prev => prev + 1);
+    showToast('Budget settings saved', 'success');
+  };
 
   if (loading) {
     return (
@@ -229,6 +254,25 @@ export default function DashboardPage() {
             </div>
           </Card>
         )}
+
+        {/* Budget Widget */}
+        <div className="animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Budget Tracking</h2>
+            <button
+              onClick={() => setIsBudgetModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              title="Configure budget settings"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span className="hidden sm:inline">Settings</span>
+            </button>
+          </div>
+          <BudgetWidget key={budgetRefreshKey} monthlySpending={monthlySpending} />
+        </div>
       </div>
 
       {/* Charts */}
@@ -303,6 +347,13 @@ export default function DashboardPage() {
           </Card>
         )}
       </div>
+
+      {/* Budget Settings Modal */}
+      <BudgetSettingsModal
+        isOpen={isBudgetModalOpen}
+        onClose={() => setIsBudgetModalOpen(false)}
+        onSave={handleBudgetSettingsSave}
+      />
     </div>
   );
 }

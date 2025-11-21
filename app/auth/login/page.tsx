@@ -60,7 +60,7 @@ export default function LoginPage() {
           <Link href="/" className="inline-flex items-center justify-center rounded-2xl bg-white/80 px-6 py-4 shadow-2xl ring-1 ring-primary-100/80 dark:bg-white/10 dark:ring-white/10 transition-transform duration-300 hover:scale-105">
             <span className="sr-only">Subsy Home</span>
             <Image
-              src="/subsy-full-logo-2.png"
+              src="/subsy-logo.png"
               alt="Subsy logo"
               width={220}
               height={220}
