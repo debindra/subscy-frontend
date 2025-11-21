@@ -160,7 +160,7 @@ export default function DashboardPage() {
         </div>
         <Link
           href="/dashboard/subscriptions"
-          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-500 dark:to-primary-600 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 dark:hover:from-primary-600 dark:hover:to-primary-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
+          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white rounded-lg hover:from-brand-accent-600 hover:to-brand-accent-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -312,7 +312,7 @@ export default function DashboardPage() {
             <p className="text-gray-600 dark:text-gray-400 mt-1">Subscriptions renewing in the next 7 days</p>
           </div>
           {upcomingSubscriptions.length > 0 && (
-            <span className="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full text-sm font-bold">
+            <span className="px-4 py-2 bg-brand-accent-100 dark:bg-brand-accent-900/30 text-brand-accent-700 dark:text-brand-accent-400 rounded-full text-sm font-bold">
               {upcomingSubscriptions.length} upcoming
             </span>
           )}

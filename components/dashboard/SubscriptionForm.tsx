@@ -311,7 +311,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
       )}
 
       <div className="flex space-x-3 pt-4">
-        <Button type="submit" disabled={loading} fullWidth>
+        <Button type="submit" variant="accent" disabled={loading} fullWidth>
           {loading ? 'Saving...' : subscription ? 'Update Subscription' : 'Add Subscription'}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} fullWidth>

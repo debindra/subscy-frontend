@@ -2,10 +2,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/context/ThemeContext';
 import { useRouter } from 'next/navigation';
+import { AccountSwitcher } from './AccountSwitcher';
+import { useAccountContext } from '@/lib/hooks/useAccountContext';
 
 export const Navbar: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -13,8 +16,10 @@ export const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { availableContexts } = useAccountContext();
   const accountType =
     (user?.user_metadata as { account_type?: string } | undefined)?.account_type ?? 'personal';
+  const hasBusinessContext = availableContexts.some(c => c.context === 'business');
   const displayName =
     (user?.user_metadata?.full_name as string | undefined) ||
     (user?.user_metadata?.name as string | undefined) ||
@@ -61,13 +66,15 @@ export const Navbar: React.FC = () => {
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/dashboard" className="flex items-center group">
-              <div className="p-1.5 bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 rounded-lg transform group-hover:scale-110 transition-transform duration-200 shadow-md">
-                <span className="text-xl">💳</span>
-              </div>
-              <span className="ml-3 text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
-                Subsy
-              </span>
+            <Link href="/dashboard" className="flex items-center group" aria-label="Subsy Home">
+              <Image
+                src={theme === 'dark' ? '/subsy-full-logo-darktheme.png' : '/subsy-full-logo.png'}
+                alt="Subsy logo"
+                width={120}
+                height={36}
+                priority
+                className="h-9 scale-150 w-auto transition-transform duration-200 group-hover:scale-105"
+              />
             </Link>
           </div>
 
@@ -111,7 +118,7 @@ export const Navbar: React.FC = () => {
                   )}
                 </Link>
 
-                {accountType === 'business' && (
+                {hasBusinessContext && (
                   <Link href="/dashboard/business" className={navLinkClass('/dashboard/business')}>
                     <div className="flex items-center space-x-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,6 +131,9 @@ export const Navbar: React.FC = () => {
                     )}
                   </Link>
                 )}
+
+                {/* Account Switcher */}
+                <AccountSwitcher />
 
                 {/* Dark Mode Toggle */}
                 <button
@@ -267,7 +277,7 @@ export const Navbar: React.FC = () => {
                 </div>
               </Link>
 
-              {accountType === 'business' && (
+              {hasBusinessContext && (
                 <Link
                   href="/dashboard/business"
                   className={`block ${navLinkClass('/dashboard/business')}`}

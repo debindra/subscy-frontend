@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useTheme } from '@/lib/context/ThemeContext';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [oauthLoading, setOauthLoading] = useState(false);
 
   const { signIn, signInWithGoogle } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +62,7 @@ export default function LoginPage() {
           <Link href="/" className="inline-flex items-center justify-center rounded-2xl bg-white/80 px-6 py-4 shadow-2xl ring-1 ring-primary-100/80 dark:bg-white/10 dark:ring-white/10 transition-transform duration-300 hover:scale-105">
             <span className="sr-only">Subsy Home</span>
             <Image
-              src="/subsy-logo.png"
+              src={theme === 'dark' ? '/subsy-logo-darktheme.png' : '/subsy-logo.png'}
               alt="Subsy logo"
               width={220}
               height={220}

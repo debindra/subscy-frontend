@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useTheme } from '@/lib/context/ThemeContext';
 import Script from 'next/script';
 
 const FEATURES = [
@@ -126,6 +127,7 @@ const FAQS = [
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
   const heroCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -299,12 +301,12 @@ export default function Home() {
           <Link href="/" className="flex items-center gap-3" aria-label="Subsy Home">
             <span className="sr-only">Subsy</span>
             <Image
-              src="/subsy-full-logo.png"
+              src={theme === 'dark' ? '/subsy-full-logo-darktheme.png' : '/subsy-full-logo.png'}
               alt="Subsy logo"
               width={200}
               height={300}
               priority
-              className="h-16 w-auto"
+              className="h-16 w-auto scale-110"
             />
           </Link>
           <div className="flex items-center gap-4 text-sm font-medium text-slate-700">

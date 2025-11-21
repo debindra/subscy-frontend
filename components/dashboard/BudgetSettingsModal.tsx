@@ -128,7 +128,7 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
         </div>
 
         <div className="flex space-x-3 pt-4">
-          <Button type="submit" disabled={loading} fullWidth>
+          <Button type="submit" variant="accent" disabled={loading} fullWidth>
             {loading ? 'Saving...' : 'Save Settings'}
           </Button>
           <Button type="button" variant="outline" onClick={onClose} fullWidth>

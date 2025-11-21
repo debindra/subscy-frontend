@@ -236,7 +236,7 @@ export default function SubscriptionsPage() {
               yearlyTotal={yearlyTotal}
             />
           )}
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={() => setIsModalOpen(true)} variant="accent">
             + Add Subscription
           </Button>
         </div>
@@ -413,7 +413,7 @@ export default function SubscriptionsPage() {
               : 'Get started by adding your first subscription.'}
           </p>
           {filter === 'all' && (
-            <Button onClick={() => setIsModalOpen(true)}>
+            <Button onClick={() => setIsModalOpen(true)} variant="accent">
               + Add Your First Subscription
             </Button>
           )}

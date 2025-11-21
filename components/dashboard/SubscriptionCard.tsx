@@ -52,7 +52,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
                 </span>
               )}
               {isUpcoming && (
-                <span className="px-2 py-0.5 text-xs rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-medium shrink-0">
+                <span className="px-2 py-0.5 text-xs rounded-md bg-brand-accent-100 dark:bg-brand-accent-900/30 text-brand-accent-700 dark:text-brand-accent-400 font-medium shrink-0">
                   Soon
                 </span>
               )}
@@ -82,13 +82,13 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
               </svg>
               <span className="text-gray-600 dark:text-gray-400 font-medium">Next renewal</span>
             </div>
-            <span className={`text-sm font-bold ${isOverdue ? 'text-red-600 dark:text-red-400' : isUpcoming ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-gray-100'}`}>
+            <span className={`text-sm font-bold ${isOverdue ? 'text-red-600 dark:text-red-400' : isUpcoming ? 'text-brand-accent-600 dark:text-brand-accent-400' : 'text-gray-900 dark:text-gray-100'}`}>
               {formatDate(subscription.nextRenewalDate)}
             </span>
           </div>
 
           {daysUntilRenewal >= 0 && (
-            <div className={`flex items-center space-x-2 text-xs px-3 py-2 rounded-lg ${isUpcoming ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400' : 'bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400'}`}>
+            <div className={`flex items-center space-x-2 text-xs px-3 py-2 rounded-lg ${isUpcoming ? 'bg-brand-accent-50 dark:bg-brand-accent-900/20 text-brand-accent-700 dark:text-brand-accent-400' : 'bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400'}`}>
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
               </svg>

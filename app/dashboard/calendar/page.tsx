@@ -165,7 +165,7 @@ export default function CalendarPage() {
                     key={idx}
                     className={`text-xs truncate px-2 py-1 rounded ${
                       entry.type === 'trial'
-                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+                        ? 'bg-brand-accent-100 text-brand-accent-800 dark:bg-brand-accent-900/30 dark:text-brand-accent-300'
                         : 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300'
                     }`}
                     onMouseEnter={(event) => showTooltip(event, entry)}
