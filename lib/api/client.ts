@@ -11,12 +11,20 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Add auth token to requests
+// Add auth token and account context to requests
 apiClient.interceptors.request.use(async (config) => {
   const { data: { session } } = await supabase.auth.getSession();
   
   if (session?.access_token) {
     config.headers.Authorization = `Bearer ${session.access_token}`;
+  }
+  
+  // Add account context header if available
+  if (typeof window !== 'undefined') {
+    const accountContext = localStorage.getItem('activeAccountContext');
+    if (accountContext && (accountContext === 'personal' || accountContext === 'business')) {
+      config.headers['X-Account-Context'] = accountContext;
+    }
   }
   
   return config;
