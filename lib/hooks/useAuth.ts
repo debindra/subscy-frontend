@@ -4,7 +4,7 @@ import { supabase } from '../supabase';
 import { businessApi } from '../api/business';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '../utils/passwordRules';
 
-type AccountType = 'personal' | 'business';
+type AccountType = 'free' | 'pro' | 'family' | 'personal' | 'business';
 
 interface SignUpParams {
   email: string;

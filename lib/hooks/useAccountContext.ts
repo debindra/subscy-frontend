@@ -5,6 +5,7 @@ import { useAuth } from './useAuth';
 import { authApi } from '../api/auth';
 
 type AccountContext = 'personal' | 'business';
+type AccountType = 'free' | 'pro' | 'family' | 'personal' | 'business';
 
 interface AccountContextInfo {
   context: AccountContext;
@@ -18,11 +19,11 @@ export function useAccountContext() {
   const [availableContexts, setAvailableContexts] = useState<AccountContextInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Get account type from user metadata
-  const getUserAccountType = useCallback((): AccountContext => {
+  // Get account type from user metadata (returns account type, not context)
+  const getUserAccountType = useCallback((): AccountType => {
     if (!user) return 'free';
     const metadata = user.user_metadata as { account_type?: string } | undefined;
-    const accountType = (metadata?.account_type as AccountContext) || 'free';
+    const accountType = (metadata?.account_type as AccountType) || 'free';
     // Map legacy "personal" to "free" for backward compatibility
     return accountType === 'personal' ? 'free' : accountType;
   }, [user]);
@@ -48,15 +49,17 @@ export function useAccountContext() {
     } catch (error: any) {
       console.error('Error loading account contexts:', error);
       console.error('Error details:', error.response?.data || error.message);
-      // Fallback to user metadata - always show at least personal
+      // Fallback to user metadata - map account type to context
       const accountType = getUserAccountType();
-      setActiveContext(accountType);
+      // Map account types to contexts: free/pro/family -> personal, business -> business
+      const mappedContext: AccountContext = accountType === 'business' ? 'business' : 'personal';
+      setActiveContext(mappedContext);
       
       const contexts: AccountContextInfo[] = [
         {
           context: 'personal',
           label: 'Personal',
-          isActive: accountType === 'personal',
+          isActive: mappedContext === 'personal',
         },
       ];
       
