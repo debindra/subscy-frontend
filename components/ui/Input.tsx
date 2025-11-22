@@ -5,6 +5,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   helperText?: string;
   adornmentRight?: React.ReactNode;
+  hideLabel?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -14,13 +15,14 @@ export const Input: React.FC<InputProps> = ({
   adornmentRight,
   className = '',
   id,
+  hideLabel = false,
   ...props
 }) => {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
   
   return (
     <div className="w-full">
-      {label && (
+      {label && !hideLabel && (
         <label
           htmlFor={inputId}
           className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
