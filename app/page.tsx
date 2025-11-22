@@ -242,6 +242,15 @@ export default function Home() {
                 height={40}
                 className="h-10 w-auto scale-125"
                 loading="eager"
+                onError={(e) => {
+                  // Fallback: try to reload or use a different path
+                  const target = e.target as HTMLImageElement;
+                  if (!target.src.includes('data:')) {
+                    target.src = theme === 'dark' 
+                      ? '/subsy-full-logo-darktheme.png?t=' + Date.now()
+                      : '/subsy-full-logo.png?t=' + Date.now();
+                  }
+                }}
               />
             </Link>
             <div className="flex items-center gap-4 text-sm font-medium">

@@ -67,6 +67,14 @@ export default function LoginPage() {
               height={220}
               className="h-14 w-auto"
               loading="eager"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (!target.src.includes('data:')) {
+                  target.src = theme === 'dark' 
+                    ? '/subsy-logo-darktheme.png?t=' + Date.now()
+                    : '/subsy-logo.png?t=' + Date.now();
+                }
+              }}
             />
           </Link>
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mt-4 mb-2">

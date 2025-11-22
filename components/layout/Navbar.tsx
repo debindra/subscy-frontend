@@ -73,6 +73,15 @@ export const Navbar: React.FC = () => {
                 height={36}
                 className="h-9 scale-150 w-auto transition-transform duration-200 group-hover:scale-105"
                 loading="eager"
+                onError={(e) => {
+                  // Fallback: try to reload or use a different path
+                  const target = e.target as HTMLImageElement;
+                  if (!target.src.includes('data:')) {
+                    target.src = theme === 'dark' 
+                      ? '/subsy-full-logo-darktheme.png?t=' + Date.now()
+                      : '/subsy-full-logo.png?t=' + Date.now();
+                  }
+                }}
               />
             </Link>
           </div>
