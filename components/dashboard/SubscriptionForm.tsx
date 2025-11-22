@@ -6,6 +6,7 @@ import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { CardBrandSelect } from '../ui/CardBrandSelect';
 import { Button } from '../ui/Button';
+import { usePlanFeatures } from '@/lib/hooks/usePlanFeatures';
 
 interface SubscriptionFormProps {
   subscription?: Subscription;
@@ -59,6 +60,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const { hasCategorization, hasSmartRenewalManagement } = usePlanFeatures();
   const [formData, setFormData] = useState<CreateSubscriptionData>({
     name: '',
     amount: 0,
@@ -199,12 +201,24 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         />
       </div>
 
-      <Select
-        label="Category"
-        value={formData.category}
-        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-        options={categories.map((cat) => ({ value: cat, label: cat }))}
-      />
+      <div>
+        <Select
+          label="Category"
+          value={hasCategorization ? formData.category : 'Uncategorized'}
+          onChange={(e) => {
+            if (hasCategorization) {
+              setFormData({ ...formData, category: e.target.value });
+            }
+          }}
+          options={categories.map((cat) => ({ value: cat, label: cat }))}
+          disabled={!hasCategorization}
+        />
+        {!hasCategorization && (
+          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+            Categorization is a Pro feature. <a href="/" className="underline font-semibold">Upgrade to Pro</a> to organize subscriptions by category.
+          </p>
+        )}
+      </div>
 
       <Input
         label="Description (Optional)"
@@ -285,14 +299,26 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
       </div>
 
       {formData.reminderEnabled && (
-        <Input
-          label="Remind me (days before renewal)"
-          type="number"
-          min="1"
-          max="30"
-          value={formData.reminderDaysBefore}
-          onChange={(e) => setFormData({ ...formData, reminderDaysBefore: parseInt(e.target.value) })}
-        />
+        <div>
+          <Input
+            label="Remind me (days before renewal)"
+            type="number"
+            min="1"
+            max="30"
+            value={hasSmartRenewalManagement ? formData.reminderDaysBefore : 7}
+            onChange={(e) => {
+              if (hasSmartRenewalManagement) {
+                setFormData({ ...formData, reminderDaysBefore: parseInt(e.target.value) });
+              }
+            }}
+            disabled={!hasSmartRenewalManagement}
+          />
+          {!hasSmartRenewalManagement && (
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              Custom reminder timing is a Pro feature. Free tier uses 7-day reminders. <a href="/" className="underline font-semibold">Upgrade to Pro</a> for customizable reminders.
+            </p>
+          )}
+        </div>
       )}
 
       {formData.isTrial && (

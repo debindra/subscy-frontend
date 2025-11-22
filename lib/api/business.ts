@@ -28,10 +28,15 @@ export interface PlanLimits {
   exports?: PlanExportLimits;
   business_profile?: boolean;
   priority_support?: boolean;
+  categorization?: boolean;
+  smart_renewal_management?: boolean;
+  cancellation_notes?: boolean;
+  shared_accounts?: boolean;
+  individual_dashboards?: boolean;
 }
 
 export interface PlanResponse {
-  accountType: 'personal' | 'business' | string;
+  accountType: 'free' | 'pro' | 'family' | 'personal' | 'business' | string;
   limits: PlanLimits;
 }
 

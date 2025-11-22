@@ -1,8 +1,15 @@
 import type { Metadata } from 'next';
+import { Albert_Sans } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { ToastProvider } from '@/lib/context/ToastContext';
 import { PWASetup } from '@/components/layout/PWASetup';
+
+const albertSans = Albert_Sans({
+  subsets: ['latin'],
+  variable: '--font-albert-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -104,7 +111,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
-      <body className="bg-gray-50 dark:bg-gray-900 overflow-y-hidden">
+      <body className={`${albertSans.variable} font-albert-sans bg-gray-50 dark:bg-gray-900 overflow-y-hidden`}>
         <PWASetup />
         <ThemeProvider>
           <ToastProvider>

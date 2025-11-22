@@ -20,9 +20,11 @@ export function useAccountContext() {
 
   // Get account type from user metadata
   const getUserAccountType = useCallback((): AccountContext => {
-    if (!user) return 'personal';
+    if (!user) return 'free';
     const metadata = user.user_metadata as { account_type?: string } | undefined;
-    return (metadata?.account_type as AccountContext) || 'personal';
+    const accountType = (metadata?.account_type as AccountContext) || 'free';
+    // Map legacy "personal" to "free" for backward compatibility
+    return accountType === 'personal' ? 'free' : accountType;
   }, [user]);
 
   // Load available account contexts

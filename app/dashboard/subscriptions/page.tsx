@@ -9,6 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/lib/context/ToastContext';
 import { useSearchParams } from 'next/navigation';
+import { usePlanFeatures } from '@/lib/hooks/usePlanFeatures';
 
 export default function SubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -27,6 +28,7 @@ export default function SubscriptionsPage() {
   const [currency, setCurrency] = useState<string>('all');
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const { showToast } = useToast();
+  const { hasCategorization } = usePlanFeatures();
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
 
@@ -305,17 +307,23 @@ export default function SubscriptionsPage() {
         {/* Advanced Filters - Only shown when expanded */}
         {isFiltersExpanded && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="all">All Categories</option>
-                {Array.from(new Set(subscriptions.map((s) => s.category))).sort().map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+            <div className={`grid grid-cols-1 md:grid-cols-${hasCategorization ? '3' : '2'} gap-3`}>
+              {hasCategorization ? (
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="all">All Categories</option>
+                  {Array.from(new Set(subscriptions.map((s) => s.category))).sort().map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              ) : (
+                <div className="px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-sm">
+                  Category filter is a Pro feature. <a href="/" className="underline font-semibold">Upgrade to Pro</a> to filter by category.
+                </div>
+              )}
 
               <select
                 value={billing}

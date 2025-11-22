@@ -13,6 +13,7 @@ import { useToast } from '@/lib/context/ToastContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { businessApi, PlanResponse } from '@/lib/api/business';
+import { usePlanFeatures } from '@/lib/hooks/usePlanFeatures';
 
 export default function DashboardPage() {
   const [upcomingSubscriptions, setUpcomingSubscriptions] = useState<Subscription[]>([]);
@@ -26,6 +27,7 @@ export default function DashboardPage() {
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
   const { showToast } = useToast();
+  const { hasCategorization } = usePlanFeatures();
   const router = useRouter();
 
   useEffect(() => {
@@ -58,14 +60,19 @@ export default function DashboardPage() {
       const [upcomingRes, spendingRes, categoryRes, monthlyRes] = await Promise.all([
         subscriptionsApi.getUpcoming(),
         analyticsApi.getSpending(),
-        analyticsApi.getByCategory(),
+        hasCategorization ? analyticsApi.getByCategory().catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
         analyticsApi.getMonthlyTrend(months),
       ]);
-
+      
       setUpcomingSubscriptions(upcomingRes.data);
       setCurrencySummaries(spendingRes.data);
-      setCategoryData(categoryRes.data);
+      if (hasCategorization && categoryRes.data) {
+        setCategoryData(categoryRes.data);
+      } else {
+        setCategoryData([]);
+      }
       setMonthlyData(monthlyRes.data);
+
     } catch (error) {
       showToast('Failed to load dashboard data', 'error');
       console.error('Error loading dashboard data:', error);
@@ -302,7 +309,19 @@ export default function DashboardPage() {
           </label>
         </div>
       </div>
-      <SpendingChart categoryData={categoryData} monthlyData={monthlyData} />
+      {hasCategorization ? (
+        <SpendingChart categoryData={categoryData} monthlyData={monthlyData} />
+      ) : (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6 text-center">
+          <p className="text-amber-800 dark:text-amber-200 font-semibold mb-2">Category Analytics is a Pro Feature</p>
+          <p className="text-sm text-amber-700 dark:text-amber-300 mb-4">
+            Upgrade to Pro to view spending breakdown by category and unlock advanced analytics.
+          </p>
+          <a href="/" className="inline-block px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+            Upgrade to Pro
+          </a>
+        </div>
+      )}
 
       {/* Upcoming Renewals */}
       <div className="animate-fade-in">

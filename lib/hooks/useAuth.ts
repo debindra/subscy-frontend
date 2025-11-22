@@ -41,7 +41,7 @@ export function useAuth() {
     email,
     password,
     fullName,
-    accountType = 'personal',
+    accountType = 'free',
     companyName,
     companyAddress,
     companyTaxId,
