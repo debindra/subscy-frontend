@@ -8,7 +8,12 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    // Ensure static images from public folder work in production
+    remotePatterns: [],
+    formats: ['image/webp', 'image/avif'],
   },
+  // Ensure public folder assets are properly served
+  trailingSlash: false,
 }
 
 module.exports = nextConfig

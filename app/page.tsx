@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/context/ThemeContext';
 import Script from 'next/script';
@@ -236,13 +235,13 @@ export default function Home() {
           <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8" aria-label="Main navigation">
             <Link href="/" className="flex items-center gap-3" aria-label="Subsy Home">
               <span className="sr-only">Subsy</span>
-              <Image
+              <img
                 src={theme === 'dark' ? '/subsy-full-logo-darktheme.png' : '/subsy-full-logo.png'}
                 alt="Subsy logo"
                 width={140}
                 height={40}
-                priority
                 className="h-10 w-auto scale-125"
+                loading="eager"
               />
             </Link>
             <div className="flex items-center gap-4 text-sm font-medium">

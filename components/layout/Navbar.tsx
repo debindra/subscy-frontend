@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/context/ThemeContext';
@@ -67,13 +66,13 @@ export const Navbar: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/dashboard" className="flex items-center group" aria-label="Subsy Home">
-              <Image
+              <img
                 src={theme === 'dark' ? '/subsy-full-logo-darktheme.png' : '/subsy-full-logo.png'}
                 alt="Subsy logo"
                 width={120}
                 height={36}
-                priority
                 className="h-9 scale-150 w-auto transition-transform duration-200 group-hover:scale-105"
+                loading="eager"
               />
             </Link>
           </div>

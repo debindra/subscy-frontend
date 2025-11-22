@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -109,13 +108,13 @@ export default function SignUpPage() {
         <div className="text-center mb-8 animate-fade-in">
           <Link href="/" className="inline-flex items-center justify-center rounded-2xl bg-white/80 px-6 py-4 shadow-2xl ring-1 ring-primary-100/80 dark:bg-white/10 dark:ring-white/10 transition-transform duration-300 hover:scale-105">
             <span className="sr-only">Subsy Home</span>
-            <Image
+            <img
               src={theme === 'dark' ? '/subsy-logo-darktheme.png' : '/subsy-logo.png'}
               alt="Subsy logo"
               width={220}
               height={220}
-              priority
               className="h-14 w-auto"
+              loading="eager"
             />
           </Link>
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mt-4 mb-2">
