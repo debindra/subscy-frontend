@@ -88,7 +88,7 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
       margin: 0 auto;
     }
     .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
       color: white;
       padding: 40px 30px;
       border-radius: 12px;
@@ -156,6 +156,9 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      min-height: 80px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .subscription-item:last-child {
       border-bottom: none;
@@ -182,26 +185,30 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
     .subscription-amount {
       font-size: 20px;
       font-weight: 700;
-      color: #4f46e5;
+      color: #0d9488;
       white-space: nowrap;
       margin-left: 20px;
     }
     .badge {
       display: inline-block;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 12px;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.3px;
       text-transform: uppercase;
+      border: 1px solid;
+      white-space: nowrap;
     }
     .badge-active {
-      background-color: #d1fae5;
-      color: #065f46;
+      background-color: #ccfbf1;
+      color: #134e4a;
+      border-color: #0d9488;
     }
     .badge-inactive {
       background-color: #fee2e2;
       color: #991b1b;
+      border-color: #dc2626;
     }
     .footer {
       text-align: center;
@@ -223,9 +230,19 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
         box-shadow: none;
         border: 1px solid #e5e7eb;
         page-break-inside: avoid;
+        break-inside: avoid;
       }
       .subscription-item {
         page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .header {
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      .summary-grid {
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
     }
   </style>
@@ -332,27 +349,94 @@ export async function downloadPDFFromHTML(htmlContent: string, filename: string 
   container.innerHTML = htmlContent;
   document.body.appendChild(container);
 
+  // Wait for images and content to load
+  await new Promise(resolve => setTimeout(resolve, 100));
+
   const canvas = await html2canvas(container as HTMLElement, {
     scale: 2,
     useCORS: true,
     backgroundColor: '#ffffff',
     windowWidth: 794,
+    logging: false,
   });
 
   const pdf = new jsPDF('p', 'pt', 'a4');
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
+  
+  // Reserve space for page numbers at the bottom (40 points)
+  const pageNumberHeight = 40;
+  const contentPageHeight = pageHeight - pageNumberHeight;
 
   // Scale image to fit page width (points). Compute how many canvas pixels fit per PDF page in height.
   const imgWidth = pageWidth;
   const scale = imgWidth / canvas.width; // points per pixel horizontally
-  const pageHeightInPixels = Math.floor(pageHeight / scale); // pixels that fit vertically per page
+  const pageHeightInPixels = Math.floor(contentPageHeight / scale); // pixels that fit vertically per page
 
-  // Slice the big canvas into page-height chunks and render each as an image
-  let offset = 0;
-  let pageIndex = 0;
-  while (offset < canvas.height) {
-    const sliceHeight = Math.min(pageHeightInPixels, canvas.height - offset);
+  // Get subscription item positions and heights to break pages
+  // First page: max 4 items, subsequent pages: max 8 items
+  const subscriptionItems = container.querySelectorAll('.subscription-item');
+  const firstPageItems = 4;
+  const itemsPerPage = 8;
+  const itemData: Array<{ top: number; bottom: number }> = [];
+  
+  subscriptionItems.forEach((item) => {
+    const rect = item.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    const relativeTop = (rect.top - containerRect.top) * 2; // Multiply by scale (2) to match canvas coordinates
+    const relativeBottom = (rect.bottom - containerRect.top) * 2;
+    itemData.push({ top: relativeTop, bottom: relativeBottom });
+  });
+
+  // Find where the subscriptions list starts (after header and summary)
+  const subscriptionsList = container.querySelector('.subscriptions-list');
+  let listStartOffset = 0;
+  if (subscriptionsList) {
+    const listRect = subscriptionsList.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    listStartOffset = (listRect.top - containerRect.top) * 2;
+  }
+
+  // Calculate page breaks: first page max 4 items, subsequent pages max 8 items
+  const calculatePageBreaks = (): number[] => {
+    const breaks: number[] = [0]; // Start at the top
+    
+    if (itemData.length > 0) {
+      // First page: break after 4 items (or last item if less than 4)
+      const firstPageItemCount = Math.min(firstPageItems, itemData.length);
+      const firstPageLastItem = itemData[firstPageItemCount - 1];
+      let firstBreak = Math.min(firstPageLastItem.bottom + 20, canvas.height); // Add padding and cap at canvas height
+      breaks.push(firstBreak);
+      
+      // For remaining items, break after every 8 items
+      for (let i = firstPageItems; i < itemData.length; i += itemsPerPage) {
+        const endIndex = Math.min(i + itemsPerPage - 1, itemData.length - 1);
+        const lastItemOnPage = itemData[endIndex];
+        let pageBreak = Math.min(lastItemOnPage.bottom + 20, canvas.height); // Add padding and cap at canvas height
+        breaks.push(pageBreak);
+      }
+      
+      // Ensure the last break is at canvas height
+      if (breaks[breaks.length - 1] < canvas.height) {
+        breaks[breaks.length - 1] = canvas.height;
+      }
+    } else {
+      // No items, just one page
+      breaks.push(canvas.height);
+    }
+    
+    return breaks;
+  };
+
+  const pageBreaks = calculatePageBreaks();
+  const totalPages = pageBreaks.length - 1;
+
+  // Slice the canvas at calculated break points
+  for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+    const startOffset = pageBreaks[pageIndex];
+    const endOffset = pageBreaks[pageIndex + 1];
+    const sliceHeight = endOffset - startOffset;
+    
     const pageCanvas = document.createElement('canvas');
     pageCanvas.width = canvas.width;
     pageCanvas.height = sliceHeight;
@@ -362,7 +446,7 @@ export async function downloadPDFFromHTML(htmlContent: string, filename: string 
     ctx.drawImage(
       canvas,
       0,
-      offset,
+      startOffset,
       canvas.width,
       sliceHeight,
       0,
@@ -375,10 +459,19 @@ export async function downloadPDFFromHTML(htmlContent: string, filename: string 
     const pageImgHeightPts = sliceHeight * scale; // convert pixels to points using same scale
 
     if (pageIndex > 0) pdf.addPage();
+    
+    // Add the page content image
     pdf.addImage(pageImgData, 'PNG', 0, 0, imgWidth, pageImgHeightPts);
-
-    offset += sliceHeight;
-    pageIndex += 1;
+    
+    // Add page number at the bottom center
+    pdf.setFontSize(10);
+    pdf.setTextColor(107, 114, 128); // #6b7280 gray color
+    pdf.text(
+      `Page ${pageIndex + 1} of ${totalPages}`,
+      pageWidth / 2,
+      pageHeight - 15,
+      { align: 'center' }
+    );
   }
 
   pdf.save(filename);
