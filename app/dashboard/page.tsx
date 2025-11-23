@@ -97,6 +97,24 @@ export default function DashboardPage() {
     return Array.from(new Set(allowed)).sort((a, b) => a - b);
   }, [plan]);
 
+  // Get plan-specific color classes
+  const getPlanColors = (accountType: string) => {
+    switch (accountType.toLowerCase()) {
+      case 'free':
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300';
+      case 'pro':
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'family':
+        return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300';
+      case 'business':
+        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
+      case 'personal':
+        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
+      default:
+        return 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300';
+    }
+  };
+
   // Calculate total monthly spending for budget widget
   // Prefer USD if available, otherwise use first currency
   const monthlySpending = useMemo(() => {
@@ -287,8 +305,8 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Spending Insights</h2>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           {plan && (
-            <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-              {plan.accountType === 'business' ? 'Business Plan' : 'Personal Plan'}
+            <span className={`px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded-full ${getPlanColors(plan.accountType)}`}>
+              {plan.accountType.charAt(0).toUpperCase() + plan.accountType.slice(1)} Plan
             </span>
           )}
           <label className="flex items-center text-sm text-gray-600 dark:text-gray-300">
