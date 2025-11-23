@@ -25,10 +25,10 @@ export interface BudgetStatus {
 }
 
 export const settingsApi = {
-  getSettings: () => apiClient.get<UserSettings>('/settings'),
+  getSettings: () => apiClient.get<UserSettings>('/settings/'),
   
   updateSettings: (data: UpdateSettingsData) =>
-    apiClient.patch<UserSettings>('/settings', data),
+    apiClient.patch<UserSettings>('/settings/', data),
   
   getBudgetStatus: (currentSpending: number) =>
     apiClient.get<BudgetStatus>('/settings/budget-status', {

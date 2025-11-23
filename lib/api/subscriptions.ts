@@ -43,13 +43,13 @@ export interface CreateSubscriptionData {
 }
 
 export const subscriptionsApi = {
-  getAll: () => apiClient.get<Subscription[]>('/subscriptions'),
+  getAll: () => apiClient.get<Subscription[]>('/subscriptions/'),
   
   getById: (id: string) => apiClient.get<Subscription>(`/subscriptions/${id}`),
   
   getUpcoming: () => apiClient.get<Subscription[]>('/subscriptions/upcoming'),
   
-  create: (data: CreateSubscriptionData) => apiClient.post<Subscription>('/subscriptions', data),
+  create: (data: CreateSubscriptionData) => apiClient.post<Subscription>('/subscriptions/', data),
   
   update: (id: string, data: Partial<CreateSubscriptionData>) =>
     apiClient.patch<Subscription>(`/subscriptions/${id}`, data),
