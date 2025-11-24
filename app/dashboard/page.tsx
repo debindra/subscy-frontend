@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { SubscriptionCard } from '@/components/dashboard/SubscriptionCard';
@@ -27,12 +27,65 @@ export default function DashboardPage() {
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
   const { showToast } = useToast();
-  const { hasCategorization } = usePlanFeatures();
+  const { hasCategorization, loading: planFeaturesLoading } = usePlanFeatures();
   const router = useRouter();
 
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Load category data separately with better error handling
+      let categoryDataResult: CategorySpending[] = [];
+      
+      if (hasCategorization) {
+        try {
+          console.log('Loading category data... (hasCategorization:', hasCategorization, ')');
+          const categoryRes = await analyticsApi.getByCategory();
+          if (categoryRes && categoryRes.data) {
+            categoryDataResult = Array.isArray(categoryRes.data) ? categoryRes.data : [];
+            console.log('Category data loaded successfully:', categoryDataResult);
+          } else {
+            console.warn('Category API response missing data:', categoryRes);
+          }
+        } catch (categoryError: any) {
+          console.error('Error loading category data:', categoryError);
+          // Check if it's a 403 (forbidden) error
+          if (categoryError?.response?.status === 403) {
+            console.warn('Category analytics not available - user may need to upgrade plan');
+            showToast('Category analytics requires Pro plan', 'info');
+          } else {
+            console.error('Unexpected error loading category data:', categoryError);
+          }
+          categoryDataResult = [];
+        }
+      } else {
+        console.log('Skipping category data load - hasCategorization is false');
+      }
+
+      const [upcomingRes, spendingRes, monthlyRes] = await Promise.all([
+        subscriptionsApi.getUpcoming(),
+        analyticsApi.getSpending(),
+        analyticsApi.getMonthlyTrend(months),
+      ]);
+      
+      setUpcomingSubscriptions(upcomingRes.data);
+      setCurrencySummaries(spendingRes.data);
+      setCategoryData(categoryDataResult);
+      setMonthlyData(monthlyRes.data);
+
+    } catch (error) {
+      showToast('Failed to load dashboard data', 'error');
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [hasCategorization, months, showToast]);
+
   useEffect(() => {
-    loadData();
-  }, [months]);
+    // Wait for plan features to load before fetching data
+    if (!planFeaturesLoading) {
+      loadData();
+    }
+  }, [loadData, planFeaturesLoading]);
 
   useEffect(() => {
     const fetchPlan = async () => {
@@ -54,32 +107,6 @@ export default function DashboardPage() {
     fetchPlan();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const loadData = async () => {
-    try {
-      const [upcomingRes, spendingRes, categoryRes, monthlyRes] = await Promise.all([
-        subscriptionsApi.getUpcoming(),
-        analyticsApi.getSpending(),
-        hasCategorization ? analyticsApi.getByCategory().catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
-        analyticsApi.getMonthlyTrend(months),
-      ]);
-      
-      setUpcomingSubscriptions(upcomingRes.data);
-      setCurrencySummaries(spendingRes.data);
-      if (hasCategorization && categoryRes.data) {
-        setCategoryData(categoryRes.data);
-      } else {
-        setCategoryData([]);
-      }
-      setMonthlyData(monthlyRes.data);
-
-    } catch (error) {
-      showToast('Failed to load dashboard data', 'error');
-      console.error('Error loading dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const monthOptions = useMemo(() => {
     const baseOptions = [3, 6, 12, 24];
@@ -136,7 +163,7 @@ export default function DashboardPage() {
     showToast('Budget settings saved', 'success');
   };
 
-  if (loading) {
+  if (loading || planFeaturesLoading) {
     return (
       <div className="space-y-8 animate-fade-in">
         <div className="flex justify-between items-center">
