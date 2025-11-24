@@ -8,6 +8,7 @@ import { useTheme } from '@/lib/context/ThemeContext';
 import { useRouter } from 'next/navigation';
 import { AccountSwitcher } from './AccountSwitcher';
 import { useAccountContext } from '@/lib/hooks/useAccountContext';
+import { getUserAvatarUrl, getUserDisplayName } from '@/lib/utils/userUtils';
 
 export const Navbar: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -19,10 +20,8 @@ export const Navbar: React.FC = () => {
   const accountType =
     (user?.user_metadata as { account_type?: string } | undefined)?.account_type ?? 'personal';
   const hasBusinessContext = availableContexts.some(c => c.context === 'business');
-  const displayName =
-    (user?.user_metadata?.full_name as string | undefined) ||
-    (user?.user_metadata?.name as string | undefined) ||
-    (user?.email ? user.email.split('@')[0] : 'Account');
+  const displayName = getUserDisplayName(user);
+  const avatarUrl = getUserAvatarUrl(user);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -167,7 +166,24 @@ export const Navbar: React.FC = () => {
                     onClick={() => setUserMenuOpen((open) => !open)}
                     className="flex items-center space-x-2 px-3 py-1.5 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
                   >
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={displayName}
+                        className="w-6 h-6 rounded-full object-cover ring-2 ring-primary-500/20 dark:ring-primary-400/20"
+                        onError={(e) => {
+                          // Fallback to default avatar if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    {!avatarUrl && (
+                      <div className="w-6 h-6 rounded-full bg-primary-500 dark:bg-primary-600 flex items-center justify-center text-white text-xs font-semibold ring-2 ring-primary-500/20 dark:ring-primary-400/20">
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <span className="max-w-[140px] truncate">{displayName}</span>
                     <svg className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -177,8 +193,30 @@ export const Navbar: React.FC = () => {
                   {userMenuOpen && (
                     <div className="absolute right-0 top-full mt-3 w-64 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl overflow-hidden animate-scale-in">
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
-                        <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Signed in as</p>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.email}</p>
+                        <div className="flex items-center space-x-3">
+                          {avatarUrl ? (
+                            <img
+                              src={avatarUrl}
+                              alt={displayName}
+                              className="w-10 h-10 rounded-full object-cover ring-2 ring-primary-500/20 dark:ring-primary-400/20"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const fallback = target.nextElementSibling as HTMLElement;
+                                if (fallback) fallback.classList.remove('hidden');
+                              }}
+                            />
+                          ) : null}
+                          {!avatarUrl && (
+                            <div className="w-10 h-10 rounded-full bg-primary-500 dark:bg-primary-600 flex items-center justify-center text-white text-sm font-semibold ring-2 ring-primary-500/20 dark:ring-primary-400/20">
+                              {displayName.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Signed in as</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.email}</p>
+                          </div>
+                        </div>
                       </div>
                       <div className="py-1">
                         <Link
@@ -302,11 +340,31 @@ export const Navbar: React.FC = () => {
 
               <div className="pt-4 mt-4 border-t dark:border-gray-700">
                 <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg mb-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
-                      {user.email}
-                    </span>
+                  <div className="flex items-center space-x-3">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={displayName}
+                        className="w-8 h-8 rounded-full object-cover ring-2 ring-primary-500/20 dark:ring-primary-400/20"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = target.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    {!avatarUrl && (
+                      <div className="w-8 h-8 rounded-full bg-primary-500 dark:bg-primary-600 flex items-center justify-center text-white text-xs font-semibold ring-2 ring-primary-500/20 dark:ring-primary-400/20">
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                        {displayName}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <Link

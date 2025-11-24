@@ -8,6 +8,7 @@ import { useToast } from '@/lib/context/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { getUserAvatarUrl, getUserDisplayName } from '@/lib/utils/userUtils';
 
 type AccountType = 'personal' | 'business';
 
@@ -82,14 +83,33 @@ export default function ProfilePage() {
     );
   }
 
+  const avatarUrl = getUserAvatarUrl(user);
+  const displayName = getUserDisplayName(user);
+
   return (
     <div className="min-h-screen px-4 py-10 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="space-y-3 text-center">
-          <div className="inline-flex items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 text-white shadow-xl">
-            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.121 17.804A10.97 10.97 0 0112 15c2.5 0 4.847.835 6.879 2.236M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+          <div className="inline-flex items-center justify-center">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-20 h-20 rounded-full object-cover ring-4 ring-primary-500/20 dark:ring-primary-400/20 shadow-xl"
+                onError={(e) => {
+                  // Fallback to default avatar if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            {!avatarUrl && (
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 flex items-center justify-center text-white text-3xl font-bold shadow-xl ring-4 ring-primary-500/20 dark:ring-primary-400/20">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Profile</h1>
