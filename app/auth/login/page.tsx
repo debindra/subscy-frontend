@@ -88,8 +88,9 @@ export default function LoginPage() {
             <Button
               type="button"
               variant="outline"
+              size="lg"
               fullWidth
-              className="h-12 text-lg flex items-center justify-center gap-3"
+              className="flex items-center justify-center gap-3"
               onClick={handleGoogleSignIn}
               disabled={oauthLoading}
             >
@@ -194,7 +195,7 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              <Button type="submit" fullWidth disabled={loading || oauthLoading} className="h-12 text-lg">
+              <Button type="submit" variant="accent" size="lg" fullWidth disabled={loading || oauthLoading} className="flex items-center justify-center">
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
