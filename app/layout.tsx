@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { Albert_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { ToastProvider } from '@/lib/context/ToastContext';
 import { PWASetup } from '@/components/layout/PWASetup';
 
-const albertSans = Albert_Sans({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-albert-sans',
+  variable: '--font-inter',
   display: 'swap',
 });
 
@@ -111,7 +111,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
-      <body className={`${albertSans.variable} font-albert-sans bg-gray-50 dark:bg-gray-900 overflow-y-hidden`}>
+      <body className={`${inter.variable} font-inter bg-gray-50 dark:bg-gray-900 overflow-y-hidden`}>
         <PWASetup />
         <ThemeProvider>
           <ToastProvider>

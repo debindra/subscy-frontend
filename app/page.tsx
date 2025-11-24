@@ -566,7 +566,7 @@ export default function Home() {
                   </svg>
                   Intelligent Subscription Alerts
                 </span>
-                <h1 id="hero-heading" className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.2] px-2 sm:px-0">
+                <h1 id="hero-heading" className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.2]!important px-2 sm:px-0" style={{ lineHeight: '1.2!important' }}>
                   Stay ahead of every{' '}
                   <span className="relative inline-block">
                     <span className="relative z-10 bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">

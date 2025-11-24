@@ -11,13 +11,43 @@ export default function TermsPage() {
     <div className="relative flex min-h-screen flex-col bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5" aria-label="Main navigation">
-          <Link href="/" className="text-xl font-bold tracking-tight text-primary-600 transition hover:text-primary-700">
-            Subsy
+          <Link href="/" className="flex items-center gap-2 sm:gap-3" aria-label="Subsy Home">
+            <span className="sr-only">Subsy</span>
+            <img
+              src="/subsy-full-logo.png"
+              alt="Subsy logo"
+              width={140}
+              height={40}
+              className="h-8 sm:h-10 w-auto dark:hidden"
+              loading="eager"
+            />
+            <img
+              src="/subsy-full-logo-darktheme.png"
+              alt="Subsy logo"
+              width={140}
+              height={40}
+              className="h-8 sm:h-10 w-auto hidden dark:block"
+              loading="eager"
+            />
           </Link>
           <Link
             href="/"
-            className="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:text-primary-600 hover:bg-primary-50"
+            className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:text-primary-600 hover:bg-primary-50"
           >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
             Back to Home
           </Link>
         </nav>
