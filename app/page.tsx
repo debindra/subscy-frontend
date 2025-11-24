@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/context/ThemeContext';
 import Script from 'next/script';
+import { getNotificationChannelIcon } from '@/lib/utils/icons';
 
 const FEATURES = [
   {
@@ -55,29 +56,17 @@ const NOTIFICATION_CHANNELS = [
   { 
     name: 'Email', 
     description: 'Get instant email alerts for all your subscription renewals',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    )
+    icon: getNotificationChannelIcon('email')
   },
   { 
     name: 'SMS', 
     description: 'Receive text messages directly to your phone',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    )
+    icon: getNotificationChannelIcon('sms')
   },
   { 
     name: 'Push Notifications', 
     description: 'Real-time browser and mobile push alerts',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-      </svg>
-    )
+    icon: getNotificationChannelIcon('push notifications')
   },
 ];
 
@@ -87,12 +76,60 @@ const TESTIMONIALS = [
       'Subsy\'s alert system saved me from three unwanted renewals in the first month. The SMS notifications are a game-changer—I never miss an alert now.',
     name: 'Sarah Martinez',
     role: 'Freelance Designer',
+    rating: 5,
+    timestamp: '1 month ago',
+    verified: true,
+    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=faces',
   },
   {
     quote:
       'The customizable alert windows are perfect for our team. We get notified 30 days before renewals, giving us plenty of time to review and cancel if needed.',
     name: 'Michael Chen',
     role: 'Small Business Owner',
+    rating: 5,
+    timestamp: '2 months ago',
+    verified: true,
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=faces',
+  },
+  {
+    quote:
+      'I was spending hours tracking my subscriptions manually. Subsy automated everything and now I get alerts exactly when I need them. It\'s saved me both time and money.',
+    name: 'Emily Rodriguez',
+    role: 'Marketing Manager',
+    rating: 5,
+    timestamp: '3 weeks ago',
+    verified: true,
+    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=faces',
+  },
+  {
+    quote:
+      'The price change alerts are incredible! I caught a subscription price increase before it renewed and was able to cancel. This tool pays for itself.',
+    name: 'David Kim',
+    role: 'Software Engineer',
+    rating: 5,
+    timestamp: '4 days ago',
+    verified: true,
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=faces',
+  },
+  {
+    quote:
+      'As someone with multiple subscriptions across different services, Subsy keeps everything organized in one place. The dashboard is clean and easy to use.',
+    name: 'Jessica Thompson',
+    role: 'Content Creator',
+    rating: 5,
+    timestamp: '1 week ago',
+    verified: true,
+    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=faces',
+  },
+  {
+    quote:
+      'The multi-channel notifications mean I never miss an alert. Whether I\'m at my desk or on the go, I always know when a subscription is about to renew.',
+    name: 'Robert Williams',
+    role: 'Entrepreneur',
+    rating: 5,
+    timestamp: '2 weeks ago',
+    verified: true,
+    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=faces',
   },
 ];
 
@@ -170,6 +207,8 @@ export default function Home() {
   const [isAnnual, setIsAnnual] = useState(false);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<number>>(new Set());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+  const [windowWidth, setWindowWidth] = useState(0);
 
   const scrollToPricing = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -189,6 +228,65 @@ export default function Home() {
       }
       return newSet;
     });
+  };
+
+
+  // Track window width for responsive carousel
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    // Set initial width
+    if (typeof window !== 'undefined') {
+      setWindowWidth(window.innerWidth);
+      window.addEventListener('resize', handleResize);
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize);
+      }
+    };
+  }, []);
+
+  // Infinite auto-play testimonial carousel - NoteAI style with seamless loop
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonialIndex((prev) => {
+        const next = prev + 1;
+        // Seamless infinite loop - reset when reaching duplicate set boundary
+        if (next >= TESTIMONIALS.length * 2) {
+          // Use requestAnimationFrame for smooth, instant reset
+          requestAnimationFrame(() => {
+            setCurrentTestimonialIndex(0);
+          });
+          return TESTIMONIALS.length * 2;
+        }
+        return next;
+      });
+    }, 4000); // Change slide every 4 seconds - NoteAI style timing
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calculate transform based on screen size - NoteAI style
+  // For responsive carousel: Mobile (1 card), Tablet (2 cards), Desktop (3 cards)
+  const getTransformValue = () => {
+    if (windowWidth === 0) return 0; // SSR or initial render
+    
+    // Calculate based on card width + gap for smooth infinite scroll
+    // gap-6 = 1.5rem
+    if (windowWidth >= 1024) {
+      // Desktop: 3 cards visible, move by one card width
+      return currentTestimonialIndex * (100 / 3);
+    } else if (windowWidth >= 768) {
+      // Tablet: 2 cards visible, move by one card width
+      return currentTestimonialIndex * 50;
+    } else {
+      // Mobile: 1 card visible, move by 100%
+      return currentTestimonialIndex * 100;
+    }
   };
 
   if (loading) {
@@ -468,7 +566,7 @@ export default function Home() {
                   </svg>
                   Intelligent Subscription Alerts
                 </span>
-                <h1 id="hero-heading" className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-tight px-2 sm:px-0">
+                <h1 id="hero-heading" className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.2] px-2 sm:px-0">
                   Stay ahead of every{' '}
                   <span className="relative inline-block">
                     <span className="relative z-10 bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">
@@ -478,8 +576,8 @@ export default function Home() {
                   </span>
                   {' '}with intelligent notifications
                 </h1>
-                <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl leading-7 text-slate-600 max-w-3xl mx-auto px-4 sm:px-0">
-                  Never miss a payment or renewal again. Subsy's advanced alert system delivers timely notifications across email, SMS, and push channels—keeping you informed and in control of every subscription.
+                <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl leading-7 text-slate-600 max-w-3xl mx-auto  sm:px-0">
+                  Never miss a payment or renewal again. Subsy's advanced alert system delivers timely notifications across email, SMS, and push channels.
                 </p>
                 <div className="mt-6 sm:mt-8 md:mt-10 flex flex-col items-center justify-center gap-3 sm:gap-4 sm:flex-row px-4 sm:px-0">
                   <Link
@@ -507,29 +605,30 @@ export default function Home() {
                 {/* Enhanced stats */}
                 <div className="mt-8 sm:mt-10 md:mt-12 lg:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8 max-w-3xl mx-auto px-4 sm:px-0">
                   <div className="text-center p-4 sm:p-5 md:p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-100 mb-3 sm:mb-4">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    {/* <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-100 mb-3 sm:mb-4">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 16 16">
+                        <path strokeLinejoin="round" strokeMiterlimit="10" d="M6 10h2.5c.55 0 1-.45 1-1s-.45-1-1-1h-1c-.55 0-1-.45-1-1s.45-1 1-1H10M8 4.5v1.167M8 9.5v2M14.5 8a6.5 6.5 0 1 1-13 0a6.5 6.5 0 0 1 13 0Z" />
                       </svg>
-                    </div>
+                    </div> */}
+           
                     <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">99.9%</p>
                     <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold text-slate-700 uppercase tracking-wider">Alert Delivery Rate</p>
                   </div>
                   <div className="text-center p-4 sm:p-5 md:p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-accent-100 mb-3 sm:mb-4">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-brand-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    {/* <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-accent-100 mb-3 sm:mb-4">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-brand-accent-600" fill="currentColor" viewBox="0 0 2048 2048">
+                        <path d="m2029 1453l-557 558l-269-270l90-90l179 178l467-466zM1024 384v512h384v128H896V384zm-64 1408q16 0 32-1t32-2l114 114q-45 8-89 12t-89 5q-132 0-254-34t-230-97t-194-150t-150-195t-97-229T0 960q0-132 34-254t97-230t150-194t195-150t229-97T960 0q132 0 254 34t230 97t194 150t150 195t97 229t35 255q0 50-6 101l-168 169q46-133 46-270q0-115-30-221t-84-198t-130-169t-168-130t-199-84t-221-30q-115 0-221 30t-198 84t-169 130t-130 168t-84 199t-30 221q0 115 30 221t84 198t130 169t168 130t199 84t221 30" />
                       </svg>
-                    </div>
+                    </div> */}
                     <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">24/7</p>
                     <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold text-slate-700 uppercase tracking-wider">Real-time Monitoring</p>
                   </div>
                   <div className="text-center p-4 sm:p-5 md:p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-100 mb-3 sm:mb-4">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    {/* <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-100 mb-3 sm:mb-4">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18 7h1v1a1 1 0 0 0 2 0V7h1a1 1 0 0 0 0-2h-1V4a1 1 0 0 0-2 0v1h-1a1 1 0 0 0 0 2m2 9a3 3 0 0 0-1.73.56l-2.45-1.45A3.7 3.7 0 0 0 16 14a4 4 0 0 0-3-3.86V7.82a3 3 0 1 0-2 0v2.32A4 4 0 0 0 8 14a3.7 3.7 0 0 0 .18 1.11l-2.45 1.45A3 3 0 0 0 4 16a3 3 0 1 0 3 3a3 3 0 0 0-.12-.8l2.3-1.37a4 4 0 0 0 5.64 0l2.3 1.37A3 3 0 1 0 20 16M4 20a1 1 0 1 1 1-1a1 1 0 0 1-1 1m8-16a1 1 0 1 1-1 1a1 1 0 0 1 1-1m0 12a2 2 0 1 1 2-2a2 2 0 0 1-2 2m8 4a1 1 0 1 1 1-1a1 1 0 0 1-1 1" />
                       </svg>
-                    </div>
+                    </div> */}
                     <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">3+</p>
                     <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold text-slate-700 uppercase tracking-wider">Notification Channels</p>
                   </div>
@@ -575,7 +674,7 @@ export default function Home() {
                     key={channel.name} 
                     className="group flex flex-col items-center text-center p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 hover:border-primary-300 hover:shadow-lg transition-all duration-300"
                   >
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-50 to-brand-accent-50 text-primary-600 mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-50 to-brand-accent-50 text-primary-600 mb-4 group-hover:scale-110 transition-transform duration-300">
                       {channel.icon}
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2">{channel.name}</h3>
@@ -647,6 +746,7 @@ export default function Home() {
           </section>
 
           {/* Security Section - Cleaner */}
+          {/*
           <section className="py-12 sm:py-16 md:py-24" aria-labelledby="security-heading">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-10 sm:mb-12 md:mb-16">
@@ -690,30 +790,97 @@ export default function Home() {
               </div>
             </div>
           </section>
+          *}
 
-          {/* Testimonials - Cleaner */}
-          <section className="py-12 sm:py-16 md:py-24 bg-slate-50" aria-label="Customer testimonials">
+          {/* Testimonials -  Carousel */}
+          <section className="py-12 sm:py-16 md:py-24 bg-gradient-to-b from-slate-50 to-white" aria-label="Customer testimonials">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-10 sm:mb-12 md:mb-16">
-                <span className="inline-flex items-center rounded-full bg-white border border-slate-200 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-medium uppercase tracking-wider text-slate-600">
-                  Testimonials
-                </span>
-                <h2 className="mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 px-4 sm:px-0">Loved by users who never miss a renewal</h2>
-                <p className="mt-3 sm:mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto px-4 sm:px-0">See how Subsy's alert system helps users stay on top of their subscriptions</p>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-4">
+                  What Users Say About Subsy
+                </h2>
+                <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+                  Hear what users who stay on top of their subscriptions with Subsy have to say.
+                </p>
               </div>
-              <div className="grid gap-6 sm:gap-8 md:grid-cols-2">
-                {TESTIMONIALS.map((testimonial) => (
-                  <article
-                    key={testimonial.name}
-                    className="rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 transition-all hover:shadow-lg"
+              
+              {/* Carousel Container - Infinite Loop */}
+              <div className="relative">
+                <div className="overflow-hidden">
+                  <div 
+                    className="flex gap-6"
+                    style={{ 
+                      transform: windowWidth >= 1024 
+                        ? `translateX(calc(-${getTransformValue()}% - ${currentTestimonialIndex * 1.5}rem))`
+                        : windowWidth >= 768
+                        ? `translateX(calc(-${getTransformValue()}% - ${currentTestimonialIndex * 1.5}rem))`
+                        : `translateX(-${getTransformValue()}%)`,
+                      transition: currentTestimonialIndex < TESTIMONIALS.length * 2 
+                        ? 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
+                        : 'none' // No transition on reset for seamless loop
+                    }}
                   >
-                    <blockquote className="text-lg leading-relaxed text-slate-700">"{testimonial.quote}"</blockquote>
-                    <div className="mt-6">
-                      <p className="text-base font-semibold text-slate-900">{testimonial.name}</p>
-                      <p className="mt-1 text-sm text-slate-500">{testimonial.role}</p>
-                    </div>
-                  </article>
-                ))}
+                    {/* Duplicate testimonials for seamless infinite loop */}
+                    {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((testimonial, index) => (
+                      <div
+                        key={`${testimonial.name}-${index}`}
+                        className="w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333333%-1rem)] flex-shrink-0"
+                      >
+                        <article className="rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 transition-all hover:shadow-lg h-full">
+                          <div className="flex items-start gap-4 mb-4">
+                            <img
+                              src={testimonial.image}
+                              alt={testimonial.name}
+                              className="w-12 h-12 rounded-full flex-shrink-0 object-cover"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <div>
+                                  <p className="text-base font-semibold text-slate-900">{testimonial.name}</p>
+                                  <p className="text-sm text-slate-500">{testimonial.role}</p>
+                                </div>
+                                <div className="flex items-center gap-0.5 flex-shrink-0">
+                                  {[...Array(5)].map((_, i) => (
+                                    <svg
+                                      key={i}
+                                      className={`w-4 h-4 ${
+                                        i < testimonial.rating
+                                          ? 'text-yellow-400 fill-current'
+                                          : 'text-slate-300'
+                                      }`}
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <blockquote className="text-sm sm:text-base leading-relaxed text-slate-700 mb-4">
+                            "{testimonial.quote}"
+                          </blockquote>
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <span>{testimonial.timestamp}</span>
+                            {testimonial.verified && (
+                              <>
+                                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                <span>Verified User</span>
+                              </>
+                            )}
+                          </div>
+                        </article>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -830,6 +997,7 @@ export default function Home() {
           </section>
 
           {/* CTA Section - Cleaner */}
+         { /*
           <section className="py-12 sm:py-16 md:py-24" aria-labelledby="cta-heading">
             <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
               <div className="rounded-3xl bg-gradient-to-r from-primary-600 to-primary-700 p-6 sm:p-8 md:p-12 text-center text-white shadow-xl">
@@ -856,7 +1024,7 @@ export default function Home() {
               </div>
             </div>
           </section>
-
+          */}
           {/* FAQ - Cleaner */}
           <section className="py-12 sm:py-16 md:py-24 bg-slate-50" aria-labelledby="faq-heading">
             <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -927,9 +1095,12 @@ export default function Home() {
               <div className="flex justify-center">
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 mb-4">
-                    <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-8 h-8 text-primary-600 [&>svg]:w-8 [&>svg]:h-8">
+                      {getNotificationChannelIcon('email')}
+                    </div> 
+                    {/* <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+                    </svg> */}
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 mb-2">Email Us</h3>
                   <a href="mailto:hello@subsy.tech" className="text-primary-600 hover:text-primary-700 transition-colors font-medium text-lg">

@@ -792,3 +792,47 @@ export const getCardBrandIcon = (brand: string): React.ReactNode => {
   }
 };
 
+export const getNotificationChannelIcon = (channel: string): React.ReactNode => {
+  const iconClass = "w-16 h-16";
+  
+  switch (channel.toLowerCase()) {
+    case 'email':
+      return (
+        <svg className={iconClass} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="currentColor">
+          <path
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M20.51 7.18c.84-.55.07-.55 3.49-.55s2.37-.13 3.49.55l12.83 10.07H7.68ZM7.68 17.25v2.5l12.39 9.71l2 1.3c2 1.13 2 1.13 3.93 0l2-1.3l12.39-9.71v-2.5l3.18 2.5v21.63H4.5V19.75Z"
+          />
+        </svg>
+      );
+    case 'sms':
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 48 48">
+          <path d="M39.3635,8.9125H8.6366A4.1366,4.1366,0,0,0,4.5,13.049V31.101a4.1367,4.1367,0,0,0,4.1366,4.1365H36.2731L41.8356,40.8A.975.975,0,0,0,43.5,40.1105V13.049A4.1365,4.1365,0,0,0,39.3635,8.9125Z" />
+          <path d="M24,28.6306h6.6438a2.2285,2.2285,0,0,0,2.2285-2.2286V15.237" />
+          <polyline points="36.999 19.364 32.872 15.237 28.746 19.364" />
+          <path d="M24,15.237H17.3563a2.2286,2.2286,0,0,0-2.2286,2.2286v11.165" />
+          <polyline points="11.001 24.504 15.128 28.631 19.254 24.504" />
+        </svg>
+      );
+    case 'push notifications':
+    case 'push':
+      return (
+        <svg className={iconClass} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={.5} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          <path d="M9 8a3 3 0 0 1 6 0" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+      );
+  }
+};
+
