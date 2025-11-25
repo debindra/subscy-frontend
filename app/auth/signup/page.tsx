@@ -29,7 +29,7 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
 
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp, signUpWithGoogle } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
 
@@ -68,7 +68,7 @@ export default function SignUpPage() {
     try {
       setError('');
       setOauthLoading(true);
-      await signInWithGoogle();
+      await signUpWithGoogle();
     } catch (err: any) {
       setOauthLoading(false);
       setError(err.message || 'Google sign-up failed');

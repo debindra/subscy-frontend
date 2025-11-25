@@ -79,7 +79,16 @@ export function useAuth() {
       },
     });
 
-    if (error) throw error;
+    if (error) {
+      // Better error messages
+      if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+        throw new Error('An account with this email already exists. Please sign in instead.');
+      }
+      if (error.message.includes('Password') || error.message.includes('password')) {
+        throw new Error('Password does not meet requirements. Please use a stronger password.');
+      }
+      throw error;
+    }
 
     // Persist business profile details via API when applicable
     if (accountType === 'business' && companyName && data.session?.access_token) {
@@ -110,14 +119,46 @@ export function useAuth() {
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      // Provide user-friendly error messages
+      if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid credentials')) {
+        throw new Error('Invalid email or password. Please check your credentials and try again.');
+      }
+      if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
+        throw new Error('Please check your email and confirm your account before signing in.');
+      }
+      throw error;
+    }
     return data;
   };
 
   const signInWithGoogle = async () => {
+    // For login - just authenticate
     const redirectTo =
       typeof window !== 'undefined'
-        ? `${window.location.origin}/auth/callback`
+        ? `${window.location.origin}/auth/callback?mode=login`
+        : undefined;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+
+    if (error) throw error;
+    return data;
+  };
+
+  const signUpWithGoogle = async () => {
+    // For signup - authenticate then collect additional info
+    const redirectTo =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback?mode=signup`
         : undefined;
 
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -172,6 +213,7 @@ export function useAuth() {
     signUp,
     signIn,
     signInWithGoogle,
+    signUpWithGoogle,
     resetPassword,
     updatePassword,
     signOut,

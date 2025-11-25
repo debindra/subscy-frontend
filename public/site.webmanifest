@@ -1,6 +1,7 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "Subsy - Subscription Management",
+  "short_name": "Subsy",
+  "description": "Track and manage all your subscriptions in one place",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +16,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
+  "theme_color": "#0d9488",
   "background_color": "#ffffff",
   "display": "standalone"
 }

@@ -166,6 +166,9 @@ function AuthCallbackContent() {
 
     const exchangeCodeForSession = async () => {
       try {
+        // Get mode parameter to determine if this is login or signup
+        const mode = searchParams.get('mode'); // 'login' or 'signup'
+        
         // First, wait a moment and check if Supabase has already processed the confirmation
         // This handles cases where Supabase automatically processes email confirmations
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -174,6 +177,30 @@ function AuthCallbackContent() {
         if (existingSession) {
           // Session exists - might be from email confirmation or OAuth
           const userMetadata = existingSession.user?.user_metadata || {};
+          
+          // Check if this is a new user signing up via Google OAuth
+          if (mode === 'signup') {
+            const isNewUser = existingSession.user.created_at === existingSession.user.last_sign_in_at;
+            
+            // If new user and no account type set, redirect to complete signup
+            if (isNewUser && !userMetadata.account_type) {
+              setStatus('success');
+              setMessage('Account created! Please complete your profile...');
+
+              if (typeof window !== 'undefined') {
+                window.history.replaceState(null, '', window.location.pathname);
+              }
+
+              setTimeout(() => {
+                if (isActive) {
+                  router.replace('/auth/complete-signup');
+                }
+              }, 1500);
+              return;
+            }
+          }
+          
+          // Handle business profile creation
           if (userMetadata.account_type === 'business' && userMetadata.company_name) {
             try {
               await businessApi.upsertProfile({
@@ -224,7 +251,7 @@ function AuthCallbackContent() {
         }
 
         // Otherwise, handle OAuth callback
-        setMessage('Signing you in with Google...');
+        setMessage(mode === 'signup' ? 'Signing you up with Google...' : 'Signing you in with Google...');
         
         // Supabase automatically handles OAuth callbacks from URL hash fragments
         // Wait a moment for Supabase to process the callback
@@ -271,6 +298,29 @@ function AuthCallbackContent() {
                 setMessage('Failed to authenticate. Please try again.');
                 return;
               }
+              
+              // Check if this is a new user signing up via Google OAuth
+              if (mode === 'signup' && newSession) {
+                const isNewUser = newSession.user.created_at === newSession.user.last_sign_in_at;
+                const userMetadata = newSession.user?.user_metadata || {};
+                
+                // If new user and no account type set, redirect to complete signup
+                if (isNewUser && !userMetadata.account_type) {
+                  setStatus('success');
+                  setMessage('Account created! Please complete your profile...');
+
+                  if (typeof window !== 'undefined') {
+                    window.history.replaceState(null, '', window.location.pathname);
+                  }
+
+                  setTimeout(() => {
+                    if (isActive) {
+                      router.replace('/auth/complete-signup');
+                    }
+                  }, 1500);
+                  return;
+                }
+              }
             } else {
               setStatus('error');
               setMessage('No authentication data found. Please try signing in again.');
@@ -279,6 +329,30 @@ function AuthCallbackContent() {
           } else {
             setStatus('error');
             setMessage('No authentication data found. Please try signing in again.');
+            return;
+          }
+        }
+
+        // Check if this is a new user signing up via Google OAuth
+        if (mode === 'signup' && session) {
+          const isNewUser = session.user.created_at === session.user.last_sign_in_at;
+          const userMetadata = session.user?.user_metadata || {};
+          
+          // If new user and no account type set, redirect to complete signup
+          if (isNewUser && !userMetadata.account_type) {
+            setStatus('success');
+            setMessage('Account created! Please complete your profile...');
+
+            // Clear the hash from URL for security
+            if (typeof window !== 'undefined') {
+              window.history.replaceState(null, '', window.location.pathname);
+            }
+
+            setTimeout(() => {
+              if (isActive) {
+                router.replace('/auth/complete-signup');
+              }
+            }, 1500);
             return;
           }
         }

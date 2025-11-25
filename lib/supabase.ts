@@ -9,6 +9,22 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(
   supabaseUrl || 'https://qwlrovakflxxnivoywlm.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
+  supabaseAnonKey || 'placeholder-key',
+  {
+    auth: {
+      // Customize redirect URLs
+      redirectTo: typeof window !== 'undefined' 
+        ? `${window.location.origin}/auth/callback`
+        : undefined,
+      // Customize storage key names to use Subsy branding
+      storageKey: 'subsy-auth-token',
+      // Auto refresh token
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      // Flow type for OAuth
+      flowType: 'pkce',
+    },
+  }
 );
 

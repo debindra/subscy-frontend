@@ -119,74 +119,78 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Calendar</h1>
-          <p className="text-gray-600 dark:text-gray-400">Renewals and trial end dates</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Calendar</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Renewals and trial end dates</p>
         </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setCursor(addMonths(cursor, -1))}
-            className="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm sm:text-base"
+            aria-label="Previous month"
           >
             Prev
           </button>
-          <div className="px-4 py-2 font-semibold text-gray-900 dark:text-white">{monthName}</div>
+          <div className="px-3 sm:px-4 py-2 font-semibold text-gray-900 dark:text-white text-sm sm:text-base whitespace-nowrap">{monthName}</div>
           <button
             onClick={() => setCursor(addMonths(cursor, 1))}
-            className="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm sm:text-base"
+            aria-label="Next month"
           >
             Next
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-          <div key={d} className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 px-2">{d}</div>
-        ))}
-        {matrix.flat().map((day) => {
-          const isCurrentMonth = day.getMonth() === month;
-          const key = day.toDateString();
-          const items = itemsByDay.get(key) || [];
-          return (
-            <div
-              key={key}
-              className={`min-h-[110px] rounded-lg border p-2 flex flex-col space-y-1 overflow-hidden ${
-                isCurrentMonth
-                  ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                  : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-800'
-              }`}
-            >
-              <div className={`text-xs font-medium ${isCurrentMonth ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
-                {day.getDate()}
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 min-w-[600px] sm:min-w-0">
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+            <div key={d} className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 px-1 sm:px-2 text-center">{d}</div>
+          ))}
+          {matrix.flat().map((day) => {
+            const isCurrentMonth = day.getMonth() === month;
+            const key = day.toDateString();
+            const items = itemsByDay.get(key) || [];
+            return (
+              <div
+                key={key}
+                className={`min-h-[80px] sm:min-h-[110px] rounded-lg border p-1 sm:p-2 flex flex-col space-y-1 overflow-hidden ${
+                  isCurrentMonth
+                    ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                    : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-800'
+                }`}
+              >
+                <div className={`text-xs sm:text-sm font-medium ${isCurrentMonth ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                  {day.getDate()}
+                </div>
+                <div className="space-y-0.5 sm:space-y-1 flex-1 overflow-hidden">
+                  {items.slice(0, 2).map((entry, idx) => (
+                    <div
+                      key={idx}
+                      className={`text-[10px] sm:text-xs truncate px-1 sm:px-2 py-0.5 sm:py-1 rounded ${
+                        entry.type === 'trial'
+                          ? 'bg-brand-accent-100 text-brand-accent-800 dark:bg-brand-accent-900/30 dark:text-brand-accent-300'
+                          : 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300'
+                      }`}
+                      onMouseEnter={(event) => showTooltip(event, entry)}
+                      onMouseLeave={hideTooltip}
+                      onFocus={(event) => showTooltip(event, entry)}
+                      onBlur={hideTooltip}
+                      tabIndex={0}
+                    >
+                      {entry.type === 'trial' ? 'Trial: ' : ''}
+                      {entry.sub.name}
+                    </div>
+                  ))}
+                  {items.length > 2 && (
+                    <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">+{items.length - 2} more</div>
+                  )}
+                </div>
               </div>
-              <div className="space-y-1">
-                {items.slice(0, 3).map((entry, idx) => (
-                  <div
-                    key={idx}
-                    className={`text-xs truncate px-2 py-1 rounded ${
-                      entry.type === 'trial'
-                        ? 'bg-brand-accent-100 text-brand-accent-800 dark:bg-brand-accent-900/30 dark:text-brand-accent-300'
-                        : 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300'
-                    }`}
-                    onMouseEnter={(event) => showTooltip(event, entry)}
-                    onMouseLeave={hideTooltip}
-                    onFocus={(event) => showTooltip(event, entry)}
-                    onBlur={hideTooltip}
-                    tabIndex={0}
-                  >
-                    {entry.type === 'trial' ? 'Trial: ' : ''}
-                    {entry.sub.name}
-                  </div>
-                ))}
-                {items.length > 3 && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400">+{items.length - 3} more</div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
       {tooltip &&
         createPortal(

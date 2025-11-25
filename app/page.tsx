@@ -133,6 +133,8 @@ const TESTIMONIALS = [
   },
 ];
 
+const TESTIMONIAL_GAP_REM = 1.5;
+
 const PRICING = [
   {
     name: 'Free',
@@ -289,6 +291,15 @@ export default function Home() {
     }
   };
 
+  const getCarouselTransform = () => {
+    if (windowWidth === 0) {
+      return 'translateX(0)';
+    }
+
+    const gapOffset = currentTestimonialIndex * TESTIMONIAL_GAP_REM;
+    return `translateX(calc(-${getTransformValue()}% - ${gapOffset}rem))`;
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900">
@@ -394,9 +405,9 @@ export default function Home() {
                 <img
                   src={theme === 'dark' ? '/subsy-full-logo-darktheme.png' : '/subsy-full-logo.png'}
                   alt="Subsy logo"
-                  width={140}
-                  height={40}
-                  className="h-8 sm:h-10 w-auto"
+                  width={220}
+                  height={220}
+                  className="h-14 w-auto"
                   loading="eager"
                   onError={(e) => {
                     // Fallback: try to reload or use a different path
@@ -810,11 +821,7 @@ export default function Home() {
                   <div 
                     className="flex gap-6"
                     style={{ 
-                      transform: windowWidth >= 1024 
-                        ? `translateX(calc(-${getTransformValue()}% - ${currentTestimonialIndex * 1.5}rem))`
-                        : windowWidth >= 768
-                        ? `translateX(calc(-${getTransformValue()}% - ${currentTestimonialIndex * 1.5}rem))`
-                        : `translateX(-${getTransformValue()}%)`,
+                      transform: getCarouselTransform(),
                       transition: currentTestimonialIndex < TESTIMONIALS.length * 2 
                         ? 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
                         : 'none' // No transition on reset for seamless loop
@@ -824,7 +831,7 @@ export default function Home() {
                     {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((testimonial, index) => (
                       <div
                         key={`${testimonial.name}-${index}`}
-                        className="w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333333%-1rem)] flex-shrink-0"
+                        className="w-full md:w-[calc(50%_-_0.75rem)] lg:w-[calc(33.333333%_-_1rem)] flex-shrink-0"
                       >
                         <article className="rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 transition-all hover:shadow-lg h-full">
                           <div className="flex items-start gap-4 mb-4">
