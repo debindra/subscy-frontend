@@ -12,10 +12,6 @@ export const supabase = createClient(
   supabaseAnonKey || 'placeholder-key',
   {
     auth: {
-      // Customize redirect URLs
-      redirectTo: typeof window !== 'undefined' 
-        ? `${window.location.origin}/auth/callback`
-        : undefined,
       // Customize storage key names to use Subsy branding
       storageKey: 'subsy-auth-token',
       // Auto refresh token

@@ -292,21 +292,23 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : (
-          <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="p-4 bg-gray-100 dark:bg-gray-700/40 rounded-full">
-                <svg className="w-8 h-8 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-3-3v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+          <Link href="/dashboard/subscriptions">
+            <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] group">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="p-4 bg-gray-100 dark:bg-gray-700/40 rounded-full group-hover:bg-primary-100 dark:group-hover:bg-primary-900/30 transition-colors">
+                  <svg className="w-8 h-8 text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-3-3v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">No active subscriptions</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Add subscriptions to see spending summaries grouped by currency.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No active subscriptions</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Add subscriptions to see spending summaries grouped by currency.
-                </p>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </Link>
         )}
 
         {/* Budget Widget */}
