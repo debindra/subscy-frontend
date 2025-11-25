@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useToast } from '@/lib/context/ToastContext';
 import { businessApi, BusinessProfilePayload, PlanResponse } from '@/lib/api/business';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 export default function BusinessSettingsPage() {
+  usePageTitle('Business Console');
   const { user, loading } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();

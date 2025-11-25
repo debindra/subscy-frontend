@@ -8,8 +8,10 @@ import { useTheme } from '@/lib/context/ThemeContext';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 export default function LoginPage() {
+  usePageTitle('Login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

@@ -11,8 +11,10 @@ import { Card } from '@/components/ui/Card';
 import { authApi } from '@/lib/api/auth';
 import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '@/lib/utils/passwordRules';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 export default function ChangePasswordPage() {
+  usePageTitle('Change Password');
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();

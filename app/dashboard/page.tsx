@@ -14,8 +14,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { businessApi, PlanResponse } from '@/lib/api/business';
 import { usePlanFeatures } from '@/lib/hooks/usePlanFeatures';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 export default function DashboardPage() {
+  usePageTitle('Dashboard');
   const [upcomingSubscriptions, setUpcomingSubscriptions] = useState<Subscription[]>([]);
   const [currencySummaries, setCurrencySummaries] = useState<CurrencySpendingSummary[]>([]);
   const [categoryData, setCategoryData] = useState<CategorySpending[]>([]);

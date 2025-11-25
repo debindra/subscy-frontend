@@ -11,8 +11,10 @@ import { Card } from '@/components/ui/Card';
 import { Select } from '@/components/ui/Select';
 import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '@/lib/utils/passwordRules';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 export default function SignUpPage() {
+  usePageTitle('Sign Up');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');

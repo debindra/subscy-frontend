@@ -6,8 +6,10 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 export default function ForgotPasswordPage() {
+  usePageTitle('Forgot Password');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);

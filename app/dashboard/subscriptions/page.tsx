@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/Button';
 import { useToast } from '@/lib/context/ToastContext';
 import { useSearchParams } from 'next/navigation';
 import { usePlanFeatures } from '@/lib/hooks/usePlanFeatures';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 export default function SubscriptionsPage() {
+  usePageTitle('Subscriptions');
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);

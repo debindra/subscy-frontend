@@ -13,7 +13,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Subsy - Subscription Finance Platform | Track & Optimize Recurring Spend',
+    default: 'Subsy - Track & Manage Your Subscriptions',
     template: '%s | Subsy',
   },
   description: 'Subsy brings together payments, renewals, and vendor analytics so finance and operations teams can orchestrate every recurring dollar in real time. Track subscriptions, automate renewals, and optimize spend.',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   creator: 'Subsy',
   publisher: 'Subsy',
   manifest: '/manifest.json',
-  themeColor: '#6366f1',
+  themeColor: '#0d9488',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://subsy.com'),
   alternates: {
     canonical: '/',
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: '/',
     siteName: 'Subsy',
-    title: 'Subsy - Subscription Finance Platform | Track & Optimize Recurring Spend',
+    title: 'Subsy - Track & Manage Your Subscriptions',
     description: 'Subsy brings together payments, renewals, and vendor analytics so finance and operations teams can orchestrate every recurring dollar in real time.',
     images: [
       {
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Subsy - Subscription Finance Platform',
+    title: 'Subsy - Track & Manage Your Subscriptions',
     description: 'Track subscriptions, automate renewals, and optimize spend with Subsy.',
     images: ['/og-image.png'],
     creator: '@subsy',
@@ -106,7 +106,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#6366f1" />
+        <meta name="theme-color" content="#0d9488" />
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />

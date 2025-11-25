@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 import { createPortal } from 'react-dom';
 import { subscriptionsApi, Subscription } from '@/lib/api/subscriptions';
 import { formatCurrency, formatDate } from '@/lib/utils/format';
@@ -48,6 +49,7 @@ interface TooltipState {
 }
 
 export default function CalendarPage() {
+  usePageTitle('Calendar');
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [cursor, setCursor] = useState<Date>(startOfMonth(new Date()));

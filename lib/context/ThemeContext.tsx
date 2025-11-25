@@ -16,13 +16,13 @@ function getInitialTheme(): Theme {
     return 'light';
   }
 
-  const savedTheme = (localStorage.getItem('theme') as Theme | null) ?? undefined;
+  const savedTheme = localStorage.getItem('theme') as Theme | null;
   if (savedTheme === 'dark' || savedTheme === 'light') {
     return savedTheme;
   }
 
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  return prefersDark ? 'dark' : 'light';
+  // Default to light theme - dark theme only activates when explicitly enabled
+  return 'light';
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -36,11 +36,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     if (savedTheme === 'dark' || savedTheme === 'light') {
       setTheme(savedTheme);
-      return;
+    } else {
+      // Default to light theme - dark theme only activates when explicitly enabled
+      setTheme('light');
     }
-
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setTheme(prefersDark ? 'dark' : 'light');
   }, []);
 
   useEffect(() => {
@@ -51,27 +50,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (event: MediaQueryListEvent) => {
-      const preference = event.matches ? 'dark' : 'light';
-      const stored = localStorage.getItem('theme') as Theme | null;
-
-      if (!stored) {
-        setTheme(preference);
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
+  // Removed automatic system preference detection
+  // Dark theme only activates when explicitly enabled by the user
 
   const toggleTheme = () => {
     const nextTheme: Theme = theme === 'light' ? 'dark' : 'light';

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '@/lib/utils/passwordRules';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 type Step = 'checking' | 'ready' | 'completed' | 'error';
 
@@ -249,6 +250,7 @@ function UpdatePasswordContent() {
 }
 
 export default function UpdatePasswordPage() {
+  usePageTitle('Update Password');
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

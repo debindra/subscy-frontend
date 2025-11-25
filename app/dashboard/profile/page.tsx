@@ -9,10 +9,12 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { getUserAvatarUrl, getUserDisplayName } from '@/lib/utils/userUtils';
+import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 type AccountType = 'personal' | 'business';
 
 export default function ProfilePage() {
+  usePageTitle('Profile');
   const { user, loading } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
