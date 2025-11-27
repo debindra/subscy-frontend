@@ -30,22 +30,37 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
   const textColor = isDark ? '#e5e7eb' : '#374151';
   const gridColor = isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(209, 213, 219, 0.3)';
 
+  // Brand-based color palettes for charts
+  const brandPrimaryShades = [
+    '#0d9488', // primary-600 main brand
+    '#14b8a6', // primary-500
+    '#0f766e', // primary-700
+    '#115e59', // primary-800
+    '#2dd4bf', // primary-400
+    '#5eead4', // primary-300
+  ];
+
+  const brandAccentShades = [
+    '#f97316', // brand-accent-500
+    '#ea580c', // brand-accent-600
+    '#c2410c', // brand-accent-700
+    '#9a3412', // brand-accent-800
+    '#fb923c', // brand-accent-400
+    '#fdba74', // brand-accent-300
+  ];
+
+  const pieColors = categoryData.map((_, index) => {
+    const palette = index % 2 === 0 ? brandPrimaryShades : brandAccentShades;
+    return palette[index % palette.length];
+  });
+
   const pieData = {
     labels: categoryData.map((item) => item.category),
     datasets: [
       {
         label: 'Monthly Spending',
         data: categoryData.map((item) => item.amount),
-        backgroundColor: [
-          'rgba(99, 102, 241, 0.8)',
-          'rgba(239, 68, 68, 0.8)',
-          'rgba(34, 197, 94, 0.8)',
-          'rgba(251, 191, 36, 0.8)',
-          'rgba(168, 85, 247, 0.8)',
-          'rgba(236, 72, 153, 0.8)',
-          'rgba(20, 184, 166, 0.8)',
-          'rgba(249, 115, 22, 0.8)',
-        ],
+        backgroundColor: pieColors,
         borderColor: isDark ? '#1f2937' : '#ffffff',
         borderWidth: 2,
         hoverOffset: 8,
@@ -59,11 +74,12 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
       {
         label: 'Monthly Spending',
         data: monthlyData.map((item) => item.total),
-        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-        borderColor: 'rgba(99, 102, 241, 1)',
+        // Use brand primary color for bars
+        backgroundColor: 'rgba(20, 184, 166, 0.8)', // primary-500
+        borderColor: 'rgba(13, 148, 136, 1)', // primary-600
         borderWidth: 2,
         borderRadius: 8,
-        hoverBackgroundColor: 'rgba(99, 102, 241, 1)',
+        hoverBackgroundColor: 'rgba(13, 148, 136, 1)',
       },
     ],
   };

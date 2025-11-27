@@ -1,9 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { ToastProvider } from '@/lib/context/ToastContext';
 import { PWASetup } from '@/components/layout/PWASetup';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -33,7 +34,6 @@ export const metadata: Metadata = {
   creator: 'Subsy',
   publisher: 'Subsy',
   manifest: '/manifest.json',
-  themeColor: '#0d9488',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://subsy.com'),
   alternates: {
     canonical: '/',
@@ -80,12 +80,6 @@ export const metadata: Metadata = {
     shortcut: ['/favicon.ico'],
     apple: [{ url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -95,6 +89,14 @@ export const metadata: Metadata = {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
   },
   category: 'finance',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0d9488',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({
@@ -115,7 +117,9 @@ export default function RootLayout({
         <PWASetup />
         <ThemeProvider>
           <ToastProvider>
-            {children}
+            <QueryProvider>
+              {children}
+            </QueryProvider>
           </ToastProvider>
         </ThemeProvider>
       </body>

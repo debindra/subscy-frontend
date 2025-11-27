@@ -5,6 +5,7 @@ import { settingsApi, UserSettings, UpdateSettingsData } from '@/lib/api/setting
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { useToast } from '@/lib/context/ToastContext';
 
 interface BudgetSettingsModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
   onClose,
   onSave,
 }) => {
+  const { showToast } = useToast();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [formData, setFormData] = useState<UpdateSettingsData>({
     monthlyBudget: null,
@@ -53,10 +55,13 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
 
     try {
       await settingsApi.updateSettings(formData);
+      showToast('Budget settings saved', 'success');
       onSave();
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to save settings');
+      const message = err?.response?.data?.message || 'Failed to save budget settings';
+      setError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }

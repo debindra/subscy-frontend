@@ -131,6 +131,36 @@ const TESTIMONIALS = [
     verified: true,
     image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=faces',
   },
+  {
+    quote:
+      'As a student on a tight budget, Subsy has helped me save over $200 in the past 6 months by catching subscriptions I forgot about. Essential tool!',
+    name: 'Alex Johnson',
+    role: 'University Student',
+    rating: 5,
+    timestamp: '3 months ago',
+    verified: true,
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=faces',
+  },
+  {
+    quote:
+      'Our finance team uses Subsy to track all company subscriptions. The export features and analytics have made our expense reporting so much easier.',
+    name: 'Priya Sharma',
+    role: 'Finance Director',
+    rating: 5,
+    timestamp: '5 months ago',
+    verified: true,
+    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=faces',
+  },
+  {
+    quote:
+      'Being a digital nomad, I need reliable notifications across time zones. Subsy\'s international support and mobile app keep me connected everywhere.',
+    name: 'Carlos Silva',
+    role: 'Remote Developer',
+    rating: 5,
+    timestamp: '2 months ago',
+    verified: true,
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=faces',
+  },
 ];
 
 const TESTIMONIAL_GAP_REM = 1.5;
@@ -211,6 +241,7 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [windowWidth, setWindowWidth] = useState(0);
+  const [isSticky, setIsSticky] = useState(false);
 
   const scrollToPricing = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -238,13 +269,13 @@ export default function Home() {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
     };
-    
+
     // Set initial width
     if (typeof window !== 'undefined') {
       setWindowWidth(window.innerWidth);
       window.addEventListener('resize', handleResize);
     }
-    
+
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('resize', handleResize);
@@ -252,52 +283,41 @@ export default function Home() {
     };
   }, []);
 
-  // Infinite auto-play testimonial carousel - NoteAI style with seamless loop
+  // Sticky navigation effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsSticky(window.scrollY > 100);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  // Simplified testimonial carousel
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTestimonialIndex((prev) => {
-        const next = prev + 1;
-        // Seamless infinite loop - reset when reaching duplicate set boundary
-        if (next >= TESTIMONIALS.length * 2) {
-          // Use requestAnimationFrame for smooth, instant reset
-          requestAnimationFrame(() => {
-            setCurrentTestimonialIndex(0);
-          });
-          return TESTIMONIALS.length * 2;
-        }
-        return next;
-      });
-    }, 4000); // Change slide every 4 seconds - NoteAI style timing
+      setCurrentTestimonialIndex((prev) => (prev + 1) % TESTIMONIALS.length);
+    }, 5000); // Change slide every 5 seconds
 
     return () => clearInterval(interval);
   }, []);
 
-  // Calculate transform based on screen size - NoteAI style
-  // For responsive carousel: Mobile (1 card), Tablet (2 cards), Desktop (3 cards)
-  const getTransformValue = () => {
-    if (windowWidth === 0) return 0; // SSR or initial render
-    
-    // Calculate based on card width + gap for smooth infinite scroll
-    // gap-6 = 1.5rem
-    if (windowWidth >= 1024) {
-      // Desktop: 3 cards visible, move by one card width
-      return currentTestimonialIndex * (100 / 3);
-    } else if (windowWidth >= 768) {
-      // Tablet: 2 cards visible, move by one card width
-      return currentTestimonialIndex * 50;
-    } else {
-      // Mobile: 1 card visible, move by 100%
-      return currentTestimonialIndex * 100;
-    }
-  };
-
+  // Simplified carousel transform
   const getCarouselTransform = () => {
-    if (windowWidth === 0) {
-      return 'translateX(0)';
-    }
+    if (windowWidth === 0) return 'translateX(0)';
 
-    const gapOffset = currentTestimonialIndex * TESTIMONIAL_GAP_REM;
-    return `translateX(calc(-${getTransformValue()}% - ${gapOffset}rem))`;
+    if (windowWidth >= 1024) {
+      // Desktop: 3 cards visible
+      return `translateX(-${currentTestimonialIndex * (100 / 3)}%)`;
+    } else if (windowWidth >= 768) {
+      // Tablet: 2 cards visible
+      return `translateX(-${currentTestimonialIndex * 50}%)`;
+    } else {
+      // Mobile: 1 card visible
+      return `translateX(-${currentTestimonialIndex * 100}%)`;
+    }
   };
 
   if (loading) {
@@ -311,51 +331,109 @@ export default function Home() {
     );
   }
 
-  // Structured data for SEO
+  // Enhanced structured data for SEO
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'Subsy',
     applicationCategory: 'FinanceApplication',
     operatingSystem: 'Web',
+    url: 'https://subsy.com',
+    description: 'Subsy brings together payments, renewals, and vendor analytics so finance and operations teams can orchestrate every recurring dollar in real time.',
     offers: {
       '@type': 'Offer',
-      price: '19',
+      price: '0',
       priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: '0',
+        priceCurrency: 'USD',
+        eligibleQuantity: {
+          '@type': 'QuantitativeValue',
+          value: '1'
+        }
+      }
     },
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: '4.9',
       ratingCount: '127',
+      bestRating: '5',
+      worstRating: '1',
     },
-    description: 'Subsy brings together payments, renewals, and vendor analytics so finance and operations teams can orchestrate every recurring dollar in real time.',
     featureList: [
       'Unified Subscription Dashboard',
       'Predictive Spend Insights',
       'One-Tap Controls',
       'Automated Renewal Alerts',
       'Vendor Health Monitoring',
+      'Multi-Channel Notifications',
+      'Real-time Monitoring',
+      'Customizable Alert Windows',
     ],
+    screenshot: [
+      {
+        '@type': 'ImageObject',
+        url: 'https://subsy.com/screenshot-dashboard.png',
+        caption: 'Subsy Dashboard - Track all your subscriptions in one place'
+      }
+    ],
+    applicationSubCategory: 'Subscription Management',
+    permissions: 'Free',
+    releaseNotes: 'Latest version with enhanced notification system',
+    softwareVersion: '1.0.0',
+    downloadUrl: 'https://subsy.com/auth/signup',
+    installUrl: 'https://subsy.com/auth/signup',
+    countriesSupported: 'Worldwide',
+    publisher: {
+      '@type': 'Organization',
+      name: 'Subsy',
+      url: 'https://subsy.com'
+    }
   };
 
   const organizationData = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Subsy',
-    url: 'https://subsy.tech',
-    logo: 'https://subsy.tech/logo.png',
-    description: 'Subscription finance platform for modern finance operations',
-    email: 'hello@subsy.tech',
+    url: 'https://subsy.com',
+    logo: 'https://subsy.com/logo.png',
+    description: 'Subscription finance platform for modern finance operations. Track, manage, and optimize your recurring subscriptions with intelligent alerts and analytics.',
+    email: 'hello@subsy.com',
     contactPoint: [
       {
         '@type': 'ContactPoint',
-        email: 'hello@subsy.tech',
-        contactType: 'General Inquiries',
+        email: 'hello@subsy.com',
+        contactType: 'customer service',
+        areaServed: 'Worldwide',
+        availableLanguage: 'English',
       },
     ],
     sameAs: [
       'https://twitter.com/subsy',
       'https://linkedin.com/company/subsy',
+      'https://github.com/subsy',
+    ],
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'US',
+    },
+    founder: [
+      {
+        '@type': 'Person',
+        name: 'Subsy Team',
+      },
+    ],
+    foundingDate: '2024',
+    numberOfEmployees: '1-10',
+    slogan: 'Never miss a subscription payment again',
+    knowsAbout: [
+      'Subscription Management',
+      'Finance Operations',
+      'SaaS Analytics',
+      'Recurring Payments',
+      'Vendor Management',
     ],
   };
 
@@ -529,44 +607,61 @@ export default function Home() {
           )}
         </header>
 
+        {/* Sticky Navigation */}
+        {!user && (
+          <div className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+            isSticky
+              ? 'translate-y-0 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100'
+              : '-translate-y-full'
+          }`}>
+            <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <Link href="/" className="flex items-center gap-2">
+                    <img
+                      src={theme === 'dark' ? '/subsy-full-logo-darktheme.png' : '/subsy-full-logo.png'}
+                      alt="Subsy logo"
+                      width={120}
+                      height={40}
+                      className="h-8 w-auto"
+                    />
+                  </Link>
+                  <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-700">
+                    <a href="#tour" className="hover:text-primary-600 transition-colors">Features</a>
+                    <a href="#pricing" className="hover:text-primary-600 transition-colors">Pricing</a>
+                    <a href="#faq" className="hover:text-primary-600 transition-colors">FAQ</a>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Link
+                    href="/auth/login"
+                    className="text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="rounded-lg bg-brand-accent-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-brand-accent-600 hover:shadow-md"
+                  >
+                    Start Free
+                  </Link>
+                </div>
+              </div>
+            </nav>
+          </div>
+        )}
+
         <main className="relative z-10">
           {/* Simplified Hero Section */}
           <section className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-b from-slate-50 via-white to-white min-h-[85vh] sm:min-h-screen flex items-center pt-20 sm:pt-24 md:pt-16 pb-12 sm:pb-16" aria-labelledby="hero-heading">
-            {/* Animated Background Elements */}
+            {/* Simplified Background Elements */}
             <div className="absolute inset-0 -z-10 overflow-hidden">
-              {/* Animated gradient orbs */}
-              <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-primary-200/40 blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-              <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-brand-accent-200/40 blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-primary-100/30 blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }} />
-              
-              {/* Grid pattern overlay */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] opacity-40" />
-              
-              {/* Subtle geometric shapes */}
-              <div className="absolute top-20 right-20 w-32 h-32 border border-primary-200/30 rounded-lg rotate-12 animate-pulse" style={{ animationDuration: '8s' }} />
-              <div className="absolute bottom-32 left-32 w-24 h-24 border border-brand-accent-200/30 rounded-full animate-pulse" style={{ animationDuration: '7s', animationDelay: '1.5s' }} />
-              
-              {/* Subscription calendar-like pattern */}
-              <div className="absolute top-1/4 right-1/4 opacity-5">
-                <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="10" y="10" width="40" height="40" rx="4" fill="currentColor" />
-                  <rect x="60" y="10" width="40" height="40" rx="4" fill="currentColor" />
-                  <rect x="110" y="10" width="40" height="40" rx="4" fill="currentColor" />
-                  <rect x="160" y="10" width="40" height="40" rx="4" fill="currentColor" />
-                  <rect x="10" y="60" width="40" height="40" rx="4" fill="currentColor" />
-                  <rect x="60" y="60" width="40" height="40" rx="4" fill="currentColor" />
-                  <rect x="110" y="60" width="40" height="40" rx="4" fill="currentColor" />
-                  <rect x="160" y="60" width="40" height="40" rx="4" fill="currentColor" />
-                </svg>
-              </div>
-              
-              {/* Financial chart-like lines */}
-              <div className="absolute bottom-1/4 left-1/4 opacity-5">
-                <svg width="300" height="150" viewBox="0 0 300 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10 120 L50 100 L90 80 L130 60 L170 40 L210 50 L250 30 L290 20" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                  <path d="M10 140 L50 130 L90 110 L130 90 L170 70 L210 80 L250 60 L290 50" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-                </svg>
-              </div>
+              {/* Minimal gradient orbs */}
+              <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-primary-200/30 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+              <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-brand-accent-200/30 blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+
+              {/* Subtle grid pattern */}
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px] opacity-30" />
             </div>
             
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full py-6 sm:py-8 md:py-12">
@@ -578,22 +673,22 @@ export default function Home() {
                   Intelligent Subscription Alerts
                 </span>
                 <h1 id="hero-heading" className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.2]!important px-2 sm:px-0" style={{ lineHeight: '1.2!important' }}>
-                  Stay ahead of every{' '}
+                  Never miss a{' '}
                   <span className="relative inline-block">
                     <span className="relative z-10 bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">
-                      subscription renewal
+                      subscription payment
                     </span>
                     <span className="absolute bottom-1 sm:bottom-2 left-0 right-0 h-2 sm:h-3 bg-primary-100/40 -z-0 transform -skew-x-12"></span>
                   </span>
-                  {' '}with intelligent notifications
+                  {' '}again
                 </h1>
                 <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl leading-7 text-slate-600 max-w-3xl mx-auto  sm:px-0">
-                  Never miss a payment or renewal again. Subsy's advanced alert system delivers timely notifications across email, SMS, and push channels.
+                  Subsy tracks all your subscriptions and sends smart alerts before renewals. Save money, avoid unwanted charges, and stay in control with our multi-channel notification system.
                 </p>
                 <div className="mt-6 sm:mt-8 md:mt-10 flex flex-col items-center justify-center gap-3 sm:gap-4 sm:flex-row px-4 sm:px-0">
                   <Link
                     href={user ? '/dashboard' : '/auth/signup'}
-                    className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-5 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base font-bold text-white shadow-xl shadow-brand-accent-500/30 transition-all hover:shadow-2xl hover:shadow-brand-accent-500/40 hover:scale-105 hover:from-brand-accent-600 hover:to-brand-accent-700 w-full sm:w-auto"
+                    className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-5 sm:px-6 md:px-8 py-3 sm:py-3 md:py-4 text-base font-bold text-white shadow-xl shadow-brand-accent-500/30 transition-all hover:shadow-2xl hover:shadow-brand-accent-500/40 hover:scale-105 hover:from-brand-accent-600 hover:to-brand-accent-700 w-full sm:w-auto min-h-[48px]"
                     aria-label={user ? 'Go to dashboard' : 'Start free trial'}
                   >
                     {user ? 'Dashboard' : 'Start Free Trial'}
@@ -603,7 +698,7 @@ export default function Home() {
                   </Link>
                   <Link
                     href={user ? '/dashboard/subscriptions' : '#tour'}
-                    className="group inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white/80 backdrop-blur-sm px-5 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base font-semibold text-slate-700 transition-all hover:bg-white hover:border-primary-300 hover:text-primary-600 hover:shadow-lg w-full sm:w-auto"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white/80 backdrop-blur-sm px-5 sm:px-6 md:px-8 py-3 sm:py-3 md:py-4 text-base font-semibold text-slate-700 transition-all hover:bg-white hover:border-primary-300 hover:text-primary-600 hover:shadow-lg w-full sm:w-auto min-h-[48px]"
                     aria-label={user ? 'View subscription insights' : 'Watch product walkthrough'}
                   >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -818,17 +913,14 @@ export default function Home() {
               {/* Carousel Container - Infinite Loop */}
               <div className="relative">
                 <div className="overflow-hidden">
-                  <div 
+                  <div
                     className="flex gap-6"
-                    style={{ 
+                    style={{
                       transform: getCarouselTransform(),
-                      transition: currentTestimonialIndex < TESTIMONIALS.length * 2 
-                        ? 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
-                        : 'none' // No transition on reset for seamless loop
+                      transition: 'transform 0.6s ease-in-out'
                     }}
                   >
-                    {/* Duplicate testimonials for seamless infinite loop */}
-                    {[...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS].map((testimonial, index) => (
+                    {TESTIMONIALS.map((testimonial, index) => (
                       <div
                         key={`${testimonial.name}-${index}`}
                         className="w-full md:w-[calc(50%_-_0.75rem)] lg:w-[calc(33.333333%_-_1rem)] flex-shrink-0"
@@ -1033,7 +1125,7 @@ export default function Home() {
           </section>
           */}
           {/* FAQ - Cleaner */}
-          <section className="py-12 sm:py-16 md:py-24 bg-slate-50" aria-labelledby="faq-heading">
+          <section id="faq" className="py-12 sm:py-16 md:py-24 bg-slate-50" aria-labelledby="faq-heading">
             <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-10 sm:mb-12 md:mb-16">
                 <span className="inline-flex items-center rounded-full bg-white border border-slate-200 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-medium uppercase tracking-wider text-slate-600">
@@ -1052,9 +1144,10 @@ export default function Home() {
                     >
                       <button
                         onClick={() => toggleFaq(index)}
-                        className="w-full flex items-center justify-between p-4 sm:p-6 text-left focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-xl"
+                        className="w-full flex items-center justify-between p-4 sm:p-6 text-left focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-xl min-h-[60px] sm:min-h-[70px]"
                         aria-expanded={isExpanded}
                         aria-controls={`faq-answer-${index}`}
+                        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} question: ${faq.question}`}
                       >
                         <h3 className="text-base sm:text-lg font-bold text-slate-900 pr-4">{faq.question}</h3>
                         <svg
@@ -1064,6 +1157,7 @@ export default function Home() {
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
+                          aria-hidden="true"
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>

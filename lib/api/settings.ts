@@ -6,6 +6,15 @@ export interface UserSettings {
   monthlyBudget: number | null;
   budgetAlertsEnabled: boolean;
   budgetAlertThreshold: number;
+  timezone: string | null;
+  /**
+   * Daily notification time in HH:MM (24h) format, interpreted in user's timezone
+   */
+  notificationTime: string | null;
+  /**
+   * Preferred default currency code for dashboard summaries, e.g. 'USD'
+   */
+  defaultCurrency?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -14,6 +23,9 @@ export interface UpdateSettingsData {
   monthlyBudget?: number | null;
   budgetAlertsEnabled?: boolean;
   budgetAlertThreshold?: number;
+  timezone?: string | null;
+  notificationTime?: string | null;
+  defaultCurrency?: string | null;
 }
 
 export interface BudgetStatus {

@@ -7,6 +7,7 @@ import { Select } from '../ui/Select';
 import { CardBrandSelect } from '../ui/CardBrandSelect';
 import { Button } from '../ui/Button';
 import { usePlanFeatures } from '@/lib/hooks/usePlanFeatures';
+import { SUPPORTED_CURRENCIES } from '@/lib/constants/currencies';
 
 interface SubscriptionFormProps {
   subscription?: Subscription;
@@ -60,7 +61,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  const { hasCategorization, hasSmartRenewalManagement } = usePlanFeatures();
+  const { hasSmartRenewalManagement } = usePlanFeatures();
   const [formData, setFormData] = useState<CreateSubscriptionData>({
     name: '',
     amount: 0,
@@ -191,12 +192,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             label="Currency"
             value={formData.currency}
             onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-            options={[
-              { value: 'USD', label: 'USD ($)' },
-              { value: 'EUR', label: 'EUR (€)' },
-              { value: 'GBP', label: 'GBP (£)' },
-              { value: 'NPR', label: 'NPR (रू)' },
-            ]}
+            options={SUPPORTED_CURRENCIES}
             className="text-base"
             hideLabel
           />
@@ -239,27 +235,14 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         <div>
           <Select
             label="Category"
-            value={hasCategorization ? formData.category : 'Uncategorized'}
+            value={formData.category}
             onChange={(e) => {
-              if (hasCategorization) {
-                setFormData({ ...formData, category: e.target.value });
-              }
+              setFormData({ ...formData, category: e.target.value });
             }}
             options={categories.map((cat) => ({ value: cat, label: cat }))}
-            disabled={!hasCategorization}
             className="text-base"
             hideLabel
           />
-          {!hasCategorization && (
-            <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
-                <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <span>Categorization is a Pro feature. <a href="/" className="underline font-semibold hover:text-amber-800 dark:hover:text-amber-200">Upgrade to Pro</a> to organize subscriptions by category.</span>
-              </p>
-            </div>
-          )}
         </div>
       </div>
 

@@ -31,7 +31,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div
-        className="fixed top-4 right-4 z-50 space-y-3"
+        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-y-3 flex flex-col items-center"
         aria-live="polite"
         aria-atomic="true"
         role="status"

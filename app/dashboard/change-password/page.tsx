@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useToast } from '@/lib/context/ToastContext';
 import { Input } from '@/components/ui/Input';
@@ -16,7 +15,7 @@ import { usePageTitle } from '@/lib/hooks/usePageTitle';
 export default function ChangePasswordPage() {
   usePageTitle('Change Password');
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
 
   const [currentPassword, setCurrentPassword] = useState('');
@@ -66,11 +65,6 @@ export default function ChangePasswordPage() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 1500);
     } catch (err: any) {
       const errorMessage = err?.response?.data?.detail || err?.message || 'Failed to change password. Please try again.';
       setError(errorMessage);
@@ -80,49 +74,53 @@ export default function ChangePasswordPage() {
     }
   };
 
-  if (!user) {
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/auth/login');
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 py-12">
-        <Card className="max-w-md w-full text-center">
-          <p className="text-gray-600 dark:text-gray-400">Please sign in to change your password.</p>
-          <Link href="/auth/login" className="mt-4 inline-block text-primary-600 dark:text-primary-400 hover:underline">
-            Go to Sign In
-          </Link>
+        <Card className="max-w-md w-full text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600" />
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </Card>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-16 left-12 w-60 h-60 bg-primary-200 dark:bg-primary-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute bottom-20 right-16 w-60 h-60 bg-purple-200 dark:bg-purple-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-      </div>
+  if (!user) {
+    return null;
+  }
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-block p-4 bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 rounded-2xl shadow-2xl mb-4">
-            <span className="text-5xl">🔐</span>
+  return (
+    <div className="min-h-screen px-4 py-10 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <div className="space-y-3 text-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Change Password</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Update your account password to keep your account secure.
+            </p>
           </div>
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
-            Change Password
-          </h1>
-          <p className="text-base text-gray-600 dark:text-gray-400">
-            Update your account password
-          </p>
         </div>
 
-        <Card className="animate-scale-in shadow-2xl">
+        <Card className="p-6 space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Password details</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Enter your current password and choose a new secure password.
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg text-red-700 dark:text-red-400 text-sm font-medium animate-shake">
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  {error}
-                </div>
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
+                {error}
               </div>
             )}
 
@@ -198,26 +196,12 @@ export default function ChangePasswordPage() {
               <PasswordRequirements />
             </div>
 
-            <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading} className="flex items-center justify-center">
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Changing password...
-                </div>
-              ) : (
-                'Change Password'
-              )}
-            </Button>
+            <div className="flex items-center justify-end">
+              <Button type="submit" variant="primary" disabled={loading} className="px-6">
+                {loading ? 'Changing password...' : 'Change password'}
+              </Button>
+            </div>
           </form>
-
-          <div className="pt-6 border-t dark:border-gray-700 text-center">
-            <Link
-              href="/dashboard"
-              className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
-            >
-              Back to Dashboard
-            </Link>
-          </div>
         </Card>
       </div>
     </div>

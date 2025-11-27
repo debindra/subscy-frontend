@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
 import { createPortal } from 'react-dom';
-import { subscriptionsApi, Subscription } from '@/lib/api/subscriptions';
+import { Subscription } from '@/lib/api/subscriptions';
 import { formatCurrency, formatDate } from '@/lib/utils/format';
+import { useSubscriptions } from '@/lib/hooks/useSubscriptions';
 
 function startOfMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1);
@@ -50,21 +51,9 @@ interface TooltipState {
 
 export default function CalendarPage() {
   usePageTitle('Calendar');
-  const [subs, setSubs] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: subs = [], isLoading } = useSubscriptions();
   const [cursor, setCursor] = useState<Date>(startOfMonth(new Date()));
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await subscriptionsApi.getAll();
-        setSubs(res.data);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
@@ -104,7 +93,7 @@ export default function CalendarPage() {
 
   const hideTooltip = () => setTooltip(null);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6 animate-fade-in">
         <div className="h-9 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
@@ -124,7 +113,7 @@ export default function CalendarPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Calendar</h1>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Renewals and trial end dates</p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center justify-start sm:justify-end gap-2">
           <button
             onClick={() => setCursor(addMonths(cursor, -1))}
             className="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm sm:text-base"
@@ -144,9 +133,14 @@ export default function CalendarPage() {
       </div>
 
       <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 min-w-[600px] sm:min-w-0">
+        <div className="grid grid-cols-7 gap-px sm:gap-1 md:gap-2 w-full">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-            <div key={d} className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 px-1 sm:px-2 text-center">{d}</div>
+            <div
+              key={d}
+              className="text-[10px] sm:text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 px-0.5 sm:px-2 text-center"
+            >
+              {d}
+            </div>
           ))}
           {matrix.flat().map((day) => {
             const isCurrentMonth = day.getMonth() === month;

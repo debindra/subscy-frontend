@@ -58,10 +58,12 @@ interface ExportSummaryData {
   yearlyTotal: number;
   totalSubscriptions: number;
   activeSubscriptions: number;
+  currency?: string; // Optional currency code for converted totals
 }
 
 export function exportSummaryToHTML(data: ExportSummaryData): string {
-  const { subscriptions, monthlyTotal, yearlyTotal, totalSubscriptions, activeSubscriptions } = data;
+  const { subscriptions, monthlyTotal, yearlyTotal, totalSubscriptions, activeSubscriptions, currency } = data;
+  const displayCurrency = currency || 'USD';
 
   // Generate HTML for the summary
   return `
@@ -256,12 +258,12 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
 
     <div class="summary-grid">
       <div class="summary-card">
-        <h3>Monthly Total</h3>
-        <p>${formatCurrency(monthlyTotal, 'USD')}</p>
+        <h3>Monthly Total${currency ? ` (${currency})` : ''}</h3>
+        <p>${formatCurrency(monthlyTotal, displayCurrency)}</p>
       </div>
       <div class="summary-card">
-        <h3>Yearly Total</h3>
-        <p>${formatCurrency(yearlyTotal, 'USD')}</p>
+        <h3>Yearly Total${currency ? ` (${currency})` : ''}</h3>
+        <p>${formatCurrency(yearlyTotal, displayCurrency)}</p>
       </div>
       <div class="summary-card">
         <h3>Total Subscriptions</h3>

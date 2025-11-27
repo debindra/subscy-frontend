@@ -7,6 +7,17 @@ export interface CurrencySpendingSummary {
   totalSubscriptions: number;
 }
 
+export interface ConvertedSpendingSummary {
+  monthlyTotal: number;
+  yearlyTotal: number;
+  currency: string;
+}
+
+export interface SpendingSummaryResponse {
+  converted?: ConvertedSpendingSummary;
+  byCurrency: CurrencySpendingSummary[];
+}
+
 export interface CategorySpending {
   category: string;
   amount: number;
@@ -25,7 +36,10 @@ export interface SubscriptionStats {
 }
 
 export const analyticsApi = {
-  getSpending: () => apiClient.get<CurrencySpendingSummary[]>('/analytics/spending'),
+  getSpending: (baseCurrency?: string) => {
+    const config = baseCurrency ? { params: { baseCurrency } } : undefined;
+    return apiClient.get<SpendingSummaryResponse | CurrencySpendingSummary[]>('/analytics/spending', config);
+  },
   
   getByCategory: () => apiClient.get<CategorySpending[]>('/analytics/by-category'),
   

@@ -16,6 +16,20 @@ const nextConfig = {
   },
   // Ensure public folder assets are properly served
   trailingSlash: false,
+  // Performance optimizations
+  experimental: {
+    optimizeCss: true,
+  },
+  // Compress responses
+  compress: true,
+  // Enable SWC minification (faster than Terser)
+  swcMinify: true,
+  // Optimize font loading
+  optimizeFonts: true,
+  // Enable static optimization for better performance
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
 }
 
 module.exports = nextConfig

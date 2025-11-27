@@ -10,12 +10,14 @@ interface ExportButtonProps {
   subscriptions: Subscription[];
   monthlyTotal: number;
   yearlyTotal: number;
+  currency?: string;
 }
 
 export const ExportButton: React.FC<ExportButtonProps> = ({
   subscriptions,
   monthlyTotal,
   yearlyTotal,
+  currency,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -44,6 +46,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         yearlyTotal,
         totalSubscriptions: subscriptions.length,
         activeSubscriptions: subscriptions.filter(s => s.isActive).length,
+        currency,
       });
       downloadHTML(htmlContent, `subscription-report-${timestamp}.html`);
       showToast('HTML report downloaded', 'success');
@@ -64,6 +67,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         yearlyTotal,
         totalSubscriptions: subscriptions.length,
         activeSubscriptions: subscriptions.filter(s => s.isActive).length,
+        currency,
       });
       printHTML(htmlContent);
       showToast('Opening print dialog…', 'info');
@@ -89,6 +93,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         yearlyTotal,
         totalSubscriptions: subscriptions.length,
         activeSubscriptions: subscriptions.filter(s => s.isActive).length,
+        currency,
       });
       await downloadPDFFromHTML(htmlContent, `subscription-report-${timestamp}.pdf`);
       showToast('PDF exported successfully', 'success');

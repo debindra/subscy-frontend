@@ -17,11 +17,26 @@ interface SignUpParams {
   companyPhone?: string;
 }
 
+const E2E_BYPASS = process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === 'true';
+const MOCK_USER = {
+  id: 'e2e-user',
+  email: 'e2e-user@local.test',
+  aud: 'authenticated',
+  app_metadata: { provider: 'email' },
+  user_metadata: {},
+  role: 'authenticated',
+  created_at: new Date(0).toISOString(),
+  updated_at: new Date(0).toISOString(),
+} as unknown as User;
+
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(E2E_BYPASS ? MOCK_USER : null);
+  const [loading, setLoading] = useState(!E2E_BYPASS);
 
   useEffect(() => {
+    if (E2E_BYPASS) {
+      return;
+    }
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);

@@ -7,11 +7,15 @@ import { Card } from '../ui/Card';
 
 interface BudgetWidgetProps {
   monthlySpending: number;
+  preferredCurrency?: string;
 }
 
-export const BudgetWidget: React.FC<BudgetWidgetProps> = ({ monthlySpending }) => {
+export const BudgetWidget: React.FC<BudgetWidgetProps> = ({ monthlySpending, preferredCurrency = 'USD' }) => {
   const [budgetStatus, setBudgetStatus] = useState<BudgetStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Normalize currency code to uppercase (e.g., 'jpy' -> 'JPY')
+  const normalizedCurrency = preferredCurrency?.toUpperCase() || 'USD';
 
   useEffect(() => {
     loadBudgetStatus();
@@ -63,7 +67,7 @@ export const BudgetWidget: React.FC<BudgetWidgetProps> = ({ monthlySpending }) =
             Monthly Budget
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {formatCurrency(spendingAmount, 'USD')} of {formatCurrency(budgetAmount, 'USD')}
+            {formatCurrency(spendingAmount, normalizedCurrency)} of {formatCurrency(budgetAmount, normalizedCurrency)}
           </p>
         </div>
         {alertTriggered && (
@@ -91,27 +95,27 @@ export const BudgetWidget: React.FC<BudgetWidgetProps> = ({ monthlySpending }) =
           {percentageUsed?.toFixed(1)}% used
         </span>
         <span className="text-gray-500 dark:text-gray-400">
-          {formatCurrency(budgetAmount - spendingAmount, 'USD')} remaining
+          {formatCurrency(budgetAmount - spendingAmount, normalizedCurrency)} remaining
         </span>
       </div>
 
       {/* Alert Message */}
-      {alertTriggered && (
+      {/* {alertTriggered && (
         <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
           <p className="text-sm text-orange-700 dark:text-orange-400">
             ⚠️ You've reached {percentageUsed?.toFixed(0)}% of your monthly budget
           </p>
         </div>
-      )}
+      )} */}
 
       {/* Over Budget Message */}
-      {!withinBudget && (
+      {/* {!withinBudget && (
         <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-sm text-red-700 dark:text-red-400">
-            🚨 You're over budget by {formatCurrency(spendingAmount - budgetAmount, 'USD')}
+            🚨 You're over budget by {formatCurrency(spendingAmount - budgetAmount, normalizedCurrency)}
           </p>
         </div>
-      )}
+      )} */}
     </Card>
   );
 };

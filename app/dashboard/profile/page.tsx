@@ -8,7 +8,6 @@ import { useToast } from '@/lib/context/ToastContext';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { getUserAvatarUrl, getUserDisplayName } from '@/lib/utils/userUtils';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
 type AccountType = 'personal' | 'business';
@@ -85,34 +84,10 @@ export default function ProfilePage() {
     );
   }
 
-  const avatarUrl = getUserAvatarUrl(user);
-  const displayName = getUserDisplayName(user);
-
   return (
     <div className="min-h-screen px-4 py-10 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="space-y-3 text-center">
-          <div className="inline-flex items-center justify-center">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                className="w-20 h-20 rounded-full object-cover ring-4 ring-primary-500/20 dark:ring-primary-400/20 shadow-xl"
-                onError={(e) => {
-                  // Fallback to default avatar if image fails to load
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.classList.remove('hidden');
-                }}
-              />
-            ) : null}
-            {!avatarUrl && (
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-800 flex items-center justify-center text-white text-3xl font-bold shadow-xl ring-4 ring-primary-500/20 dark:ring-primary-400/20">
-                {displayName.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Profile</h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -177,7 +152,7 @@ export default function ProfilePage() {
             )}
 
             <div className="flex items-center justify-end">
-              <Button type="submit" disabled={saving} className="px-6">
+              <Button type="submit" variant="primary" disabled={saving} className="px-6">
                 {saving ? 'Saving...' : 'Save changes'}
               </Button>
             </div>
