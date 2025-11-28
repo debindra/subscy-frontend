@@ -88,6 +88,28 @@ body {
   }
 }
 
+/* Mobile select dropdown positioning fix */
+@media (max-width: 768px) {
+  select {
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Ensure select dropdowns appear above modal overlays */
+  [role="dialog"] select,
+  .modal select {
+    z-index: 9999;
+    position: relative;
+  }
+  
+  /* Fix for select inside modals - ensure proper stacking context */
+  [role="dialog"] form,
+  .modal form {
+    position: relative;
+    z-index: 1;
+  }
+}
+
 /* Animations */
 @keyframes slide-in {
   from {

@@ -83,7 +83,7 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
       line-height: 1.6;
       color: #1f2937;
       background-color: #ffffff;
-      padding: 40px 20px;
+      padding: 40px 5px;
     }
     .container {
       max-width: 1000px;
@@ -226,7 +226,7 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
     @media print {
       body {
         background-color: white;
-        padding: 20px;
+        padding: 40px 5px;
       }
       .summary-card, .subscriptions-list {
         box-shadow: none;
@@ -253,7 +253,7 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
   <div class="container">
     <div class="header">
       <h1>📄 Subscription Report</h1>
-      <p>Generated on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      <p>Generated on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}${currency ? ` • Currency: ${currency}` : ''}</p>
     </div>
 
     <div class="summary-grid">

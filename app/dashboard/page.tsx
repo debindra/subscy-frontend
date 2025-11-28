@@ -657,7 +657,11 @@ export default function DashboardPage() {
         </div>
       </div>
       {hasCategorization ? (
-        <SpendingChart categoryData={categoryData} monthlyData={monthlyData} />
+        <SpendingChart 
+          categoryData={categoryData} 
+          monthlyData={monthlyData}
+          preferredCurrency={userSettings?.defaultCurrency || primarySpending?.currency || 'USD'}
+        />
       ) : (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6 text-center">
           <p className="text-amber-800 dark:text-amber-200 font-semibold mb-2">Category Analytics is a Pro Feature</p>

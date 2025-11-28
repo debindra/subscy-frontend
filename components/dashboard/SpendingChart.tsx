@@ -1,25 +1,40 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { CategorySpending, MonthlyTrend } from '@/lib/api/analytics';
 import { Card } from '../ui/Card';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { useExchangeRates, calculateConversion } from '@/lib/hooks/useExchangeRates';
+import { formatCurrency } from '@/lib/utils/format';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 interface SpendingChartProps {
   categoryData: CategorySpending[];
   monthlyData: MonthlyTrend[];
+  preferredCurrency?: string;
 }
 
 export const SpendingChart: React.FC<SpendingChartProps> = ({
   categoryData,
   monthlyData,
+  preferredCurrency = 'USD',
 }) => {
   const { theme } = useTheme();
   const [chartKey, setChartKey] = useState(0);
+  
+  // Normalize preferred currency
+  const targetCurrency = preferredCurrency?.toUpperCase() || 'USD';
+  const fromCurrency = 'USD'; // Backend returns amounts in USD (or mixed, but we assume USD for conversion)
+  
+  // Fetch exchange rates if conversion is needed
+  const needsConversion = targetCurrency !== fromCurrency;
+  const { data: ratesData, isLoading: ratesLoading } = useExchangeRates({
+    baseCurrency: 'USD',
+    targetCurrencies: needsConversion ? [targetCurrency] : undefined,
+  });
 
   // Force chart re-render when theme changes
   useEffect(() => {
@@ -54,12 +69,46 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
     return palette[index % palette.length];
   });
 
+  // Convert category data amounts to preferred currency
+  const convertedCategoryData = useMemo(() => {
+    if (!needsConversion || !ratesData?.rates || ratesLoading) {
+      return categoryData;
+    }
+
+    try {
+      return categoryData.map((item) => ({
+        ...item,
+        amount: calculateConversion(item.amount, fromCurrency, targetCurrency, ratesData.rates, 'USD'),
+      }));
+    } catch (error) {
+      console.error('Error converting category data:', error);
+      return categoryData;
+    }
+  }, [categoryData, needsConversion, ratesData?.rates, ratesLoading, targetCurrency, fromCurrency]);
+
+  // Convert monthly data amounts to preferred currency
+  const convertedMonthlyData = useMemo(() => {
+    if (!needsConversion || !ratesData?.rates || ratesLoading) {
+      return monthlyData;
+    }
+
+    try {
+      return monthlyData.map((item) => ({
+        ...item,
+        total: calculateConversion(item.total, fromCurrency, targetCurrency, ratesData.rates, 'USD'),
+      }));
+    } catch (error) {
+      console.error('Error converting monthly data:', error);
+      return monthlyData;
+    }
+  }, [monthlyData, needsConversion, ratesData?.rates, ratesLoading, targetCurrency, fromCurrency]);
+
   const pieData = {
-    labels: categoryData.map((item) => item.category),
+    labels: convertedCategoryData.map((item) => item.category),
     datasets: [
       {
         label: 'Monthly Spending',
-        data: categoryData.map((item) => item.amount),
+        data: convertedCategoryData.map((item) => item.amount),
         backgroundColor: pieColors,
         borderColor: isDark ? '#1f2937' : '#ffffff',
         borderWidth: 2,
@@ -69,11 +118,11 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
   };
 
   const barData = {
-    labels: monthlyData.map((item) => item.month),
+    labels: convertedMonthlyData.map((item) => item.month),
     datasets: [
       {
         label: 'Monthly Spending',
-        data: monthlyData.map((item) => item.total),
+        data: convertedMonthlyData.map((item) => item.total),
         // Use brand primary color for bars
         backgroundColor: 'rgba(20, 184, 166, 0.8)', // primary-500
         borderColor: 'rgba(13, 148, 136, 1)', // primary-600
@@ -115,7 +164,7 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
             const value = context.parsed || 0;
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
             const percentage = ((value / total) * 100).toFixed(1);
-            return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+            return `${label}: ${formatCurrency(value, targetCurrency)} (${percentage}%)`;
           },
         },
       },
@@ -143,7 +192,7 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
         displayColors: false,
         callbacks: {
           label: function(context: any) {
-            return `Spending: $${context.parsed.y.toFixed(2)}`;
+            return `Spending: ${formatCurrency(context.parsed.y, targetCurrency)}`;
           },
         },
       },
@@ -161,7 +210,9 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
             size: 11,
           },
           callback: function(value: any) {
-            return '$' + value;
+            // Format currency without full formatting to keep it compact
+            const numValue = typeof value === 'string' ? parseFloat(value) : value;
+            return formatCurrency(numValue, targetCurrency);
           },
         },
       },
@@ -192,7 +243,7 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
           </div>
         </div>
         <div className="h-72 flex items-center justify-center">
-          {categoryData.length > 0 ? (
+          {convertedCategoryData.length > 0 && !ratesLoading ? (
             <Pie key={`pie-${chartKey}`} data={pieData} options={pieOptions} />
           ) : (
             <div className="text-center py-12">
@@ -214,7 +265,7 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
           </div>
         </div>
         <div className="h-72">
-          {monthlyData.length > 0 ? (
+          {convertedMonthlyData.length > 0 && !ratesLoading ? (
             <Bar key={`bar-${chartKey}`} data={barData} options={barOptions} />
           ) : (
             <div className="flex items-center justify-center h-full text-center">

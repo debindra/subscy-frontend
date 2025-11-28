@@ -89,6 +89,32 @@ export default function SubscriptionsPage() {
     }
   }, [searchParamsString]);
 
+  // Prevent body scroll when mobile filter drawer is open
+  useEffect(() => {
+    if (isMobileFiltersOpen) {
+      const scrollY = window.scrollY;
+      const body = document.body;
+      const html = document.documentElement;
+      
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollY}px`;
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      html.style.overflow = 'hidden';
+      body.style.touchAction = 'none';
+      
+      return () => {
+        body.style.position = '';
+        body.style.top = '';
+        body.style.width = '';
+        body.style.overflow = '';
+        html.style.overflow = '';
+        body.style.touchAction = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isMobileFiltersOpen]);
+
   const handleCreate = async (data: CreateSubscriptionData) => {
     try {
       await createSubscription.mutateAsync(data);
@@ -360,29 +386,40 @@ export default function SubscriptionsPage() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Subscriptions</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Manage all your subscriptions</p>
         </div>
-        <div className="flex space-x-3">
-          {/* Mobile Filter Button - Hidden on desktop */}
-          <button
-            onClick={() => setIsMobileFiltersOpen(true)}
-            className="md:hidden flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            aria-label="Open filters menu"
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {/* First row on mobile: Export (left) and Filter (right) */}
+          <div className="flex gap-2 w-full sm:w-auto sm:order-3">
+            {subscriptions.length > 0 && (
+              <div className="flex-1 sm:flex-none min-w-0">
+                <ExportButton
+                  subscriptions={subscriptions}
+                  monthlyTotal={monthlyTotal}
+                  yearlyTotal={yearlyTotal}
+                  currency={totalsCurrency}
+                />
+              </div>
+            )}
+            {/* Mobile Filter Button - Hidden on desktop */}
+            <button
+              onClick={() => setIsMobileFiltersOpen(true)}
+              className="md:hidden flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-h-[44px] flex-1 sm:flex-none"
+              aria-label="Open filters menu"
+            >
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
+              </svg>
+              <span className="hidden min-[375px]:inline">Filters</span>
+            </button>
+          </div>
+          
+          {/* Second row on mobile: Add Subscription (full width) */}
+          <Button 
+            onClick={() => setIsModalOpen(true)} 
+            variant="accent"
+            className="w-full sm:w-auto sm:order-1 min-h-[44px] whitespace-nowrap"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
-            </svg>
-            <span>Filters</span>
-          </button>
-
-          {subscriptions.length > 0 && (
-            <ExportButton
-              subscriptions={subscriptions}
-              monthlyTotal={monthlyTotal}
-              yearlyTotal={yearlyTotal}
-              currency={totalsCurrency}
-            />
-          )}
-          <Button onClick={() => setIsModalOpen(true)} variant="accent">
-            + Add Subscription
+            <span className="hidden min-[375px]:inline">+ Add Subscription</span>
+            <span className="min-[375px]:hidden">+ Add</span>
           </Button>
         </div>
       </div>
@@ -757,10 +794,9 @@ export default function SubscriptionsPage() {
       </Modal>
 
       {/* Mobile Filter Drawer */}
+      {isMobileFiltersOpen && (
       <div
-        className={`fixed inset-0 z-50 md:hidden transition-transform duration-300 ${
-          isMobileFiltersOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className="fixed inset-0 z-50 md:hidden transition-transform duration-300 translate-x-0"
       >
         {/* Backdrop */}
         <div
@@ -1039,6 +1075,7 @@ export default function SubscriptionsPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

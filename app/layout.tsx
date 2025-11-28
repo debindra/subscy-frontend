@@ -113,7 +113,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
-      <body className={`${inter.variable} font-inter bg-gray-50 dark:bg-gray-900 overflow-y-hidden`}>
+      <body className={`${inter.variable} font-inter bg-gray-50 dark:bg-gray-900`}>
         <PWASetup />
         <ThemeProvider>
           <ToastProvider>

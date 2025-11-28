@@ -81,6 +81,9 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
     trialEndDate: '',
   });
   
+  // Track amount as string for input display (empty when 0 for new subscriptions)
+  const [amountInput, setAmountInput] = useState<string>('');
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const isEditing = !!subscription;
@@ -105,6 +108,10 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         isTrial: subscription.isTrial || false,
         trialEndDate: subscription.trialEndDate ? subscription.trialEndDate.split('T')[0] : '',
       });
+      setAmountInput(subscription.amount.toString());
+    } else {
+      // Reset amount input to empty for new subscriptions
+      setAmountInput('');
     }
   }, [subscription]);
 
@@ -167,7 +174,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
           required
           placeholder="e.g., Netflix, Spotify, Adobe Creative Cloud"
           className="text-base"
-          hideLabel
         />
 
         <div className="grid grid-cols-2 gap-4">
@@ -176,16 +182,17 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             type="number"
             step="0.01"
             min="0"
-            value={formData.amount}
+            value={amountInput}
             aria-invalid={formData.amount < 0}
             onChange={(e) => {
-              const val = parseFloat(e.target.value);
+              const inputValue = e.target.value;
+              setAmountInput(inputValue);
+              const val = parseFloat(inputValue);
               setFormData({ ...formData, amount: isNaN(val) ? 0 : Math.max(0, val) });
             }}
             required
             placeholder="Amount"
             className="text-base"
-            hideLabel
           />
 
           <Select
@@ -194,7 +201,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
             options={SUPPORTED_CURRENCIES}
             className="text-base"
-            hideLabel
           />
         </div>
 
@@ -205,33 +211,26 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             onChange={(e) => setFormData({ ...formData, billingCycle: e.target.value })}
             options={billingCycles}
             className="text-base"
-            hideLabel
           />
 
-          <Input
-            label="Next Renewal Date"
-            type="date"
-            value={formData.nextRenewalDate}
-            onChange={(e) => setFormData({ ...formData, nextRenewalDate: e.target.value })}
-            required
-            placeholder="Next Renewal Date"
-            className="text-base"
-            hideLabel
-          />
+          <div>
+            <Input
+              label="Next Renewal Date"
+              type="date"
+              value={formData.nextRenewalDate}
+              onChange={(e) => setFormData({ ...formData, nextRenewalDate: e.target.value })}
+              placeholder="Next Renewal Date"
+              className="text-base"
+            />
+            <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+              Optional - will be calculated automatically based on billing cycle
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Category Section - Always shown */}
       <div className="space-y-5">
-        <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-          <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-            <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Category</h3>
-        </div>
-
         <div>
           <Select
             label="Category"
@@ -241,7 +240,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             }}
             options={categories.map((cat) => ({ value: cat, label: cat }))}
             className="text-base"
-            hideLabel
           />
         </div>
       </div>
@@ -265,7 +263,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Brief description or notes about this subscription"
             className="text-base"
-            hideLabel
           />
 
           <div>
@@ -276,7 +273,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
               onChange={(e) => setFormData({ ...formData, website: e.target.value })}
               placeholder="https://example.com"
               className="text-base"
-              hideLabel
               adornmentRight={
                 formData.website ? (
                   <a
@@ -318,7 +314,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
             options={paymentMethods}
             className="text-base"
-            hideLabel
           />
 
           {(formData.paymentMethod === 'credit_card' || formData.paymentMethod === 'debit_card') && (
@@ -334,7 +329,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
                 }}
                 placeholder="Last 4 Digits"
                 className="text-base"
-                hideLabel
               />
 
               <CardBrandSelect
@@ -342,7 +336,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
                 value={formData.cardBrand || ''}
                 onChange={(e) => setFormData({ ...formData, cardBrand: e.target.value })}
                 options={cardBrands}
-                hideLabel
               />
             </div>
           )}
@@ -450,7 +443,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
                   disabled={!hasSmartRenewalManagement}
                   placeholder="Days before renewal"
                   className="text-base"
-                  hideLabel
                 />
                 {!hasSmartRenewalManagement && (
                   <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
@@ -475,7 +467,6 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
                   required
                   placeholder="Trial End Date"
                   className="text-base"
-                  hideLabel
                 />
                 <p className="mt-2 text-xs text-blue-700 dark:text-blue-300 flex items-start gap-2">
                   <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">

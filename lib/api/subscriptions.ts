@@ -8,6 +8,7 @@ export interface Subscription {
   currency: string;
   billingCycle: 'monthly' | 'yearly' | 'quarterly' | 'weekly';
   nextRenewalDate: string;
+  lastRenewalDate?: string; // Track when subscription was last renewed
   category: string;
   description?: string;
   website?: string;
@@ -28,7 +29,7 @@ export interface CreateSubscriptionData {
   amount: number;
   currency?: string;
   billingCycle: string;
-  nextRenewalDate: string;
+  nextRenewalDate?: string; // Optional - will be calculated automatically
   category: string;
   description?: string;
   website?: string;
@@ -55,5 +56,7 @@ export const subscriptionsApi = {
     apiClient.patch<Subscription>(`/subscriptions/${id}`, data),
   
   delete: (id: string) => apiClient.delete(`/subscriptions/${id}`),
+
+  renew: (id: string) => apiClient.post<{ message: string; nextRenewalDate: string }>(`/subscriptions/${id}/renew`),
 };
 
