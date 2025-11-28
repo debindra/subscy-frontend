@@ -64,7 +64,8 @@ export const calculateConversion = (
   const toRate = toCurrency === baseCurrency ? 1 : rates[toCurrency];
 
   if (!fromRate || !toRate) {
-    throw new Error(`Missing exchange rate for conversion: ${fromCurrency}→${toCurrency}`);
+    const missingCurrency = !fromRate ? fromCurrency : toCurrency;
+    throw new Error(`Missing exchange rate for conversion: ${fromCurrency}→${toCurrency} (missing: ${missingCurrency})`);
   }
 
   // Convert: amount → base currency → target currency

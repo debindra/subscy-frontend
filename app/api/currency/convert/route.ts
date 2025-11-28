@@ -13,6 +13,27 @@ const mockExchangeRates = {
   INR: 83.45, // Indian Rupee
   BRL: 5.12,
   MXN: 17.89,
+  NPR: 133.50, // Nepalese Rupee
+  NZD: 1.68,
+  SGD: 1.34,
+  HKD: 7.82,
+  SEK: 10.45,
+  NOK: 10.78,
+  DKK: 6.89,
+  PLN: 4.02,
+  ZAR: 18.65,
+  KRW: 1330.50,
+  TRY: 32.15,
+  RUB: 92.50,
+  THB: 35.80,
+  IDR: 15750.00,
+  MYR: 4.72,
+  PHP: 56.25,
+  ILS: 3.65,
+  AED: 3.67,
+  SAR: 3.75,
+  CZK: 22.85,
+  HUF: 360.50,
 };
 
 export async function GET(request: Request) {
