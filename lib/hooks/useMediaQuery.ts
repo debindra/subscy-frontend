@@ -21,19 +21,21 @@ export function useMediaQuery(query: string): boolean {
     // Set initial value
     setMatches(media.matches);
 
-    // Create listener
-    const listener = (event: MediaQueryListEvent | MediaQueryList) => {
-      setMatches(event.matches);
-    };
-
     // Modern browsers
     if (media.addEventListener) {
-      media.addEventListener('change', listener as EventListener);
-      return () => media.removeEventListener('change', listener as EventListener);
+      const listener = (event: MediaQueryListEvent) => {
+        setMatches(event.matches);
+      };
+      media.addEventListener('change', listener);
+      return () => media.removeEventListener('change', listener);
     } else {
       // Fallback for older browsers
-      media.addListener(listener as (mql: MediaQueryList) => void);
-      return () => media.removeListener(listener as (mql: MediaQueryList) => void);
+      // Legacy addListener passes MediaQueryList, not MediaQueryListEvent
+      const listener = () => {
+        setMatches(media.matches);
+      };
+      media.addListener(listener);
+      return () => media.removeListener(listener);
     }
   }, [query]);
 
