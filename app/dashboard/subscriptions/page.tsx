@@ -20,6 +20,7 @@ import {
 import { useDashboardSpending } from '@/lib/hooks/useDashboardAnalytics';
 import { settingsApi, UserSettings } from '@/lib/api/settings';
 import { SpendingSummaryResponse } from '@/lib/api/analytics';
+import { useViewMode } from '@/lib/context/ViewModeContext';
 
 export default function SubscriptionsPage() {
   const PAGE_SIZE = 6;
@@ -37,9 +38,11 @@ export default function SubscriptionsPage() {
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
   const [currency, setCurrency] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('renewalDate-asc');
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const { viewMode, setViewMode } = useViewMode();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { showToast } = useToast();
   const { hasCategorization } = usePlanFeatures();
@@ -177,43 +180,69 @@ export default function SubscriptionsPage() {
     [subscriptions]
   );
 
-  const filteredSubscriptions = subscriptions.filter((sub) => {
-    // status filter
-    if (filter === 'active' && !sub.isActive) return false;
-    if (filter === 'inactive' && sub.isActive) return false;
-    // search filter
-    const q = search.trim().toLowerCase();
-    if (q) {
-      const haystack = `${sub.name} ${sub.category} ${sub.description || ''}`.toLowerCase();
-      if (!haystack.includes(q)) return false;
-    }
-    // category filter
-    if (category !== 'all' && sub.category !== category) return false;
-    // currency filter
-    if (currency !== 'all' && sub.currency !== currency) return false;
-    // billing cycle filter
-    if (billing !== 'all' && sub.billingCycle !== billing) return false;
-    // price range filter
-    const min = priceMin ? parseFloat(priceMin) : undefined;
-    const max = priceMax ? parseFloat(priceMax) : undefined;
-    if (typeof min === 'number' && sub.amount < min) return false;
-    if (typeof max === 'number' && sub.amount > max) return false;
-    // trial filter
-    if (trial === 'trial' && !sub.isTrial) return false;
-    if (trial === 'nontrial' && sub.isTrial) return false;
-    // next renewal date range filter
-    if (dateFrom) {
-      const from = new Date(dateFrom).getTime();
-      const next = new Date(sub.nextRenewalDate).getTime();
-      if (next < from) return false;
-    }
-    if (dateTo) {
-      const to = new Date(dateTo).getTime();
-      const next = new Date(sub.nextRenewalDate).getTime();
-      if (next > to) return false;
-    }
-    return true;
-  });
+  const filteredSubscriptions = useMemo(() => {
+    const filtered = subscriptions.filter((sub) => {
+      // status filter
+      if (filter === 'active' && !sub.isActive) return false;
+      if (filter === 'inactive' && sub.isActive) return false;
+      // search filter
+      const q = search.trim().toLowerCase();
+      if (q) {
+        const haystack = `${sub.name} ${sub.category} ${sub.description || ''}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      // category filter
+      if (category !== 'all' && sub.category !== category) return false;
+      // currency filter
+      if (currency !== 'all' && sub.currency !== currency) return false;
+      // billing cycle filter
+      if (billing !== 'all' && sub.billingCycle !== billing) return false;
+      // price range filter
+      const min = priceMin ? parseFloat(priceMin) : undefined;
+      const max = priceMax ? parseFloat(priceMax) : undefined;
+      if (typeof min === 'number' && sub.amount < min) return false;
+      if (typeof max === 'number' && sub.amount > max) return false;
+      // trial filter
+      if (trial === 'trial' && !sub.isTrial) return false;
+      if (trial === 'nontrial' && sub.isTrial) return false;
+      // next renewal date range filter
+      if (dateFrom) {
+        const from = new Date(dateFrom).getTime();
+        const next = new Date(sub.nextRenewalDate).getTime();
+        if (next < from) return false;
+      }
+      if (dateTo) {
+        const to = new Date(dateTo).getTime();
+        const next = new Date(sub.nextRenewalDate).getTime();
+        if (next > to) return false;
+      }
+      return true;
+    });
+
+    // Apply sorting
+    const [sortField, sortDirection] = sortBy.split('-');
+    const sorted = [...filtered].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortField) {
+        case 'name':
+          comparison = (a.name || '').localeCompare(b.name || '');
+          break;
+        case 'renewalDate':
+          comparison = new Date(a.nextRenewalDate).getTime() - new Date(b.nextRenewalDate).getTime();
+          break;
+        case 'price':
+          comparison = (a.amount || 0) - (b.amount || 0);
+          break;
+        default:
+          return 0;
+      }
+      
+      return sortDirection === 'desc' ? -comparison : comparison;
+    });
+
+    return sorted;
+  }, [subscriptions, filter, search, category, currency, billing, priceMin, priceMax, trial, dateFrom, dateTo, sortBy]);
 
   const visibleSubscriptions = useMemo(
     () => filteredSubscriptions.slice(0, visibleCount),
@@ -234,6 +263,7 @@ export default function SubscriptionsPage() {
     dateFrom,
     dateTo,
     currency,
+    sortBy,
     subscriptions,
   ]);
 
@@ -387,7 +417,7 @@ export default function SubscriptionsPage() {
           <p className="text-gray-600 dark:text-gray-400 mt-1">Manage all your subscriptions</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          {/* First row on mobile: Export (left) and Filter (right) */}
+          {/* First row on mobile: Export and Filter */}
           <div className="flex gap-2 w-full sm:w-auto sm:order-3">
             {subscriptions.length > 0 && (
               <div className="flex-1 sm:flex-none min-w-0">
@@ -411,16 +441,49 @@ export default function SubscriptionsPage() {
               <span className="hidden min-[375px]:inline">Filters</span>
             </button>
           </div>
-          
-          {/* Second row on mobile: Add Subscription (full width) */}
-          <Button 
-            onClick={() => setIsModalOpen(true)} 
-            variant="accent"
-            className="w-full sm:w-auto sm:order-1 min-h-[44px] whitespace-nowrap"
-          >
-            <span className="hidden min-[375px]:inline">+ Add Subscription</span>
-            <span className="min-[375px]:hidden">+ Add</span>
-          </Button>
+
+          {/* Second row on mobile: Add Subscription with View Mode Toggle */}
+          <div className="flex gap-2 w-full sm:w-auto sm:order-1">
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              variant="accent"
+              className="flex-1 sm:flex-none min-h-[44px] whitespace-nowrap"
+            >
+              <span className="hidden min-[375px]:inline">+ Add Subscription</span>
+              <span className="min-[375px]:hidden">+ Add</span>
+            </Button>
+            {/* View Mode Toggle - Next to Add Subscription button */}
+            <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('compact')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  viewMode === 'compact'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                aria-label="Compact view"
+                aria-pressed={viewMode === 'compact'}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode('detailed')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  viewMode === 'detailed'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                aria-label="Detailed view"
+                aria-pressed={viewMode === 'detailed'}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -512,6 +575,7 @@ export default function SubscriptionsPage() {
               setDateFrom('');
               setDateTo('');
               setCurrency('all');
+              setSortBy('renewalDate-asc');
             }}
             className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full border border-gray-300 dark:border-gray-600 transition-colors"
           >
@@ -522,7 +586,7 @@ export default function SubscriptionsPage() {
 
       {/* Desktop Filters - Hidden on mobile */}
       <div className="hidden md:block space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {/* Search */}
           <input
             type="text"
@@ -569,6 +633,19 @@ export default function SubscriptionsPage() {
           >
             Inactive ({subscriptions.filter((s) => !s.isActive).length})
           </button>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            aria-label="Sort subscriptions"
+          >
+            <option value="renewalDate-asc">Renewal Date (Earliest)</option>
+            <option value="renewalDate-desc">Renewal Date (Latest)</option>
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="price-asc">Price (Low to High)</option>
+            <option value="price-desc">Price (High to Low)</option>
+          </select>
         </div>
 
         {/* Expand/Collapse Filters Button */}
@@ -706,7 +783,9 @@ export default function SubscriptionsPage() {
           >
             Showing {visibleSubscriptions.length} of {filteredSubscriptions.length} subscriptions
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          {/* Subscription Cards */}
+          <div className="space-y-3 md:grid md:grid-cols-1 md:gap-6 lg:grid-cols-2 xl:grid-cols-3 md:space-y-0">
             {visibleSubscriptions.map((subscription) => (
               <SubscriptionCard
                 key={subscription.id}
@@ -761,6 +840,7 @@ export default function SubscriptionsPage() {
                   setPriceMax('');
                   setDateFrom('');
                   setDateTo('');
+                  setSortBy('renewalDate-asc');
                 }}
                 variant="outline"
               >
@@ -1051,6 +1131,26 @@ export default function SubscriptionsPage() {
                 />
               </div>
             </div>
+
+            {/* Sort By */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Sort By
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                aria-label="Sort subscriptions"
+              >
+                <option value="renewalDate-asc">Renewal Date (Earliest)</option>
+                <option value="renewalDate-desc">Renewal Date (Latest)</option>
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="price-asc">Price (Low to High)</option>
+                <option value="price-desc">Price (High to Low)</option>
+              </select>
+            </div>
           </div>
 
           {/* Footer */}
@@ -1067,6 +1167,7 @@ export default function SubscriptionsPage() {
                 setDateFrom('');
                 setDateTo('');
                 setCurrency('all');
+                setSortBy('renewalDate-asc');
               }}
               className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >

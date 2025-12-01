@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { ToastProvider } from '@/lib/context/ToastContext';
+import { ViewModeProvider } from '@/lib/context/ViewModeContext';
 import { PWASetup } from '@/components/layout/PWASetup';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 
@@ -78,7 +79,7 @@ export const metadata: Metadata = {
       { url: '/favicon.svg', type: 'image/svg+xml' },
     ],
     shortcut: ['/favicon.ico'],
-    apple: [{ url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   appleWebApp: {
     capable: true,
@@ -111,14 +112,16 @@ export default function RootLayout({
         <meta name="theme-color" content="#0d9488" />
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className={`${inter.variable} font-inter bg-gray-50 dark:bg-gray-900`}>
         <PWASetup />
         <ThemeProvider>
           <ToastProvider>
             <QueryProvider>
-              {children}
+              <ViewModeProvider>
+                {children}
+              </ViewModeProvider>
             </QueryProvider>
           </ToastProvider>
         </ThemeProvider>

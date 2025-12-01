@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { Subscription } from '@/lib/api/subscriptions';
 import { SubscriptionStats } from '@/lib/api/analytics';
 import { Card } from '../ui/Card';
-import { formatCurrency } from '@/lib/utils/format';
+import { formatCurrency, getDaysUntil } from '@/lib/utils/format';
 
 interface SubscriptionHealthProps {
   subscriptions: Subscription[];
@@ -24,9 +24,7 @@ export const SubscriptionHealth: React.FC<SubscriptionHealthProps> = ({
     const trials = subscriptions.filter(s => s.isTrial);
     const expiringTrials = trials.filter(trial => {
       if (!trial.trialEndDate) return false;
-      const trialEnd = new Date(trial.trialEndDate);
-      const today = new Date();
-      const daysUntilEnd = Math.ceil((trialEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntilEnd = getDaysUntil(trial.trialEndDate);
       return daysUntilEnd <= 7 && daysUntilEnd >= 0;
     });
 

@@ -32,24 +32,70 @@ const MOCK_USER = {
 export function useAuth() {
   const [user, setUser] = useState<User | null>(E2E_BYPASS ? MOCK_USER : null);
   const [loading, setLoading] = useState(!E2E_BYPASS);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (E2E_BYPASS) {
       return;
     }
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    // Get initial session with timeout and error handling
+    const initializeAuth = async () => {
+      try {
+        // Set a timeout to prevent infinite loading
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => {
+            reject(new Error('Session check timeout'));
+          }, 10000); // 10 second timeout
+        });
+
+        const { data: { session } } = await Promise.race([
+          sessionPromise,
+          timeoutPromise,
+        ]);
+
+        if (isMounted) {
+          setUser(session?.user ?? null);
+          setLoading(false);
+          setError(null); // Clear any previous errors
+        }
+      } catch (error) {
+        console.error('Error initializing auth session:', error);
+        // Always set loading to false, even on error
+        if (isMounted) {
+          setUser(null);
+          setLoading(false);
+          setError(error instanceof Error ? error : new Error('Failed to initialize authentication'));
+        }
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      }
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+      if (isMounted) {
+        setUser(session?.user ?? null);
+        setLoading(false);
+        setError(null); // Clear errors on successful auth state change
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async ({
@@ -222,9 +268,25 @@ export function useAuth() {
     if (error) throw error;
   };
 
+  const retryAuth = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setLoading(false);
+      setError(null);
+    } catch (err) {
+      setLoading(false);
+      setError(err instanceof Error ? err : new Error('Failed to retry authentication'));
+    }
+  };
+
   return {
     user,
     loading,
+    error,
+    retryAuth,
     signUp,
     signIn,
     signInWithGoogle,

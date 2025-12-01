@@ -235,7 +235,7 @@ const FAQS = [
 
 export default function Home() {
   const { user, loading } = useAuth();
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [isAnnual, setIsAnnual] = useState(false);
   const [expandedFaqs, setExpandedFaqs] = useState<Set<number>>(new Set());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -322,7 +322,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900">
+      <div className="flex min-h-screen items-center justify-center bg-[#F9FAFB] text-slate-900">
         <div className="text-center">
           <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary-600" />
           <p className="mt-4 text-sm text-slate-600">Preparing your workspace…</p>
@@ -427,7 +427,7 @@ export default function Home() {
     ],
     foundingDate: '2024',
     numberOfEmployees: '1-10',
-    slogan: 'Never miss a subscription payment again',
+    slogan: 'Master Your Subscriptions. Never Miss a Payment',
     knowsAbout: [
       'Subscription Management',
       'Finance Operations',
@@ -467,7 +467,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
       />
-      <div className="relative bg-white text-slate-900" itemScope itemType="https://schema.org/WebPage">
+      <div className="relative bg-[#F9FAFB] text-slate-900" itemScope itemType="https://schema.org/WebPage">
         {/* Simplified background - removed multiple animated blobs */}
         <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
           <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-primary-100/30 blur-3xl" />
@@ -475,7 +475,7 @@ export default function Home() {
         </div>
 
         {/* Cleaner header */}
-        <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-slate-100 bg-white/95 backdrop-blur-md shadow-sm">
+        <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm">
           <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-3 sm:py-4 lg:px-8" aria-label="Main navigation">
             <div className="flex items-center gap-3 sm:gap-6">
               <Link href="/" className="flex items-center gap-2 sm:gap-3" aria-label="Subsy Home">
@@ -513,9 +513,12 @@ export default function Home() {
                 <>
                   <Link
                     href="/dashboard"
-                    className="hidden sm:inline-flex rounded-lg bg-primary-600 px-4 sm:px-5 py-2 text-white font-semibold transition-all hover:bg-primary-700 hover:shadow-md text-sm sm:text-base"
+                    className="group hidden sm:inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-4 sm:px-5 py-2 text-white font-semibold transition-all hover:from-brand-accent-600 hover:to-brand-accent-700 hover:shadow-lg hover:scale-105 text-sm sm:text-base"
                   >
                     Dashboard
+                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
                   </Link>
                   <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -597,9 +600,12 @@ export default function Home() {
                   <Link
                     href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block rounded-lg bg-primary-600 px-4 py-2 text-white font-semibold transition-all hover:bg-primary-700 text-center"
+                    className="group flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-4 py-2 text-white font-semibold transition-all hover:from-brand-accent-600 hover:to-brand-accent-700 hover:shadow-lg"
                   >
                     Dashboard
+                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
                   </Link>
                 )}
               </div>
@@ -653,7 +659,7 @@ export default function Home() {
 
         <main className="relative z-10">
           {/* Simplified Hero Section */}
-          <section className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-b from-slate-50 via-white to-white min-h-[85vh] sm:min-h-screen flex items-center pt-20 sm:pt-24 md:pt-16 pb-12 sm:pb-16" aria-labelledby="hero-heading">
+          <section className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-b from-slate-50 via-white to-white min-h-[60vh] sm:min-h-[75vh] md:min-h-screen flex items-center pt-16 sm:pt-24 md:pt-16 pb-8 sm:pb-12 md:pb-16" aria-labelledby="hero-heading">
             {/* Simplified Background Elements */}
             <div className="absolute inset-0 -z-10 overflow-hidden">
               {/* Minimal gradient orbs */}
@@ -664,31 +670,32 @@ export default function Home() {
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px] opacity-30" />
             </div>
             
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full py-6 sm:py-8 md:py-12">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full py-4 sm:py-6 md:py-8 lg:py-12">
               <div className="mx-auto max-w-4xl text-center">
-                <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-50 to-brand-accent-50 border border-primary-200/50 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-semibold uppercase tracking-wider text-primary-700 mb-4 sm:mb-6 shadow-sm">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-primary-50 to-brand-accent-50 border border-primary-200/50 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-primary-700 mb-3 sm:mb-4 md:mb-6 shadow-sm">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                   Intelligent Subscription Alerts
                 </span>
-                <h1 id="hero-heading" className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.2]!important px-2 sm:px-0" style={{ lineHeight: '1.2!important' }}>
-                  Never miss a{' '}
-                  <span className="relative inline-block">
-                    <span className="relative z-10 bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">
-                      subscription payment
+                <h1 id="hero-heading" className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.15] sm:leading-[1.2] px-2 sm:px-0" style={{ lineHeight: '1.15!important' }}>
+                  <span className="bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">
+                    Master Your{' '}
+                    <span className="relative inline-block">
+                      <span className="relative z-10 bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">Subscriptions.</span>
+                      <span className="absolute bottom-0.5 sm:bottom-0.5 md:bottom-1 left-0 w-full h-1 sm:h-1 md:h-1.5 bg-green-200/50 -z-0 transform -skew-x-12"></span>
                     </span>
-                    <span className="absolute bottom-1 sm:bottom-2 left-0 right-0 h-2 sm:h-3 bg-primary-100/40 -z-0 transform -skew-x-12"></span>
                   </span>
-                  {' '}again
+                  <br />
+                  Never Miss a Payment.
                 </h1>
-                <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl leading-7 text-slate-600 max-w-3xl mx-auto  sm:px-0">
-                  Subsy tracks all your subscriptions and sends smart alerts before renewals. Save money, avoid unwanted charges, and stay in control with our multi-channel notification system.
+                <p className="mt-3 sm:mt-4 md:mt-6 text-sm sm:text-base md:text-lg lg:text-xl leading-6 sm:leading-7 text-slate-600 max-w-3xl mx-auto px-2 sm:px-0">
+                  Subsy centralizes <span className="font-semibold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">all</span> your recurring expenses and keeps you informed with <span className="font-semibold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">timely, multi-channel</span> alerts—so you avoid <span className="font-semibold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">unexpected charges</span> and stay in <span className="font-semibold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">full control</span> of your spending.
                 </p>
-                <div className="mt-6 sm:mt-8 md:mt-10 flex flex-col items-center justify-center gap-3 sm:gap-4 sm:flex-row px-4 sm:px-0">
+                <div className="mt-5 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col items-center justify-center gap-2.5 sm:gap-3 md:gap-4 sm:flex-row px-4 sm:px-0">
                   <Link
                     href={user ? '/dashboard' : '/auth/signup'}
-                    className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-5 sm:px-6 md:px-8 py-3 sm:py-3 md:py-4 text-base font-bold text-white shadow-xl shadow-brand-accent-500/30 transition-all hover:shadow-2xl hover:shadow-brand-accent-500/40 hover:scale-105 hover:from-brand-accent-600 hover:to-brand-accent-700 w-full sm:w-auto min-h-[48px]"
+                    className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-4 sm:px-5 md:px-6 lg:px-8 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base font-bold text-white shadow-xl shadow-brand-accent-500/30 transition-all hover:shadow-2xl hover:shadow-brand-accent-500/40 hover:scale-105 hover:from-brand-accent-600 hover:to-brand-accent-700 w-full sm:w-auto min-h-[44px] sm:min-h-[48px]"
                     aria-label={user ? 'Go to dashboard' : 'Start free trial'}
                   >
                     {user ? 'Dashboard' : 'Start Free Trial'}
@@ -698,7 +705,7 @@ export default function Home() {
                   </Link>
                   <Link
                     href={user ? '/dashboard/subscriptions' : '#tour'}
-                    className="group inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white/80 backdrop-blur-sm px-5 sm:px-6 md:px-8 py-3 sm:py-3 md:py-4 text-base font-semibold text-slate-700 transition-all hover:bg-white hover:border-primary-300 hover:text-primary-600 hover:shadow-lg w-full sm:w-auto min-h-[48px]"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white/80 backdrop-blur-sm px-4 sm:px-5 md:px-6 lg:px-8 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base font-semibold text-slate-700 transition-all hover:bg-white hover:border-primary-300 hover:text-primary-600 hover:shadow-lg w-full sm:w-auto min-h-[44px] sm:min-h-[48px]"
                     aria-label={user ? 'View subscription insights' : 'Watch product walkthrough'}
                   >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -709,34 +716,18 @@ export default function Home() {
                   </Link>
                 </div>
                 {/* Enhanced stats */}
-                <div className="mt-8 sm:mt-10 md:mt-12 lg:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 lg:gap-8 max-w-3xl mx-auto px-4 sm:px-0">
-                  <div className="text-center p-4 sm:p-5 md:p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
-                    {/* <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-100 mb-3 sm:mb-4">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 16 16">
-                        <path strokeLinejoin="round" strokeMiterlimit="10" d="M6 10h2.5c.55 0 1-.45 1-1s-.45-1-1-1h-1c-.55 0-1-.45-1-1s.45-1 1-1H10M8 4.5v1.167M8 9.5v2M14.5 8a6.5 6.5 0 1 1-13 0a6.5 6.5 0 0 1 13 0Z" />
-                      </svg>
-                    </div> */}
-           
-                    <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">99.9%</p>
-                    <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold text-slate-700 uppercase tracking-wider">Alert Delivery Rate</p>
+                <div className="mt-6 sm:mt-8 md:mt-10 lg:mt-12 xl:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8 max-w-3xl mx-auto px-4 sm:px-0">
+                  <div className="text-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">99.9%</p>
+                    <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs md:text-sm font-semibold text-slate-700 uppercase tracking-wider">Alert Delivery Rate</p>
                   </div>
-                  <div className="text-center p-4 sm:p-5 md:p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
-                    {/* <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-accent-100 mb-3 sm:mb-4">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-brand-accent-600" fill="currentColor" viewBox="0 0 2048 2048">
-                        <path d="m2029 1453l-557 558l-269-270l90-90l179 178l467-466zM1024 384v512h384v128H896V384zm-64 1408q16 0 32-1t32-2l114 114q-45 8-89 12t-89 5q-132 0-254-34t-230-97t-194-150t-150-195t-97-229T0 960q0-132 34-254t97-230t150-194t195-150t229-97T960 0q132 0 254 34t230 97t194 150t150 195t97 229t35 255q0 50-6 101l-168 169q46-133 46-270q0-115-30-221t-84-198t-130-169t-168-130t-199-84t-221-30q-115 0-221 30t-198 84t-169 130t-130 168t-84 199t-30 221q0 115 30 221t84 198t130 169t168 130t199 84t221 30" />
-                      </svg>
-                    </div> */}
-                    <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">24/7</p>
-                    <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold text-slate-700 uppercase tracking-wider">Real-time Monitoring</p>
+                  <div className="text-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">24/7</p>
+                    <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs md:text-sm font-semibold text-slate-700 uppercase tracking-wider">Real-time Monitoring</p>
                   </div>
-                  <div className="text-center p-4 sm:p-5 md:p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
-                    {/* <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-100 mb-3 sm:mb-4">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M18 7h1v1a1 1 0 0 0 2 0V7h1a1 1 0 0 0 0-2h-1V4a1 1 0 0 0-2 0v1h-1a1 1 0 0 0 0 2m2 9a3 3 0 0 0-1.73.56l-2.45-1.45A3.7 3.7 0 0 0 16 14a4 4 0 0 0-3-3.86V7.82a3 3 0 1 0-2 0v2.32A4 4 0 0 0 8 14a3.7 3.7 0 0 0 .18 1.11l-2.45 1.45A3 3 0 0 0 4 16a3 3 0 1 0 3 3a3 3 0 0 0-.12-.8l2.3-1.37a4 4 0 0 0 5.64 0l2.3 1.37A3 3 0 1 0 20 16M4 20a1 1 0 1 1 1-1a1 1 0 0 1-1 1m8-16a1 1 0 1 1-1 1a1 1 0 0 1 1-1m0 12a2 2 0 1 1 2-2a2 2 0 0 1-2 2m8 4a1 1 0 1 1 1-1a1 1 0 0 1-1 1" />
-                      </svg>
-                    </div> */}
-                    <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">3+</p>
-                    <p className="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold text-slate-700 uppercase tracking-wider">Notification Channels</p>
+                  <div className="text-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">3+</p>
+                    <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs md:text-sm font-semibold text-slate-700 uppercase tracking-wider">Notification Channels</p>
                   </div>
                 </div>
               </div>

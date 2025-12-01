@@ -22,7 +22,7 @@ body {
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-rgb: 249, 250, 251;
+  --background-rgb: 249, 250, 251; /* #F9FAFB - matches mobile app background */
 }
 
 .dark {
@@ -247,5 +247,89 @@ body {
 
 .rotate-y-180 {
   transform: rotateY(180deg);
+}
+
+/* Pulse glow animation for urgent renewals */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(249, 115, 22, 0);
+  }
+}
+
+@keyframes pulse-glow-dark {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(249, 115, 22, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.dark .animate-pulse-glow {
+  animation: pulse-glow-dark 2s ease-in-out infinite;
+}
+
+/* Badge pulse animation */
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+.animate-badge-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* Google-style shimmer animation for "Renews Today" badge */
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+@keyframes shimmer-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.3), 0 0 20px rgba(249, 115, 22, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.5), 0 0 30px rgba(249, 115, 22, 0.3);
+  }
+}
+
+.animate-shimmer-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer-sweep 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.animate-shimmer-glow {
+  animation: shimmer-glow 2s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 }
 

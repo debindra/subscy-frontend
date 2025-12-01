@@ -75,3 +75,46 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Handle Push Notifications
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'Subsy Notification';
+  const options = {
+    body: data.body || 'You have a new notification',
+    icon: '/subsy-logo.png',
+    badge: '/subsy-logo.png',
+    image: data.image,
+    data: data.data || {},
+    tag: data.tag || 'default',
+    requireInteraction: data.requireInteraction || false,
+    actions: data.actions || [],
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+// Handle Notification Clicks
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || '/dashboard';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Check if there's already a window/tab open with the target URL
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // If not, open a new window/tab
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
+

@@ -2,10 +2,13 @@ import React, { PropsWithChildren } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { ToastProvider } from '@/lib/context/ToastContext';
+import { ViewModeProvider } from '@/lib/context/ViewModeContext';
 
 const AllProviders: React.FC<PropsWithChildren> = ({ children }) => (
   <ThemeProvider>
-    <ToastProvider>{children}</ToastProvider>
+    <ToastProvider>
+      <ViewModeProvider>{children}</ViewModeProvider>
+    </ToastProvider>
   </ThemeProvider>
 );
 

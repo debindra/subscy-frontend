@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Subscription } from '@/lib/api/subscriptions';
 import { SubscriptionCard } from './SubscriptionCard';
 import { Card } from '../ui/Card';
-import { formatCurrency } from '@/lib/utils/format';
+import { formatCurrency, getDaysUntil } from '@/lib/utils/format';
 import { useOptimizedBulkCurrencyConversion } from '@/lib/hooks/useOptimizedCurrencyConversion';
 
 interface EnhancedUpcomingRenewalsProps {
@@ -24,14 +24,10 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
   const [showOverdue, setShowOverdue] = useState(true);
 
   const filteredSubscriptions = useMemo(() => {
-    const today = new Date();
     const daysFromNow = parseInt(timeRange);
-    const futureDate = new Date(today);
-    futureDate.setDate(today.getDate() + daysFromNow);
 
     return subscriptions.filter(sub => {
-      const renewalDate = new Date(sub.nextRenewalDate);
-      const daysUntilRenewal = Math.ceil((renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntilRenewal = getDaysUntil(sub.nextRenewalDate);
 
       if (showOverdue && daysUntilRenewal < 0) return true;
       return daysUntilRenewal >= 0 && daysUntilRenewal <= daysFromNow;
@@ -59,16 +55,13 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
   });
 
   const renewalStats = useMemo(() => {
-    const today = new Date();
-
     // Use converted amount if available, otherwise use simple sum as fallback
     const totalAmount = totalConvertedAmount !== undefined
       ? totalConvertedAmount
       : filteredSubscriptions.reduce((total, sub) => total + sub.amount, 0);
 
     const overdueCount = filteredSubscriptions.filter(sub => {
-      const renewalDate = new Date(sub.nextRenewalDate);
-      const daysUntilRenewal = Math.ceil((renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      const daysUntilRenewal = getDaysUntil(sub.nextRenewalDate);
       return daysUntilRenewal < 0;
     }).length;
 
@@ -132,7 +125,7 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
         </div>
       </div>
 
-      {/* Stats Summary */}
+      {/* Stats Summary
       {filteredSubscriptions.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
@@ -204,7 +197,7 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
             </div>
           </Card>
         </div>
-      )}
+      )} */}
 
       {/* Subscriptions Grid */}
       {filteredSubscriptions.length > 0 ? (

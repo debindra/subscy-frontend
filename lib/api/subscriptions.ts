@@ -12,6 +12,7 @@ export interface Subscription {
   category: string;
   description?: string;
   website?: string;
+  email?: string;
   isActive: boolean;
   reminderEnabled: boolean;
   reminderDaysBefore: number;
@@ -33,6 +34,7 @@ export interface CreateSubscriptionData {
   category: string;
   description?: string;
   website?: string;
+  email?: string;
   isActive?: boolean;
   reminderEnabled?: boolean;
   reminderDaysBefore?: number;

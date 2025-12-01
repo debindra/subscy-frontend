@@ -22,7 +22,7 @@ export const Card: React.FC<CardProps> = ({
     lg: 'p-8',
   };
   
-  const base = `${paddingClasses[padding]} rounded-2xl transition-all duration-200 ${className}`;
+  const base = `${paddingClasses[padding]} rounded-2xl transition-all duration-200`;
   const variants: Record<string, string> = {
     elevated:
       'bg-white/95 dark:bg-gray-800/95 border border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-xl',
@@ -36,7 +36,7 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       {...rest}
-      className={`${variants[variant]} ${base}`}
+      className={`${variants[variant]} ${base} ${className}`}
       style={style}
     >
       {children}

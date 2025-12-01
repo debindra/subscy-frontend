@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { SpendingChart } from '@/components/dashboard/SpendingChart';
-import { SubscriptionCard } from '@/components/dashboard/SubscriptionCard';
 import { BudgetWidget } from '@/components/dashboard/BudgetWidget';
 import { BudgetSettingsModal } from '@/components/dashboard/BudgetSettingsModal';
 import { SubscriptionSummaryCards } from '@/components/dashboard/SubscriptionSummaryCards';
@@ -33,6 +32,15 @@ import {
 } from '@/lib/hooks/useDashboardAnalytics';
 import { useSubscriptionStats } from '@/lib/hooks/useSubscriptionStats';
 import { settingsApi, UserSettings } from '@/lib/api/settings';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { getUserDisplayName } from '@/lib/utils/userUtils';
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export default function DashboardPage() {
   usePageTitle('Dashboard');
@@ -53,7 +61,10 @@ export default function DashboardPage() {
   const [editingSubscription, setEditingSubscription] = useState<Subscription | undefined>();
   const { showToast } = useToast();
   const { hasCategorization, loading: planFeaturesLoading } = usePlanFeatures();
+  const { user } = useAuth();
   const router = useRouter();
+  
+  const displayName = getUserDisplayName(user);
 
   const {
     data: upcoming = [],
@@ -395,23 +406,30 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in">
+      <div className="sticky top-0 z-50 bg-gradient-to-b from-gray-50/95 to-white/95 dark:from-gray-900/95 dark:to-gray-950/95 py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mb-8 animate-fade-in flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
         <div>
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white bg-clip-text">
-            Dashboard
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary-700 dark:text-primary-300 mb-2">
+            {getGreeting()}
+          </p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white bg-clip-text">
+            {displayName}! 👋
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">
-            Overview of your subscriptions and spending
+          <p className="text-gray-600 dark:text-gray-400 mt-2 text-base sm:text-sm">
+            Here's your subscription overview
           </p>
         </div>
         <Link
           href="/dashboard/subscriptions"
-          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white rounded-lg hover:from-brand-accent-600 hover:to-brand-accent-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
+          className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white rounded-lg hover:from-brand-accent-600 hover:to-brand-accent-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
+          </svg> */}
           Manage Subscriptions
+          <svg className="w-5 h-5 ml-2 transform -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
         </Link>
       </div>
 
