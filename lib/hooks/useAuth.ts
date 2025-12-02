@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../supabase';
 import { businessApi } from '../api/business';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '../utils/passwordRules';
@@ -33,6 +34,7 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(E2E_BYPASS ? MOCK_USER : null);
   const [loading, setLoading] = useState(!E2E_BYPASS);
   const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (E2E_BYPASS) {
@@ -86,6 +88,10 @@ export function useAuth() {
         setUser(session?.user ?? null);
         setLoading(false);
         setError(null); // Clear errors on successful auth state change
+        // Clear cache when user logs out (session becomes null)
+        if (!session) {
+          queryClient.clear();
+        }
       }
     });
 
@@ -266,6 +272,8 @@ export function useAuth() {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    // Clear all React Query cache to prevent showing previous user's data
+    queryClient.clear();
   };
 
   const retryAuth = async () => {
