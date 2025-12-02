@@ -197,7 +197,7 @@ export default function ChangePasswordPage() {
             </div>
 
             <div className="flex items-center justify-end">
-              <Button type="submit" variant="primary" disabled={loading} className="px-6">
+              <Button type="submit" variant="accent" disabled={loading} className="px-6">
                 {loading ? 'Changing password...' : 'Change password'}
               </Button>
             </div>

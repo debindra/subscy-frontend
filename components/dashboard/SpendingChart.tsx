@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
-import { Pie, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title } from 'chart.js';
+import { Pie, Bar, Line } from 'react-chartjs-2';
 import { CategorySpending, MonthlyTrend } from '@/lib/api/analytics';
 import { Card } from '../ui/Card';
 import { useTheme } from '@/lib/context/ThemeContext';
 import { useExchangeRates, calculateConversion } from '@/lib/hooks/useExchangeRates';
 import { formatCurrency } from '@/lib/utils/format';
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title);
 
 interface SpendingChartProps {
   categoryData: CategorySpending[];
@@ -117,18 +117,26 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
     ],
   };
 
-  const barData = {
+  const lineData = {
     labels: convertedMonthlyData.map((item) => item.month),
     datasets: [
       {
         label: 'Monthly Spending',
         data: convertedMonthlyData.map((item) => item.total),
-        // Use brand primary color for bars
-        backgroundColor: 'rgba(20, 184, 166, 0.8)', // primary-500
+        // Use brand primary color for line
         borderColor: 'rgba(13, 148, 136, 1)', // primary-600
-        borderWidth: 2,
-        borderRadius: 8,
-        hoverBackgroundColor: 'rgba(13, 148, 136, 1)',
+        backgroundColor: 'rgba(20, 184, 166, 0.1)', // primary-500 with low opacity for fill
+        borderWidth: 3,
+        pointBackgroundColor: 'rgba(13, 148, 136, 1)', // primary-600
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointHoverBackgroundColor: 'rgba(13, 148, 136, 1)',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 2,
+        fill: true,
+        tension: 0.4, // Smooth curve
       },
     ],
   };
@@ -171,7 +179,7 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
     },
   };
 
-  const barOptions = {
+  const lineOptions = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -260,13 +268,13 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">Monthly Trend</h3>
           <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
             <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
             </svg>
           </div>
         </div>
         <div className="h-72">
           {convertedMonthlyData.length > 0 && !ratesLoading ? (
-            <Bar key={`bar-${chartKey}`} data={barData} options={barOptions} />
+            <Line key={`line-${chartKey}`} data={lineData} options={lineOptions} />
           ) : (
             <div className="flex items-center justify-center h-full text-center">
               <div>

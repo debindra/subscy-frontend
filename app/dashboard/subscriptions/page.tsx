@@ -326,79 +326,79 @@ export default function SubscriptionsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-fade-in">
-        {/* Header Loading State */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="space-y-2">
-            <div className="h-9 w-64 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg animate-pulse"></div>
-            <div className="h-5 w-80 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg animate-pulse"></div>
+      <div className="space-y-4 sm:space-y-6 animate-fade-in">
+        {/* Header Loading State - Responsive */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <div className="space-y-2 w-full sm:w-auto">
+            <div className="h-7 sm:h-9 w-full sm:w-48 md:w-64 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg animate-pulse"></div>
+            <div className="h-4 sm:h-5 w-full sm:w-64 md:w-80 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg animate-pulse"></div>
           </div>
-          <div className="flex space-x-3">
-            <div className="h-10 w-32 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg animate-pulse"></div>
-            <div className="h-10 w-40 bg-gradient-to-r from-primary-200 to-primary-300 dark:from-primary-700 dark:to-primary-600 rounded-lg animate-pulse"></div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+            <div className="h-10 w-full sm:w-28 md:w-32 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg animate-pulse"></div>
+            <div className="h-10 w-full sm:w-36 md:w-40 bg-gradient-to-r from-primary-200 to-primary-300 dark:from-primary-700 dark:to-primary-600 rounded-lg animate-pulse"></div>
           </div>
         </div>
 
-        {/* Filter Loading State */}
+        {/* Filter Loading State - Responsive */}
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-10 w-24 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg animate-pulse"></div>
+            <div key={i} className="h-9 sm:h-10 w-20 sm:w-24 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg animate-pulse"></div>
           ))}
         </div>
 
-        {/* Enhanced Subscription Cards Loading State - Content-Aware Skeletons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Enhanced Subscription Cards Loading State - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 animate-fade-in">
-              {/* Card Header with Icon */}
-              <div className="flex items-center space-x-4 mb-5">
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 animate-pulse"></div>
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-all duration-300 animate-fade-in">
+              {/* Card Header with Icon - Responsive */}
+              <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-5">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 animate-pulse flex-shrink-0"></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <div className="h-7 w-40 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded animate-pulse"></div>
-                    <div className="h-6 w-20 bg-gradient-to-r from-green-200 to-green-300 dark:from-green-700 dark:to-green-600 rounded-full animate-pulse"></div>
+                    <div className="h-6 sm:h-7 w-28 sm:w-40 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded animate-pulse"></div>
+                    <div className="h-5 sm:h-6 w-16 sm:w-20 bg-gradient-to-r from-green-200 to-green-300 dark:from-green-700 dark:to-green-600 rounded-full animate-pulse"></div>
                   </div>
-                  <div className="h-4 w-28 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded animate-pulse"></div>
+                  <div className="h-3.5 sm:h-4 w-20 sm:w-28 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded animate-pulse"></div>
                 </div>
               </div>
 
-              {/* Enhanced Pricing Section */}
-              <div className="mb-4 p-4 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/25 dark:to-primary-800/25 rounded-xl border border-primary-200/50 dark:border-primary-700/30 animate-pulse">
+              {/* Enhanced Pricing Section - Responsive */}
+              <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/25 dark:to-primary-800/25 rounded-xl border border-primary-200/50 dark:border-primary-700/30 animate-pulse">
                 <div className="flex items-baseline space-x-1">
-                  <div className="h-9 w-32 bg-gradient-to-r from-primary-200 to-primary-300 dark:from-primary-700 dark:to-primary-600 rounded animate-pulse"></div>
-                  <div className="h-4 w-16 bg-gradient-to-r from-primary-200 to-primary-300 dark:from-primary-700 dark:to-primary-600 rounded animate-pulse"></div>
+                  <div className="h-7 sm:h-9 w-24 sm:w-32 bg-gradient-to-r from-primary-200 to-primary-300 dark:from-primary-700 dark:to-primary-600 rounded animate-pulse"></div>
+                  <div className="h-3.5 sm:h-4 w-12 sm:w-16 bg-gradient-to-r from-primary-200 to-primary-300 dark:from-primary-700 dark:to-primary-600 rounded animate-pulse"></div>
                 </div>
               </div>
 
-              {/* Enhanced Renewal Information */}
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded-full animate-pulse"></div>
-                    <div className="h-4 w-24 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse"></div>
+              {/* Enhanced Renewal Information - Responsive */}
+              <div className="space-y-2 mb-3 sm:mb-4">
+                <div className="flex items-center justify-between p-2 sm:p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg">
+                  <div className="flex items-center space-x-2 min-w-0">
+                    <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded-full animate-pulse flex-shrink-0"></div>
+                    <div className="h-3.5 sm:h-4 w-16 sm:w-24 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse"></div>
                   </div>
-                  <div className="h-4 w-20 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse"></div>
+                  <div className="h-3.5 sm:h-4 w-14 sm:w-20 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse flex-shrink-0 ml-2"></div>
                 </div>
-                <div className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg w-32">
-                  <div className="w-3.5 h-3.5 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded-full animate-pulse"></div>
-                  <div className="h-4 w-20 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse"></div>
+                <div className="flex items-center space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg w-24 sm:w-32">
+                  <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded-full animate-pulse flex-shrink-0"></div>
+                  <div className="h-3.5 sm:h-4 w-14 sm:w-20 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500 rounded animate-pulse"></div>
                 </div>
               </div>
 
-              {/* Enhanced Action Buttons */}
-              <div className="flex space-x-2 pt-4 border-t dark:border-gray-700">
-                <div className="flex-1 h-12 bg-gradient-to-r from-primary-200 to-primary-300 dark:from-primary-700 dark:to-primary-600 rounded-lg animate-pulse"></div>
-                <div className="w-12 h-12 bg-gradient-to-r from-red-200 to-red-300 dark:from-red-700 dark:to-red-600 rounded-lg animate-pulse"></div>
+              {/* Enhanced Action Buttons - Responsive */}
+              <div className="flex space-x-2 pt-3 sm:pt-4 border-t dark:border-gray-700">
+                <div className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary-200 to-primary-300 dark:from-primary-700 dark:to-primary-600 rounded-lg animate-pulse"></div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-red-200 to-red-300 dark:from-red-700 dark:to-red-600 rounded-lg animate-pulse flex-shrink-0"></div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Enhanced Loading Progress Indicator */}
-        <div className="text-center space-y-3">
-          <div className="flex items-center justify-center space-x-3">
-            <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Loading your subscriptions...</span>
+        {/* Enhanced Loading Progress Indicator - Responsive */}
+        <div className="text-center space-y-2 sm:space-y-3 py-4 sm:py-6">
+          <div className="flex items-center justify-center space-x-2 sm:space-x-3">
+            <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Loading your subscriptions...</span>
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-500">
             Please wait while we fetch your subscription data
@@ -455,28 +455,28 @@ export default function SubscriptionsPage() {
             {/* View Mode Toggle - Next to Add Subscription button */}
             <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
               <button
-                onClick={() => setViewMode('compact')}
+                onClick={() => setViewMode('detailed')}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'compact'
-                    ? 'bg-primary-600 text-white'
+                  viewMode === 'detailed'
+                    ? 'bg-brand-accent-500 text-white'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
-                aria-label="Compact view"
-                aria-pressed={viewMode === 'compact'}
+                aria-label="List view"
+                aria-pressed={viewMode === 'detailed'}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
               <button
-                onClick={() => setViewMode('detailed')}
+                onClick={() => setViewMode('compact')}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'detailed'
-                    ? 'bg-primary-600 text-white'
+                  viewMode === 'compact'
+                    ? 'bg-brand-accent-500 text-white'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
-                aria-label="Detailed view"
-                aria-pressed={viewMode === 'detailed'}
+                aria-label="Grid view"
+                aria-pressed={viewMode === 'compact'}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -799,31 +799,36 @@ export default function SubscriptionsPage() {
         </>
       ) : (
         <div
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-12 text-center"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sm:p-8 md:p-12 text-center"
           role="status"
           aria-live="polite"
         >
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-full">
-              <svg className="w-16 h-16 text-primary-500 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex justify-center mb-4 sm:mb-6">
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-full">
+              <svg className="w-12 h-12 sm:w-16 sm:h-16 text-primary-500 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
             {filter !== 'all' ? 'No matching subscriptions' : 'No subscriptions yet'}
           </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 max-w-md mx-auto leading-relaxed px-2">
             {filter !== 'all'
               ? `No ${filter} subscriptions match your current filters. Try adjusting your search criteria.`
               : 'Start tracking your subscriptions to get insights into your recurring expenses and manage them effectively.'}
           </p>
           {filter === 'all' && (
-            <Button onClick={() => setIsModalOpen(true)} variant="accent" size="lg">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Button 
+              onClick={() => setIsModalOpen(true)} 
+              variant="accent" 
+              size="md"
+              className="w-full sm:w-auto inline-flex items-center justify-center"
+            >
+              <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Add Your First Subscription
+              <span className="whitespace-nowrap">Add Your First Subscription</span>
             </Button>
           )}
           {filter !== 'all' && (

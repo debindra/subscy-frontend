@@ -152,7 +152,7 @@ export default function ProfilePage() {
             )}
 
             <div className="flex items-center justify-end">
-              <Button type="submit" variant="primary" disabled={saving} className="px-6">
+              <Button type="submit" variant="accent" disabled={saving} className="px-6">
                 {saving ? 'Saving...' : 'Save changes'}
               </Button>
             </div>

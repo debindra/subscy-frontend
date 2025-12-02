@@ -5,6 +5,7 @@ import { settingsApi, UserSettings, UpdateSettingsData } from '@/lib/api/setting
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Switch } from '@/components/ui/Switch';
 import { useToast } from '@/lib/context/ToastContext';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
 import { SUPPORTED_CURRENCIES } from '@/lib/constants/currencies';
@@ -33,11 +34,13 @@ export default function ReminderSettingsPage() {
   const { showToast } = useToast();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [formData, setFormData] = useState<
-    Pick<UpdateSettingsData, 'timezone' | 'notificationTime' | 'defaultCurrency'>
+    Pick<UpdateSettingsData, 'timezone' | 'notificationTime' | 'defaultCurrency' | 'emailAlertEnabled' | 'pushNotificationEnabled'>
   >({
     timezone: null,
     notificationTime: DEFAULT_NOTIFICATION_TIME,
     defaultCurrency: 'USD',
+    emailAlertEnabled: true,
+    pushNotificationEnabled: true,
   });
   const [loading, setLoading] = useState(false);
   const [loadingInitial, setLoadingInitial] = useState(true);
@@ -53,11 +56,15 @@ export default function ReminderSettingsPage() {
         const currentNotificationTime =
           response.data.notificationTime || DEFAULT_NOTIFICATION_TIME;
         const currentDefaultCurrency = response.data.defaultCurrency ?? 'USD';
+        const currentEmailAlertEnabled = response.data.emailAlertEnabled ?? true;
+        const currentPushNotificationEnabled = response.data.pushNotificationEnabled ?? true;
 
         setFormData({
           timezone: currentTimezone,
           notificationTime: currentNotificationTime,
           defaultCurrency: currentDefaultCurrency,
+          emailAlertEnabled: currentEmailAlertEnabled,
+          pushNotificationEnabled: currentPushNotificationEnabled,
         });
       } catch (err) {
         console.error('Error loading reminder settings:', err);
@@ -81,6 +88,8 @@ export default function ReminderSettingsPage() {
       timezone: formData.timezone || null,
       notificationTime,
       defaultCurrency: formData.defaultCurrency || 'USD',
+      emailAlertEnabled: formData.emailAlertEnabled,
+      pushNotificationEnabled: formData.pushNotificationEnabled,
     };
 
     try {
@@ -192,6 +201,36 @@ export default function ReminderSettingsPage() {
               helperText="Choose when you want to receive daily reminders. Default is 09:00."
             />
 
+            <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                Notification Channels
+              </h3>
+              <div className="space-y-4">
+                <Switch
+                  checked={formData.emailAlertEnabled ?? true}
+                  onChange={(checked) =>
+                    setFormData({
+                      ...formData,
+                      emailAlertEnabled: checked,
+                    })
+                  }
+                  label="Email Alert"
+                  helperText="Receive subscription reminders via email"
+                />
+                <Switch
+                  checked={formData.pushNotificationEnabled ?? true}
+                  onChange={(checked) =>
+                    setFormData({
+                      ...formData,
+                      pushNotificationEnabled: checked,
+                    })
+                  }
+                  label="Push Notification"
+                  helperText="Receive subscription reminders via push notifications"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Default currency
@@ -218,7 +257,7 @@ export default function ReminderSettingsPage() {
             </div>
 
             <div className="flex items-center justify-end">
-              <Button type="submit" variant="primary" disabled={loading} className="px-6">
+              <Button type="submit" variant="accent" disabled={loading} className="px-6">
                 {loading ? 'Saving...' : 'Save changes'}
               </Button>
             </div>

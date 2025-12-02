@@ -50,8 +50,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         </svg>
       ),
       onClick: handleQuickAdd,
-      color: 'bg-primary-500',
-      textColor: 'text-primary-600 dark:text-primary-400',
+      color: 'bg-brand-accent-500',
+      textColor: 'text-brand-accent-600 dark:text-brand-accent-400',
     },
     {
       title: 'Import Subscriptions',

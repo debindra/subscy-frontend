@@ -13,6 +13,7 @@ export interface Subscription {
   description?: string;
   website?: string;
   email?: string;
+  plan?: string; // Optional subscription plan (e.g., Basic, Pro, Premium)
   isActive: boolean;
   reminderEnabled: boolean;
   reminderDaysBefore: number;
@@ -35,6 +36,7 @@ export interface CreateSubscriptionData {
   description?: string;
   website?: string;
   email?: string;
+  plan?: string; // Optional subscription plan (e.g., Basic, Pro, Premium)
   isActive?: boolean;
   reminderEnabled?: boolean;
   reminderDaysBefore?: number;

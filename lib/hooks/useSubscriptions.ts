@@ -24,4 +24,15 @@ export const useUpcomingSubscriptions = () => {
   });
 };
 
+export const useSubscription = (id: string) => {
+  return useQuery<Subscription>({
+    queryKey: ['subscriptions', id],
+    queryFn: async () => {
+      const res = await subscriptionsApi.getById(id);
+      return res.data;
+    },
+    enabled: !!id,
+  });
+};
+
 

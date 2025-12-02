@@ -95,20 +95,20 @@ export default function BusinessSettingsPage() {
 
   if (loading || profileLoading) {
     return (
-      <div className="space-y-6 animate-fade-in">
-        <Card className="p-6">
-          <div className="h-6 w-1/3 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer mb-4"></div>
-          <div className="space-y-3">
+      <div className="space-y-4 sm:space-y-6 animate-fade-in">
+        <Card className="p-4 sm:p-6">
+          <div className="h-5 sm:h-6 w-full sm:w-1/3 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer mb-3 sm:mb-4"></div>
+          <div className="space-y-2 sm:space-y-3">
             {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
+              <div key={item} className="h-9 sm:h-10 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
             ))}
           </div>
         </Card>
-        <Card className="p-6">
-          <div className="h-6 w-1/4 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer mb-4"></div>
-          <div className="space-y-3">
+        <Card className="p-4 sm:p-6">
+          <div className="h-5 sm:h-6 w-full sm:w-1/4 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer mb-3 sm:mb-4"></div>
+          <div className="space-y-2 sm:space-y-3">
             {[1, 2].map((item) => (
-              <div key={item} className="h-14 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
+              <div key={item} className="h-12 sm:h-14 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
             ))}
           </div>
         </Card>

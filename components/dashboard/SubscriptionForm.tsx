@@ -72,6 +72,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
     description: '',
     website: '',
     email: '',
+    plan: '',
     isActive: true,
     reminderEnabled: true,
     reminderDaysBefore: 7,
@@ -102,6 +103,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         description: subscription.description || '',
         website: subscription.website || '',
         email: subscription.email || '',
+        plan: subscription.plan || '',
         isActive: subscription.isActive,
         reminderEnabled: subscription.reminderEnabled,
         reminderDaysBefore: subscription.reminderDaysBefore,
@@ -146,6 +148,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         description: formData.description?.trim() || undefined,
         website: formData.website?.trim() || undefined,
         email: formData.email?.trim() || undefined,
+        plan: formData.plan?.trim() || undefined,
         paymentMethod: formData.paymentMethod?.trim() || undefined,
         lastFourDigits: formData.lastFourDigits?.trim() || undefined,
         cardBrand: formData.cardBrand?.trim() || undefined,
@@ -246,7 +249,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
 
       {/* Category Section - Always shown */}
       <div className="space-y-5">
-        <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Select
             label="Category"
             value={formData.category}
@@ -256,7 +259,18 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             options={categories.map((cat) => ({ value: cat, label: cat }))}
             className="text-base"
           />
+          <Input
+            label="Plan"
+            type="text"
+            value={formData.plan || ''}
+            onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
+            placeholder="e.g., Basic, Pro, Premium"
+            className="text-base"
+          />
         </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 -mt-3">
+          Plan is optional - helps identify which subscription tier you're on
+        </p>
       </div>
 
       {/* Advanced options toggle */}

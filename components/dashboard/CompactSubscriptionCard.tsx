@@ -68,7 +68,15 @@ export const CompactSubscriptionCard: React.FC<CompactSubscriptionCardProps> = (
                 )}
               </div>
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{subscription.category}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{subscription.category}</p>
+              {subscription.plan && (
+                <>
+                  <span className="text-gray-400 dark:text-gray-500">•</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{subscription.plan}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 

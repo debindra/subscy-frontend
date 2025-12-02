@@ -251,6 +251,14 @@ export default function Home() {
     }
   };
 
+  const scrollToFaq = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const faqSection = document.getElementById('faq');
+    if (faqSection) {
+      faqSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const toggleFaq = (index: number) => {
     setExpandedFaqs((prev) => {
       const newSet = new Set(prev);
@@ -499,13 +507,22 @@ export default function Home() {
                 />
               </Link>
               {!user && (
-                <a
-                  href="#pricing"
-                  onClick={scrollToPricing}
-                  className="hidden sm:inline-block rounded-lg px-3 sm:px-4 py-2 text-slate-700 transition hover:text-primary-600 text-sm font-medium"
-                >
-                  Pricing
-                </a>
+                <>
+                  <a
+                    href="#pricing"
+                    onClick={scrollToPricing}
+                    className="hidden sm:inline-block rounded-lg px-3 sm:px-4 py-2 text-slate-700 transition hover:text-primary-600 text-sm font-medium"
+                  >
+                    Pricing
+                  </a>
+                  <a
+                    href="#faq"
+                    onClick={scrollToFaq}
+                    className="hidden sm:inline-block rounded-lg px-3 sm:px-4 py-2 text-slate-700 transition hover:text-primary-600 text-sm font-medium"
+                  >
+                    FAQs
+                  </a>
+                </>
               )}
             </div>
             <div className="flex items-center gap-2 sm:gap-4 text-sm font-medium">
@@ -587,6 +604,16 @@ export default function Home() {
                     >
                       Pricing
                     </a>
+                    <a
+                      href="#faq"
+                      onClick={(e) => {
+                        scrollToFaq(e);
+                        setMobileMenuOpen(false);
+                      }}
+                      className="block rounded-lg px-4 py-2 text-slate-700 transition hover:text-primary-600 hover:bg-slate-50 text-sm font-medium"
+                    >
+                      FAQs
+                    </a>
                     <Link
                       href="/auth/login"
                       onClick={() => setMobileMenuOpen(false)}
@@ -659,7 +686,7 @@ export default function Home() {
 
         <main className="relative z-10">
           {/* Simplified Hero Section */}
-          <section className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-b from-slate-50 via-white to-white min-h-[60vh] sm:min-h-[75vh] md:min-h-screen flex items-center pt-16 sm:pt-24 md:pt-16 pb-8 sm:pb-12 md:pb-16" aria-labelledby="hero-heading">
+          <section className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-b from-slate-50 via-white to-white min-h-[60vh] sm:min-h-[75vh] md:min-h-screen flex items-center pt-24 sm:pt-24 md:pt-16 pb-8 sm:pb-12 md:pb-16" aria-labelledby="hero-heading">
             {/* Simplified Background Elements */}
             <div className="absolute inset-0 -z-10 overflow-hidden">
               {/* Minimal gradient orbs */}

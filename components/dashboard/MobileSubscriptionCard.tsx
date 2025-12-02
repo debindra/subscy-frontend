@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Subscription } from '@/lib/api/subscriptions';
 import { formatCurrency, getDaysUntil } from '@/lib/utils/format';
 import { getSubscriptionIcon, getSubscriptionColor } from '@/lib/utils/icons';
@@ -19,11 +20,17 @@ export const MobileSubscriptionCard: React.FC<MobileSubscriptionCardProps> = ({
   onDelete,
   preferredCurrency = 'USD',
 }) => {
+  const router = useRouter();
   const daysUntilRenewal = getDaysUntil(subscription.nextRenewalDate);
   const isUpcoming = daysUntilRenewal <= 7 && daysUntilRenewal >= 0;
   const isOverdue = daysUntilRenewal < 0;
   const iconClasses = getSubscriptionColor(subscription.name, subscription.category);
   const subscriptionIcon = getSubscriptionIcon(subscription.name, subscription.category);
+
+  const handleCardClick = () => {
+    // Only navigate on mobile devices
+    router.push(`/dashboard/subscriptions/${subscription.id}`);
+  };
 
   // Get days badge color based on status
   const getDaysBadgeColor = () => {
@@ -62,9 +69,10 @@ export const MobileSubscriptionCard: React.FC<MobileSubscriptionCardProps> = ({
         </div>
       )}
       <Card 
-        className={cardClassName} 
+        className={`${cardClassName} cursor-pointer`} 
         padding="sm"
         variant="elevated"
+        onClick={handleCardClick}
       >
 
 
@@ -76,9 +84,14 @@ export const MobileSubscriptionCard: React.FC<MobileSubscriptionCardProps> = ({
         
         <div className="flex-1 min-w-0">
           {/* Title - First Line */}
-          <h3 className="text-base font-bold text-black dark:text-white leading-tight mb-1.5">
-            {subscription.name}
-          </h3>
+          <div className="mb-1.5">
+            <h3 className="text-base font-bold text-black dark:text-white leading-tight">
+              {subscription.name}
+            </h3>
+            {subscription.plan && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subscription.plan}</p>
+            )}
+          </div>
           
           {/* Price and Days Badge - Second Line */}
           <div className="flex items-center justify-between gap-2">

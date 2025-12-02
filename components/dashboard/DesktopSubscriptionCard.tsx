@@ -141,7 +141,15 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
                 )}
               </div>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 capitalize font-medium">{subscription.category}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm text-gray-600 dark:text-gray-400 capitalize font-medium">{subscription.category}</p>
+              {subscription.plan && (
+                <>
+                  <span className="text-gray-400 dark:text-gray-500">•</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">{subscription.plan}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 

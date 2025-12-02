@@ -48,18 +48,24 @@ export const Navbar: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!userMenuOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    // Use click event instead of mousedown to avoid interfering with Link navigation
+    document.addEventListener('click', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [userMenuOpen]);
 
   return (
-    <nav className="bg-white dark:bg-gray-800 shadow-md border-b dark:border-gray-700 sticky top-0 z-40 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+    <nav className="bg-white dark:bg-gray-800 shadow-md border-b dark:border-gray-700 sticky top-0 z-[60] backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
@@ -194,7 +200,10 @@ export const Navbar: React.FC = () => {
                   </button>
 
                   {userMenuOpen && (
-                    <div className="absolute right-0 top-full mt-3 w-64 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl overflow-hidden animate-scale-in">
+                    <div 
+                      className="absolute right-0 top-full mt-3 w-64 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl overflow-hidden animate-scale-in z-[100]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
                         <div className="flex items-center space-x-3">
                           {avatarUrl ? (
@@ -321,7 +330,10 @@ export const Navbar: React.FC = () => {
                   </button>
 
                   {userMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl overflow-hidden animate-scale-in z-50">
+                    <div 
+                      className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl overflow-hidden animate-scale-in z-[100]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
                         <div className="flex items-center space-x-3">
                           {avatarUrl ? (

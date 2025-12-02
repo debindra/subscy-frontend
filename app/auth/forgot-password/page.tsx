@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
                   placeholder="you@example.com"
                 />
 
-                <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading || !email} className="flex items-center justify-center">
+                <Button type="submit" variant="accent" size="lg" fullWidth disabled={loading || !email} className="flex items-center justify-center">
                   {loading ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>

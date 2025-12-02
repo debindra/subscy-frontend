@@ -5,6 +5,7 @@ import { settingsApi, UserSettings, UpdateSettingsData } from '@/lib/api/setting
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { Switch } from '../ui/Switch';
 
 interface ReminderSettingsModalProps {
   isOpen: boolean;
@@ -36,9 +37,11 @@ export const ReminderSettingsModal: React.FC<ReminderSettingsModalProps> = ({
   onSave,
 }) => {
   const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [formData, setFormData] = useState<Pick<UpdateSettingsData, 'timezone' | 'notificationTime'>>({
+  const [formData, setFormData] = useState<Pick<UpdateSettingsData, 'timezone' | 'notificationTime' | 'emailAlertEnabled' | 'pushNotificationEnabled'>>({
     timezone: null,
     notificationTime: DEFAULT_NOTIFICATION_TIME,
+    emailAlertEnabled: true,
+    pushNotificationEnabled: true,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -56,10 +59,14 @@ export const ReminderSettingsModal: React.FC<ReminderSettingsModalProps> = ({
 
       const currentTimezone = response.data.timezone;
       const currentNotificationTime = response.data.notificationTime || DEFAULT_NOTIFICATION_TIME;
+      const currentEmailAlertEnabled = response.data.emailAlertEnabled ?? true;
+      const currentPushNotificationEnabled = response.data.pushNotificationEnabled ?? true;
 
       setFormData({
         timezone: currentTimezone,
         notificationTime: currentNotificationTime,
+        emailAlertEnabled: currentEmailAlertEnabled,
+        pushNotificationEnabled: currentPushNotificationEnabled,
       });
     } catch (err) {
       console.error('Error loading reminder settings:', err);
@@ -77,6 +84,8 @@ export const ReminderSettingsModal: React.FC<ReminderSettingsModalProps> = ({
     const payload: UpdateSettingsData = {
       timezone: formData.timezone || null,
       notificationTime,
+      emailAlertEnabled: formData.emailAlertEnabled,
+      pushNotificationEnabled: formData.pushNotificationEnabled,
     };
 
     try {
@@ -158,6 +167,38 @@ export const ReminderSettingsModal: React.FC<ReminderSettingsModalProps> = ({
           }
           helperText="Choose when you want to receive daily reminders. Default is 09:00."
         />
+
+        <div className="space-y-4 pt-2">
+          <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              Notification Channels
+            </h3>
+            <div className="space-y-4">
+              <Switch
+                checked={formData.emailAlertEnabled ?? true}
+                onChange={(checked) =>
+                  setFormData({
+                    ...formData,
+                    emailAlertEnabled: checked,
+                  })
+                }
+                label="Email Alert"
+                helperText="Receive subscription reminders via email"
+              />
+              <Switch
+                checked={formData.pushNotificationEnabled ?? true}
+                onChange={(checked) =>
+                  setFormData({
+                    ...formData,
+                    pushNotificationEnabled: checked,
+                  })
+                }
+                label="Push Notification"
+                helperText="Receive subscription reminders via push notifications"
+              />
+            </div>
+          </div>
+        </div>
 
         <div className="flex space-x-3 pt-4">
           <Button type="submit" variant="accent" disabled={loading} fullWidth>

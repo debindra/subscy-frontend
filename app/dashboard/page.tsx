@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { BudgetWidget } from '@/components/dashboard/BudgetWidget';
@@ -112,26 +112,53 @@ export default function DashboardPage() {
     }
   }, [categoryError, showToast]);
 
+  // Use refs to track previous stringified values and prevent infinite loops
+  const prevUpcomingStrRef = useRef<string>();
+  const prevSpendingStrRef = useRef<string>();
+  const prevCategorySpendingStrRef = useRef<string>();
+  const prevTrendStrRef = useRef<string>();
+
   useEffect(() => {
     if (!planFeaturesLoading) {
-      setUpcomingSubscriptions(upcoming);
-      
-      // Handle spending data - can be new format (SpendingSummaryResponse) or legacy (array)
-      if (spending && typeof spending === 'object' && 'converted' in spending) {
-        const response = spending as SpendingSummaryResponse;
-        setConvertedSummary(response.converted || null);
-        setCurrencySummaries(response.byCurrency || []);
-      } else if (Array.isArray(spending)) {
-        // Legacy format - array of currency summaries
-        setCurrencySummaries(spending);
-        setConvertedSummary(null);
-      } else {
-        setCurrencySummaries([]);
-        setConvertedSummary(null);
+      // Only update if upcoming actually changed (using stringified comparison)
+      const upcomingStr = JSON.stringify(upcoming);
+      if (prevUpcomingStrRef.current !== upcomingStr) {
+        setUpcomingSubscriptions(upcoming);
+        prevUpcomingStrRef.current = upcomingStr;
       }
       
-      setCategoryData(categorySpending);
-      setMonthlyData(trend);
+      // Only update if spending actually changed
+      const spendingStr = JSON.stringify(spending);
+      if (prevSpendingStrRef.current !== spendingStr) {
+        // Handle spending data - can be new format (SpendingSummaryResponse) or legacy (array)
+        if (spending && typeof spending === 'object' && 'converted' in spending) {
+          const response = spending as SpendingSummaryResponse;
+          setConvertedSummary(response.converted || null);
+          setCurrencySummaries(response.byCurrency || []);
+        } else if (Array.isArray(spending)) {
+          // Legacy format - array of currency summaries
+          setCurrencySummaries(spending);
+          setConvertedSummary(null);
+        } else {
+          setCurrencySummaries([]);
+          setConvertedSummary(null);
+        }
+        prevSpendingStrRef.current = spendingStr;
+      }
+      
+      // Only update if categorySpending actually changed
+      const categoryStr = JSON.stringify(categorySpending);
+      if (prevCategorySpendingStrRef.current !== categoryStr) {
+        setCategoryData(categorySpending);
+        prevCategorySpendingStrRef.current = categoryStr;
+      }
+      
+      // Only update if trend actually changed
+      const trendStr = JSON.stringify(trend);
+      if (prevTrendStrRef.current !== trendStr) {
+        setMonthlyData(trend);
+        prevTrendStrRef.current = trendStr;
+      }
     }
   }, [
     upcoming,
@@ -370,32 +397,37 @@ export default function DashboardPage() {
 
   if (upcomingLoading || spendingLoading || trendLoading || planFeaturesLoading || statsLoading) {
     return (
-      <div className="space-y-8 animate-fade-in">
-        <div className="flex justify-between items-center">
-          <div className="space-y-2">
-            <div className="h-9 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
-            <div className="h-5 w-96 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
+      <div className="space-y-6 sm:space-y-8 animate-fade-in">
+        {/* Header Skeleton - Responsive */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-2 w-full sm:w-auto">
+            <div className="h-7 sm:h-9 w-full sm:w-48 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
+            <div className="h-4 sm:h-5 w-full sm:w-96 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
           </div>
-          <div className="h-10 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
+          <div className="h-10 w-full sm:w-48 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* Stats Cards Skeleton - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div className="space-y-3 flex-1">
-                  <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
-                  <div className="h-9 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
+                <div className="space-y-2 sm:space-y-3 flex-1 min-w-0">
+                  <div className="h-3.5 sm:h-4 w-24 sm:w-32 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
+                  <div className="h-7 sm:h-9 w-32 sm:w-40 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
                 </div>
-                <div className="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 animate-shimmer"></div>
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-gray-200 dark:bg-gray-700 animate-shimmer ml-2 sm:ml-4 flex-shrink-0"></div>
               </div>
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Charts Skeleton - Responsive Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer mb-4"></div>
-              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
+              <div className="h-5 sm:h-6 w-32 sm:w-48 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer mb-3 sm:mb-4"></div>
+              <div className="h-48 sm:h-64 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
             </div>
           ))}
         </div>

@@ -15,6 +15,14 @@ export interface UserSettings {
    * Preferred default currency code for dashboard summaries, e.g. 'USD'
    */
   defaultCurrency?: string | null;
+  /**
+   * Whether email alerts are enabled for subscription reminders
+   */
+  emailAlertEnabled?: boolean;
+  /**
+   * Whether push notifications are enabled for subscription reminders
+   */
+  pushNotificationEnabled?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,6 +34,8 @@ export interface UpdateSettingsData {
   timezone?: string | null;
   notificationTime?: string | null;
   defaultCurrency?: string | null;
+  emailAlertEnabled?: boolean;
+  pushNotificationEnabled?: boolean;
 }
 
 export interface BudgetStatus {

@@ -82,11 +82,28 @@ export default function CalendarPage() {
     entry: CalendarEntry,
   ) => {
     const rect = event.currentTarget.getBoundingClientRect();
+    const tooltipWidth = 256; // w-64 = 256px
+    const padding = 16; // Padding from viewport edge
+    const centerX = rect.left + rect.width / 2;
+    
+    // Calculate the left position ensuring tooltip stays within viewport
+    let left = centerX;
+    const viewportWidth = window.innerWidth;
+    
+    // Check if tooltip would extend beyond left edge
+    if (centerX - tooltipWidth / 2 < padding) {
+      left = padding + tooltipWidth / 2;
+    }
+    // Check if tooltip would extend beyond right edge
+    else if (centerX + tooltipWidth / 2 > viewportWidth - padding) {
+      left = viewportWidth - padding - tooltipWidth / 2;
+    }
+    
     setTooltip({
       entry,
       position: {
         top: rect.top,
-        left: rect.left + rect.width / 2,
+        left: left,
       },
     });
   };
@@ -95,11 +112,11 @@ export default function CalendarPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-fade-in">
-        <div className="h-9 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
-        <div className="grid grid-cols-7 gap-2">
+      <div className="space-y-4 sm:space-y-6 animate-fade-in">
+        <div className="h-7 sm:h-9 w-full sm:w-48 md:w-64 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer"></div>
+        <div className="grid grid-cols-7 gap-1 sm:gap-2">
           {Array.from({ length: 35 }).map((_, i) => (
-            <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer" />
+            <div key={i} className="h-16 sm:h-20 md:h-24 bg-gray-200 dark:bg-gray-700 rounded animate-shimmer" />
           ))}
         </div>
       </div>
