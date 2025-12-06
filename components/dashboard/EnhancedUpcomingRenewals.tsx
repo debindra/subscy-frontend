@@ -25,13 +25,35 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
   const filteredSubscriptions = useMemo(() => {
     const daysFromNow = parseInt(timeRange);
 
+    // Filter subscriptions that are either renewing or have trials expiring
     return subscriptions.filter(sub => {
+      // Check for trial expiration if it's a trial with an end date
+      if (sub.isTrial && sub.trialEndDate) {
+        const daysUntilTrialEnd = getDaysUntil(sub.trialEndDate);
+        if (daysUntilTrialEnd >= 0 && daysUntilTrialEnd <= daysFromNow) {
+          return true;
+        }
+      }
+      
+      // Check for renewal date
       const daysUntilRenewal = getDaysUntil(sub.nextRenewalDate);
       return daysUntilRenewal >= 0 && daysUntilRenewal <= daysFromNow;
     }).sort((a, b) => {
-      const dateA = new Date(a.nextRenewalDate);
-      const dateB = new Date(b.nextRenewalDate);
-      return dateA.getTime() - dateB.getTime();
+      // Sort by trial end date if trial is expiring soon, otherwise by renewal date
+      const getRelevantDate = (sub: Subscription) => {
+        if (sub.isTrial && sub.trialEndDate) {
+          const daysUntilTrialEnd = getDaysUntil(sub.trialEndDate);
+          const daysFromNow = parseInt(timeRange);
+          if (daysUntilTrialEnd >= 0 && daysUntilTrialEnd <= daysFromNow) {
+            return new Date(sub.trialEndDate).getTime();
+          }
+        }
+        return new Date(sub.nextRenewalDate).getTime();
+      };
+      
+      const dateA = getRelevantDate(a);
+      const dateB = getRelevantDate(b);
+      return dateA - dateB;
     });
   }, [subscriptions, timeRange]);
 
@@ -75,9 +97,9 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
       {/* Header with Filters */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Upcoming Renewals</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Upcoming Renewals & Trial Expirations</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Subscriptions renewing in the next {timeRange} days
+            Subscriptions renewing and trials expiring in the next {timeRange} days
           </p>
         </div>
 
@@ -180,7 +202,7 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
             All Clear!
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
-            No upcoming renewals in the next {timeRange} days
+            No upcoming renewals or trial expirations in the next {timeRange} days
           </p>
         </Card>
       )}
