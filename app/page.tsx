@@ -9,21 +9,21 @@ import { getNotificationChannelIcon } from '@/lib/utils/icons';
 
 const FEATURES = [
   {
-    title: 'Smart Alert System',
+    title: 'Unlimited Subscription Tracking',
     description:
-      'Get notified before renewals with customizable alert windows. Set reminders for 30, 14, 7, or 1 day before payments—never miss a subscription again.',
+      'Track unlimited subscriptions with Pro plan. Organize everything in one centralized dashboard with smart categorization and advanced analytics.',
     icon: '🔔',
   },
   {
-    title: 'Multi-Channel Notifications',
+    title: 'Customizable Alerts & Notifications',
     description:
-      'Receive alerts via email, SMS, and push notifications. Choose your preferred channels and get notified instantly when subscriptions are about to renew.',
+      'Set custom reminder windows and receive alerts via email and push notifications. Pro and Ultimate plans offer flexible timing options for every subscription.',
     icon: '📱',
   },
   {
-    title: 'Real-Time Monitoring',
+    title: 'Advanced Budgeting & Analytics',
     description:
-      '24/7 monitoring of all your subscriptions with instant alerts for price changes, failed payments, and unexpected renewals. Stay in control, always.',
+      'Monitor spending with advanced analytics, category-wise budgeting, and smart renewal management. Export data and collaborate with your team on Ultimate plan.',
     icon: '⚡',
   },
 ];
@@ -56,17 +56,17 @@ const NOTIFICATION_CHANNELS = [
   { 
     name: 'Email', 
     description: 'Get instant email alerts for all your subscription renewals',
-    icon: getNotificationChannelIcon('email')
+    channel: 'email'
   },
   { 
     name: 'SMS', 
     description: 'Receive text messages directly to your phone',
-    icon: getNotificationChannelIcon('sms')
+    channel: 'sms'
   },
   { 
     name: 'Push Notifications', 
     description: 'Real-time browser and mobile push alerts',
-    icon: getNotificationChannelIcon('push notifications')
+    channel: 'push notifications'
   },
 ];
 
@@ -167,46 +167,49 @@ const TESTIMONIAL_GAP_REM = 1.5;
 
 const PRICING = [
   {
-    name: 'Free',
+    name: 'Starter',
     monthlyPrice: '$0',
-    annualPrice: '$0',
-    description: 'Basic alerts and tracking.',
+    annualPrice: null,
+    description: 'Basic organization, critical reminders.',
     features: [
-      'Up to 5 subscriptions',
-      'Email alerts (7 days before)',
-      'Basic renewal tracking',
-      'Simple dashboard',
+      '5 Subscriptions',
+      'Email Alerts (7 days before renewal)',
+      'Basic Spending Summary',
+      'Overall Budget Tracking',
     ],
   },
   {
     name: 'Pro',
-    monthlyPrice: '$2.99',
-    annualPrice: '$29.99',
-    description: 'Advanced alerts and unlimited tracking.',
+    monthlyPrice: '$4.99',
+    annualPrice: '$47.88',
+    description: 'Unlimited tracking, Advanced budgeting, App Push Notifications.',
     features: [
-      'Unlimited subscriptions',
-      'Multi-channel alerts (Email, SMS, Push)',
-      'Customizable alert windows (30, 14, 7, 1 day)',
-      'Real-time monitoring',
-      'Price change alerts',
-      'Priority support',
+      'Unlimited Subscription Tracking',
+      'Customizable Reminder Timing (1-30 days)',
+      'Email & Push Notifications',
+      'Advanced Spending Analytics',
+      'Category-Based Budgeting',
+      'Data Import & Batch Upload',
+      'Auto-Renewal Date Calculation',
+      'Cancellation Link Storage',
     ],
     highlighted: true,
-    annualSavings: 'Save 16%',
+    annualSavings: 'Save 20%',
   },
   {
-    name: 'Family',
-    monthlyPrice: '$4.99',
-    annualPrice: '$49.99',
-    description: 'Share alerts with household members.',
+    name: 'Ultimate',
+    monthlyPrice: '$9.99',
+    annualPrice: '$95.88',
+    description: 'Sharing, Data Export, Multi-Currency, Priority Support.',
     features: [
-      'All PRO features',
-      '5 linked accounts',
-      'Shared alert notifications',
-      'Individual dashboards',
-      'Family subscription management',
+      'All Pro Features',
+      'Data Export (CSV/PDF)',
+      'Multi-Currency Support',
+      'Team Sharing (5 Users)',
+      'Individual User Dashboards',
+      'Priority Support',
     ],
-    annualSavings: 'Save 16%',
+    annualSavings: 'Save 20%',
   },
 ];
 
@@ -219,7 +222,7 @@ const FAQS = [
   {
     question: 'Can I customize when I receive alerts?',
     answer:
-      'Yes! Pro and Family plans allow you to set custom alert windows—get notified 30, 14, 7, or 1 day before renewals. You can also set different preferences for each subscription.',
+      'Yes! Pro and Ultimate plans allow you to set custom alert windows—get notified 30, 14, 7, or 1 day before renewals. You can also set different preferences for each subscription.',
   },
   {
     question: 'What happens if I miss an alert?',
@@ -229,7 +232,7 @@ const FAQS = [
   {
     question: 'Do you support SMS notifications?',
     answer:
-      'Yes! SMS notifications are available on Pro and Family plans. You can choose to receive alerts via email, SMS, push notifications, or all three channels for maximum reliability.',
+      'Yes! Push notifications are available on Pro and Ultimate plans. You can choose to receive alerts via email, push notifications, or both channels for maximum reliability.',
   },
 ];
 
@@ -372,13 +375,17 @@ export default function Home() {
     },
     featureList: [
       'Unified Subscription Dashboard',
-      'Predictive Spend Insights',
-      'One-Tap Controls',
-      'Automated Renewal Alerts',
-      'Vendor Health Monitoring',
-      'Multi-Channel Notifications',
-      'Real-time Monitoring',
-      'Customizable Alert Windows',
+      'Unlimited Subscription Tracking',
+      'Customizable Email Alerts',
+      'App Push Notifications',
+      'Advanced Spending Analytics',
+      'Category-Wise Budgeting',
+      'Data Import & Batch Upload',
+      'Smart Renewal Management',
+      'Multi-Currency Support',
+      'Team Sharing & Collaboration',
+      'Data Export (CSV/PDF)',
+      'Priority Support',
     ],
     screenshot: [
       {
@@ -699,13 +706,15 @@ export default function Home() {
             
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full py-4 sm:py-6 md:py-8 lg:py-12">
               <div className="mx-auto max-w-4xl text-center">
-                <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-primary-50 to-brand-accent-50 border border-primary-200/50 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-primary-700 mb-3 sm:mb-4 md:mb-6 shadow-sm">
+                {/* Badge - 0s delay */}
+                <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-primary-50 to-brand-accent-50 border border-primary-200/50 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-primary-700 mb-3 sm:mb-4 md:mb-6 shadow-sm animate-fade-in-up animate-delay-0">
                   <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                   Intelligent Subscription Alerts
                 </span>
-                <h1 id="hero-heading" className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.15] sm:leading-[1.2] px-2 sm:px-0" style={{ lineHeight: '1.15!important' }}>
+                {/* Main heading - 0.1s delay */}
+                <h1 id="hero-heading" className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.15] sm:leading-[1.2] px-2 sm:px-0 animate-fade-in-up animate-delay-100" style={{ lineHeight: '1.15!important' }}>
                   <span className="bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">
                     Master Your{' '}
                     <span className="relative inline-block">
@@ -716,10 +725,12 @@ export default function Home() {
                   <br />
                   Never Miss a Payment.
                 </h1>
-                <p className="mt-3 sm:mt-4 md:mt-6 text-sm sm:text-base md:text-lg lg:text-xl leading-6 sm:leading-7 text-slate-600 max-w-3xl mx-auto px-2 sm:px-0">
+                {/* Description paragraph - 0.2s delay */}
+                <p className="mt-3 sm:mt-4 md:mt-6 text-sm sm:text-base md:text-lg lg:text-xl leading-6 sm:leading-7 text-slate-600 max-w-3xl mx-auto px-2 sm:px-0 animate-fade-in-up animate-delay-200">
                   Subsy centralizes <span className="font-semibold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">all</span> your recurring expenses and keeps you informed with <span className="font-semibold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">timely, multi-channel</span> alerts—so you avoid <span className="font-semibold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">unexpected charges</span> and stay in <span className="font-semibold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">full control</span> of your spending.
                 </p>
-                <div className="mt-5 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col items-center justify-center gap-2.5 sm:gap-3 md:gap-4 sm:flex-row px-4 sm:px-0">
+                {/* Action buttons - 0.3s delay */}
+                <div className="mt-5 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col items-center justify-center gap-2.5 sm:gap-3 md:gap-4 sm:flex-row px-4 sm:px-0 animate-fade-in-up animate-delay-300">
                   <Link
                     href={user ? '/dashboard' : '/auth/signup'}
                     className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-4 sm:px-5 md:px-6 lg:px-8 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base font-bold text-white shadow-xl shadow-brand-accent-500/30 transition-all hover:shadow-2xl hover:shadow-brand-accent-500/40 hover:scale-105 hover:from-brand-accent-600 hover:to-brand-accent-700 w-full sm:w-auto min-h-[44px] sm:min-h-[48px]"
@@ -742,8 +753,8 @@ export default function Home() {
                     {user ? 'View Insights' : 'Watch Demo'}
                   </Link>
                 </div>
-                {/* Enhanced stats */}
-                <div className="mt-6 sm:mt-8 md:mt-10 lg:mt-12 xl:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8 max-w-3xl mx-auto px-4 sm:px-0">
+                {/* Trust indicators (stats) - 0.4s delay */}
+                <div className="mt-6 sm:mt-8 md:mt-10 lg:mt-12 xl:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8 max-w-3xl mx-auto px-4 sm:px-0 animate-fade-in-up animate-delay-400">
                   <div className="text-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
                     <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">99.9%</p>
                     <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs md:text-sm font-semibold text-slate-700 uppercase tracking-wider">Alert Delivery Rate</p>
@@ -799,7 +810,7 @@ export default function Home() {
                     className="group flex flex-col items-center text-center p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 hover:border-primary-300 hover:shadow-lg transition-all duration-300"
                   >
                     <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-50 to-brand-accent-50 text-primary-600 mb-4 group-hover:scale-110 transition-transform duration-300">
-                      {channel.icon}
+                      {typeof channel.channel === 'string' ? getNotificationChannelIcon(channel.channel) : null}
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2">{channel.name}</h3>
                     <p className="text-sm text-slate-600 leading-relaxed">{channel.description}</p>
@@ -814,13 +825,13 @@ export default function Home() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="mx-auto max-w-2xl text-center mb-10 sm:mb-12 md:mb-16">
                 <span className="inline-flex items-center rounded-full bg-primary-50 border border-primary-100 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-medium uppercase tracking-wider text-primary-700">
-                  Alert Features
+                  Key Features
                 </span>
                 <h2 id="features-heading" className="mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 px-4 sm:px-0">
-                  Powerful alert system to keep you in control
+                  Everything you need to master your subscriptions
                 </h2>
                 <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-8 text-slate-600 px-4 sm:px-0">
-                  Never miss a renewal with our intelligent notification system. Get timely alerts, monitor changes, and stay ahead of every subscription payment.
+                  From unlimited tracking to advanced analytics and team collaboration, Subsy provides the tools you need to stay in control of your recurring expenses.
                 </p>
               </div>
               <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
@@ -1011,7 +1022,7 @@ export default function Home() {
                 </span>
                 <h2 id="pricing-heading" className="mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 px-4 sm:px-0">Simple, transparent pricing</h2>
                 <p className="mt-4 sm:mt-6 mx-auto max-w-2xl text-base sm:text-lg leading-8 text-slate-600 px-4 sm:px-0">
-                  Start free with basic email alerts, or upgrade to Pro for multi-channel notifications and advanced alert customization.
+                  Start free with Starter plan for essential tracking, or upgrade to Pro for unlimited subscriptions and advanced budgeting, or Ultimate for team collaboration and data exports.
                 </p>
                 
                 {/* Billing Toggle - Enhanced */}
@@ -1076,7 +1087,9 @@ export default function Home() {
                         <span className="text-4xl sm:text-5xl font-bold text-slate-900">
                           {isAnnual && tier.annualPrice ? tier.annualPrice : (tier.monthlyPrice || '$0')}
                         </span>
-                        {tier.monthlyPrice !== '$0' && (
+                        {tier.monthlyPrice === '$0' ? (
+                          <span className="text-sm sm:text-base text-slate-500">forever</span>
+                        ) : (
                           <span className="text-sm sm:text-base text-slate-500">
                             {isAnnual && tier.annualPrice ? '/year' : '/month'}
                           </span>
@@ -1089,10 +1102,18 @@ export default function Home() {
                       )}
                     </div>
                     <ul className="mb-8 sm:mb-10 space-y-2 sm:space-y-3 text-sm text-slate-600">
-                      {tier.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-2">
+                      {tier.features.map((feature, index) => (
+                        <li key={`${tier.name}-${feature}-${index}`} className="flex items-start gap-2">
                           <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary-500 flex-shrink-0" />
-                          <span>{feature}</span>
+                          <span>
+                            {feature === 'Unlimited Subscription Tracking' || feature === 'Advanced Spending Analytics' ? (
+                              <strong className="font-bold text-slate-900">{feature}</strong>
+                            ) : feature === 'All Pro Features' || feature === 'Team Sharing (5 Users)' ? (
+                              <strong className="font-semibold text-slate-900">{feature}</strong>
+                            ) : (
+                              feature
+                            )}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -1216,7 +1237,7 @@ export default function Home() {
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 mb-4">
                     <div className="w-8 h-8 text-primary-600 [&>svg]:w-8 [&>svg]:h-8">
                       {getNotificationChannelIcon('email')}
-                    </div> 
+                    </div>
                     {/* <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg> */}

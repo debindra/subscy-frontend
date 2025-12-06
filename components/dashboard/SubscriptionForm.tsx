@@ -91,6 +91,13 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   const [showAdvanced, setShowAdvanced] = useState(false);
   const isEditing = !!subscription;
 
+  // Get tomorrow's date in ISO format for min attribute (YYYY-MM-DD)
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
   useEffect(() => {
     if (subscription) {
       setFormData({
@@ -140,6 +147,10 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
       // Clean the data: convert empty strings to undefined for optional date fields
       const cleanedData: CreateSubscriptionData = {
         ...formData,
+        // Only include nextRenewalDate if it's not empty (let backend auto-calculate if empty)
+        nextRenewalDate: formData.nextRenewalDate && formData.nextRenewalDate.trim()
+          ? formData.nextRenewalDate.trim()
+          : undefined,
         // Only include trialEndDate if it's not empty and isTrial is true
         trialEndDate: formData.isTrial && formData.trialEndDate && formData.trialEndDate.trim()
           ? formData.trialEndDate
@@ -239,9 +250,10 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
               onChange={(e) => setFormData({ ...formData, nextRenewalDate: e.target.value })}
               placeholder="Next Renewal Date"
               className="text-base"
+              min={getTomorrowDate()}
             />
             <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-              Optional - will be calculated automatically based on billing cycle
+              <strong>Optional:</strong> Leave empty to auto-calculate based on billing cycle and current date. If provided, must be a future date.
             </p>
           </div>
         </div>

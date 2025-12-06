@@ -48,11 +48,14 @@ export interface CreateSubscriptionData {
 }
 
 export const subscriptionsApi = {
-  getAll: () => apiClient.get<Subscription[]>('/subscriptions/'),
+  getAll: (autoUpdate: boolean = true) => 
+    apiClient.get<Subscription[]>('/subscriptions/', { params: { auto_update: autoUpdate } }),
   
-  getById: (id: string) => apiClient.get<Subscription>(`/subscriptions/${id}`),
+  getById: (id: string, autoUpdate: boolean = true) => 
+    apiClient.get<Subscription>(`/subscriptions/${id}`, { params: { auto_update: autoUpdate } }),
   
-  getUpcoming: () => apiClient.get<Subscription[]>('/subscriptions/upcoming'),
+  getUpcoming: (days: number = 7, autoUpdate: boolean = true) => 
+    apiClient.get<Subscription[]>('/subscriptions/upcoming', { params: { days, auto_update: autoUpdate } }),
   
   create: (data: CreateSubscriptionData) => apiClient.post<Subscription>('/subscriptions/', data),
   

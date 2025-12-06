@@ -336,10 +336,31 @@ export function downloadHTML(htmlContent: string, filename: string = 'subscripti
 // Generate a PDF from the provided HTML content using html2canvas + jsPDF
 export async function downloadPDFFromHTML(htmlContent: string, filename: string = 'subscription-report.pdf') {
   // Dynamically import to avoid SSR issues
-  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-    import('html2canvas'),
-    import('jspdf') as unknown as Promise<{ jsPDF: any }>,
-  ]);
+  let html2canvas: any;
+  let jsPDF: any;
+  
+  try {
+    const [html2canvasModule, jspdfModule] = await Promise.all([
+      import('html2canvas').catch((err) => {
+        console.error('Failed to load html2canvas:', err);
+        throw new Error('PDF export requires html2canvas library. Please ensure it is installed.');
+      }),
+      import('jspdf').catch((err) => {
+        console.error('Failed to load jspdf:', err);
+        throw new Error('PDF export requires jspdf library. Please ensure it is installed.');
+      }),
+    ]);
+    
+    html2canvas = html2canvasModule.default || html2canvasModule;
+    jsPDF = (jspdfModule as any).jsPDF || jspdfModule.default || jspdfModule;
+    
+    if (!html2canvas || !jsPDF) {
+      throw new Error('Failed to initialize PDF export libraries');
+    }
+  } catch (error) {
+    console.error('Error loading PDF export libraries:', error);
+    throw error;
+  }
 
   // Create a hidden container to render HTML for capture
   const container = document.createElement('div');

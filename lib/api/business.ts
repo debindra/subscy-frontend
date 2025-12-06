@@ -33,6 +33,11 @@ export interface PlanLimits {
   cancellation_notes?: boolean;
   shared_accounts?: boolean;
   individual_dashboards?: boolean;
+  customizable_reminders?: boolean;
+  push_notifications?: boolean;
+  data_import?: boolean;
+  multi_currency?: boolean;
+  team_sharing?: boolean;
 }
 
 export interface PlanResponse {

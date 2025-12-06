@@ -7,6 +7,8 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
   },
   images: {
     unoptimized: true,
@@ -26,9 +28,25 @@ const nextConfig = {
   swcMinify: true,
   // Optimize font loading
   optimizeFonts: true,
-  // Enable static optimization for better performance
-  experimental: {
-    optimizePackageImports: ['lucide-react'],
+  // Webpack configuration to handle dynamic imports more reliably
+  webpack: (config, { isServer }) => {
+    // Ensure proper handling of dynamic imports
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    
+    // Improve error handling for module loading
+    config.optimization = {
+      ...config.optimization,
+      moduleIds: 'deterministic',
+    };
+    
+    return config;
   },
 }
 

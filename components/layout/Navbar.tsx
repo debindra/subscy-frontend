@@ -76,7 +76,7 @@ export const Navbar: React.FC = () => {
                 alt="Subsy logo"
                 width={120}
                 height={36}
-                className="h-9 w-auto transition-transform duration-200 group-hover:scale-105"
+                className="h-12 w-auto transition-transform duration-200 group-hover:scale-105"
                 loading="eager"
                 onError={(e) => {
                   // Fallback: try to reload or use a different path

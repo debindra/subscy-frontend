@@ -957,16 +957,6 @@ export default function SubscriptionsPage() {
                 >
                   Upcoming
                 </button>
-                <button
-                  onClick={() => {
-                    const today = new Date();
-                    setFilter('all');
-                    setDateTo(today.toISOString().split('T')[0]);
-                  }}
-                  className="px-3 py-2 text-sm rounded-lg bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 font-medium transition-colors"
-                >
-                  Overdue
-                </button>
               </div>
             </div>
 

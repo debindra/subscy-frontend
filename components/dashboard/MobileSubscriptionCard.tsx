@@ -22,8 +22,7 @@ export const MobileSubscriptionCard: React.FC<MobileSubscriptionCardProps> = ({
 }) => {
   const router = useRouter();
   const daysUntilRenewal = getDaysUntil(subscription.nextRenewalDate);
-  const isUpcoming = daysUntilRenewal <= 7 && daysUntilRenewal >= 0;
-  const isOverdue = daysUntilRenewal < 0;
+  const isUpcoming = daysUntilRenewal > 0 && daysUntilRenewal <= 7;
   const iconClasses = getSubscriptionColor(subscription.name, subscription.category);
   const subscriptionIcon = getSubscriptionIcon(subscription.name, subscription.category);
 
@@ -34,20 +33,15 @@ export const MobileSubscriptionCard: React.FC<MobileSubscriptionCardProps> = ({
 
   // Get days badge color based on status
   const getDaysBadgeColor = () => {
-    if (isOverdue) {
-      return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400';
-    }
     if (isUpcoming) {
       return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400';
     }
     return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400';
   };
 
-  const daysBadgeText = isOverdue 
-    ? `${Math.abs(daysUntilRenewal)}d` 
-    : daysUntilRenewal === 0 
-      ? 'Today' 
-      : `${daysUntilRenewal}d`;
+  const daysBadgeText = daysUntilRenewal === 0 
+    ? 'Today' 
+    : `${daysUntilRenewal}d`;
 
   // Enhanced UI for renewing today - prominent badge and visual indicators
   const isRenewingToday = daysUntilRenewal === 0;

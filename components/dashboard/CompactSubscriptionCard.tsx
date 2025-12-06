@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Subscription } from '@/lib/api/subscriptions';
 import { formatCurrency, formatDate, getDaysUntil } from '@/lib/utils/format';
 import { getSubscriptionIcon, getSubscriptionColor } from '@/lib/utils/icons';
@@ -19,15 +20,19 @@ export const CompactSubscriptionCard: React.FC<CompactSubscriptionCardProps> = (
   onDelete,
   preferredCurrency = 'USD',
 }) => {
+  const router = useRouter();
   const daysUntilRenewal = getDaysUntil(subscription.nextRenewalDate);
-  const isUpcoming = daysUntilRenewal <= 7 && daysUntilRenewal >= 0;
-  const isOverdue = daysUntilRenewal < 0;
+  const isUpcoming = daysUntilRenewal > 0 && daysUntilRenewal <= 7;
   const iconClasses = getSubscriptionColor(subscription.name, subscription.category);
   const subscriptionIcon = getSubscriptionIcon(subscription.name, subscription.category);
 
+  const handleDoubleClick = () => {
+    router.push(`/dashboard/subscriptions/${subscription.id}`);
+  };
+
   // Enhanced UI for renewing today - prominent badge and visual indicators
   const isRenewingToday = daysUntilRenewal === 0;
-  const cardClassName = "hover:shadow-lg dark:hover:shadow-gray-900/30 transition-all duration-300 transform hover:-translate-y-1 animate-fade-in relative overflow-hidden group";
+  const cardClassName = "hover:shadow-lg dark:hover:shadow-gray-900/30 transition-all duration-300 transform hover:-translate-y-1 animate-fade-in relative overflow-hidden group cursor-pointer";
 
   return (
     <div className={isRenewingToday ? "relative rounded-2xl animate-pulse-glow" : ""}>
@@ -44,7 +49,7 @@ export const CompactSubscriptionCard: React.FC<CompactSubscriptionCardProps> = (
           </div>
         </div>
       )}
-      <Card className={cardClassName} variant="elevated">
+      <Card className={cardClassName} variant="elevated" onDoubleClick={handleDoubleClick}>
 
       <div className="p-4">
         {/* Compact Header */}
@@ -59,7 +64,6 @@ export const CompactSubscriptionCard: React.FC<CompactSubscriptionCardProps> = (
                 {/* Status indicator */}
                 <div className={`w-2 h-2 rounded-full ${
                   !subscription.isActive ? 'bg-gray-400' :
-                  isOverdue ? 'bg-red-500' :
                   isUpcoming ? 'bg-amber-500' :
                   'bg-green-500'
                 }`} />
@@ -99,12 +103,10 @@ export const CompactSubscriptionCard: React.FC<CompactSubscriptionCardProps> = (
             {formatDate(subscription.nextRenewalDate)}
           </span>
           <span className={`font-medium ${
-            isOverdue ? 'text-red-600 dark:text-red-400' :
             isUpcoming ? 'text-amber-600 dark:text-amber-400' :
             'text-gray-600 dark:text-gray-400'
           }`}>
-            {isOverdue ? `Overdue ${Math.abs(daysUntilRenewal)}d` :
-             isRenewingToday ? '' : // Hidden when renewing today since we have prominent badge
+            {isRenewingToday ? '' : // Hidden when renewing today since we have prominent badge
              `${daysUntilRenewal}d`}
           </span>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Subscription } from '@/lib/api/subscriptions';
 import { formatCurrency, formatDate, getDaysUntil } from '@/lib/utils/format';
 import { getSubscriptionIcon, getSubscriptionColor } from '@/lib/utils/icons';
@@ -20,8 +21,13 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
   onDelete,
   preferredCurrency = 'USD',
 }) => {
+  const router = useRouter();
   const [isFlipped, setIsFlipped] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleDoubleClick = () => {
+    router.push(`/dashboard/subscriptions/${subscription.id}`);
+  };
 
   // Lazy loading: only fetch conversion when card is flipped
   const { data: convertedAmount, isLoading: isConverting } = useOptimizedCurrencyConversion({
@@ -31,14 +37,13 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
   });
 
   const daysUntilRenewal = getDaysUntil(subscription.nextRenewalDate);
-  const isUpcoming = daysUntilRenewal <= 7 && daysUntilRenewal >= 0;
-  const isOverdue = daysUntilRenewal < 0;
+  const isUpcoming = daysUntilRenewal > 0 && daysUntilRenewal <= 7;
   const iconClasses = getSubscriptionColor(subscription.name, subscription.category);
   const subscriptionIcon = getSubscriptionIcon(subscription.name, subscription.category);
 
   // Enhanced UI for renewing today - prominent badge, glow effect, and visual indicators
   const isRenewingToday = daysUntilRenewal === 0;
-  const cardClassName = "hover:shadow-xl dark:hover:shadow-gray-900/50 transition-all duration-300 transform hover:-translate-y-1 animate-fade-in relative overflow-hidden group";
+  const cardClassName = "hover:shadow-xl dark:hover:shadow-gray-900/50 transition-all duration-300 transform hover:-translate-y-1 animate-fade-in relative overflow-hidden group cursor-pointer";
   
   const wrapperClassName = isRenewingToday
     ? "relative rounded-2xl animate-pulse-glow"
@@ -62,6 +67,7 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
       <Card 
         className={cardClassName} 
         variant="elevated"
+        onDoubleClick={handleDoubleClick}
       >
 
 
@@ -116,19 +122,8 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
                   </span>
                 )}
 
-                {/* Renewal Status - Priority: Overdue > Upcoming > Normal */}
-                {isOverdue && (
-                  <span
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 font-semibold border border-red-200 dark:border-red-700 shadow-sm transition-all duration-200"
-                    aria-label="Overdue subscription"
-                  >
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                    Overdue
-                  </span>
-                )}
-                {isUpcoming && !isOverdue && (
+                {/* Renewal Status - Upcoming */}
+                {isUpcoming && (
                   <span
                     className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold border border-amber-200 dark:border-amber-700 shadow-sm transition-all duration-200"
                     aria-label="Subscription renewing soon"
@@ -226,13 +221,13 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
                 {isRenewingToday ? 'Renewing Today!' : 'Next renewal'}
               </span>
             </div>
-            <span className={`text-sm font-bold ${isOverdue ? 'text-red-600 dark:text-red-400' : isRenewingToday ? 'text-brand-accent-700 dark:text-brand-accent-300' : isUpcoming ? 'text-brand-accent-600 dark:text-brand-accent-400' : 'text-gray-900 dark:text-gray-100'}`}>
+            <span className={`text-sm font-bold ${isRenewingToday ? 'text-brand-accent-700 dark:text-brand-accent-300' : isUpcoming ? 'text-brand-accent-600 dark:text-brand-accent-400' : 'text-gray-900 dark:text-gray-100'}`}>
               {formatDate(subscription.nextRenewalDate)}
             </span>
           </div>
 
           {/* Days Remaining Status (hidden when renewing today since we have prominent badge) */}
-          {daysUntilRenewal >= 0 && !isRenewingToday && (
+          {daysUntilRenewal > 0 && !isRenewingToday && (
             <div
               className={`inline-flex items-center gap-2 px-3 py-2 text-xs rounded-lg font-semibold ${
                 isUpcoming
@@ -248,20 +243,6 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
               <span>
                 {`${daysUntilRenewal} days remaining`}
               </span>
-            </div>
-          )}
-
-          {/* Overdue Status */}
-          {isOverdue && (
-            <div
-              className="inline-flex items-center gap-2 px-3 py-2 text-xs rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 font-semibold"
-              role="alert"
-              aria-label={`Overdue by ${Math.abs(daysUntilRenewal)} days`}
-            >
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <span>Overdue by {Math.abs(daysUntilRenewal)} days</span>
             </div>
           )}
         </div>

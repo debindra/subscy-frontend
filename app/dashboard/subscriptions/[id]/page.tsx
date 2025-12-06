@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSubscription } from '@/lib/hooks/useSubscriptions';
 import { useUpdateSubscription, useDeleteSubscription } from '@/lib/hooks/useSubscriptionMutations';
@@ -12,7 +12,38 @@ import { formatCurrency, formatDate, getDaysUntil } from '@/lib/utils/format';
 import { getSubscriptionIcon, getSubscriptionColor } from '@/lib/utils/icons';
 import { useToast } from '@/lib/context/ToastContext';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
+import { calculateFutureRenewalDates } from '@/lib/utils/billingDates';
+import { parseISO } from 'date-fns';
 import Link from 'next/link';
+
+// Calendar helper functions
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addMonths(date: Date, months: number) {
+  return new Date(date.getFullYear(), date.getMonth() + months, 1);
+}
+
+function getMonthMatrix(year: number, month: number) {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDay = new Date(firstDay);
+  startDay.setDate(firstDay.getDate() - ((firstDay.getDay() + 6) % 7)); // Monday start
+
+  const weeks: Date[][] = [];
+  let current = new Date(startDay);
+  while (current <= lastDay || current.getDay() !== 1) {
+    const week: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      week.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+    weeks.push(week);
+    if (current > lastDay && current.getDay() === 1) break;
+  }
+  return weeks;
+}
 
 export default function SubscriptionDetailPage() {
   const params = useParams();
@@ -22,9 +53,46 @@ export default function SubscriptionDetailPage() {
   const updateMutation = useUpdateSubscription();
   const deleteMutation = useDeleteSubscription();
   const [showEditForm, setShowEditForm] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState<Date>(startOfMonth(new Date()));
   const { showToast } = useToast();
 
   usePageTitle(subscription?.name || 'Subscription Details');
+
+  // Calculate future renewal dates including the current nextRenewalDate
+  const futureRenewalDates = useMemo(() => {
+    if (!subscription) return [];
+    
+    // Start with the current nextRenewalDate
+    const currentRenewalDate = parseISO(subscription.nextRenewalDate);
+    const dates: Date[] = [currentRenewalDate];
+    
+    // Calculate future renewals (adjust count based on billing cycle)
+    const count = subscription.billingCycle === 'yearly' ? 3 : 
+                  subscription.billingCycle === 'quarterly' ? 8 : 12;
+    
+    // Calculate additional future dates starting from the current nextRenewalDate
+    const futureDates = calculateFutureRenewalDates(
+      subscription.nextRenewalDate,
+      subscription.billingCycle,
+      count
+    );
+    
+    // Combine current date with future dates
+    return [...dates, ...futureDates];
+  }, [subscription]);
+
+  // Create a Set of renewal dates for quick lookup
+  const renewalDatesSet = useMemo(() => {
+    return new Set(
+      futureRenewalDates.map(date => date.toDateString())
+    );
+  }, [futureRenewalDates]);
+
+  // Calendar calculations - MUST be before any early returns
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  const monthName = calendarMonth.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+  const matrix = useMemo(() => getMonthMatrix(year, month), [year, month]);
 
   const handleDelete = async () => {
     if (!subscription) return;
@@ -84,8 +152,7 @@ export default function SubscriptionDetailPage() {
   }
 
   const daysUntil = getDaysUntil(subscription.nextRenewalDate);
-  const isUpcoming = daysUntil >= 0 && daysUntil <= 7;
-  const isOverdue = daysUntil < 0;
+  const isUpcoming = daysUntil > 0 && daysUntil <= 7;
   const subscriptionIcon = getSubscriptionIcon(subscription.name || '', subscription.category || '');
   const subscriptionIconColor = getSubscriptionColor(subscription.name || '', subscription.category || '');
 
@@ -185,10 +252,9 @@ export default function SubscriptionDetailPage() {
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-2">
                 <svg className={`w-5 h-5 ${
-                  isOverdue ? 'text-red-500' : isUpcoming ? 'text-amber-500' : 'text-blue-500'
+                  isUpcoming ? 'text-amber-500' : 'text-blue-500'
                 }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={
-                    isOverdue ? "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" :
                     isUpcoming ? "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" :
                     "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   } />
@@ -196,19 +262,15 @@ export default function SubscriptionDetailPage() {
                 <span className="text-sm text-slate-600 dark:text-slate-400">Status</span>
               </div>
               <span className={`px-3 py-1 text-sm font-semibold rounded-md ${
-                isOverdue 
-                  ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' 
-                  : isUpcoming 
-                    ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' 
-                    : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                isUpcoming 
+                  ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' 
+                  : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
               }`}>
-                {isOverdue 
-                  ? `${Math.abs(daysUntil)} days overdue` 
-                  : daysUntil === 0 
-                    ? 'Today' 
-                    : daysUntil === 1 
-                      ? 'Tomorrow' 
-                      : `${daysUntil} days`}
+                {daysUntil === 0 
+                  ? 'Today' 
+                  : daysUntil === 1 
+                    ? 'Tomorrow' 
+                    : `${daysUntil} days`}
               </span>
             </div>
 
@@ -225,6 +287,99 @@ export default function SubscriptionDetailPage() {
                 </span>
               </div>
             )}
+          </div>
+        </Card>
+
+        {/* Upcoming Renewals Calendar */}
+        <Card className="mb-6" padding="md">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+              <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Upcoming Renewals Calendar</h2>
+          </div>
+
+          <div className="space-y-4">
+            {/* Calendar Navigation */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setCalendarMonth(addMonths(calendarMonth, -1))}
+                className="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors"
+                aria-label="Previous month"
+              >
+                Prev
+              </button>
+              <div className="px-4 py-2 font-semibold text-gray-900 dark:text-white text-sm">
+                {monthName}
+              </div>
+              <button
+                onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
+                className="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors"
+                aria-label="Next month"
+              >
+                Next
+              </button>
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+              <div className="grid grid-cols-7 gap-px sm:gap-1 md:gap-2 w-full">
+                {/* Day Headers */}
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+                  <div
+                    key={d}
+                    className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 px-2 text-center"
+                  >
+                    {d}
+                  </div>
+                ))}
+                
+                {/* Calendar Days */}
+                {matrix.flat().map((day) => {
+                  const isCurrentMonth = day.getMonth() === month;
+                  const isRenewalDate = renewalDatesSet.has(day.toDateString());
+                  const isToday = day.toDateString() === new Date().toDateString();
+                  
+                  return (
+                    <div
+                      key={day.toDateString()}
+                      className={`min-h-[80px] sm:min-h-[100px] rounded-lg border p-1 sm:p-2 flex flex-col transition-all ${
+                        isCurrentMonth
+                          ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                          : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-800'
+                      } ${isRenewalDate ? 'ring-2 ring-primary-500 dark:ring-primary-400 shadow-md' : ''}`}
+                    >
+                      <div className={`text-xs sm:text-sm font-medium ${
+                        isCurrentMonth 
+                          ? isToday 
+                            ? 'text-primary-600 dark:text-primary-400 font-bold' 
+                            : 'text-gray-700 dark:text-gray-300'
+                          : 'text-gray-400 dark:text-gray-600'
+                      }`}>
+                        {day.getDate()}
+                      </div>
+                      {isRenewalDate && (
+                        <div className="mt-1 flex-1 flex items-center">
+                          <div className="w-full bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded truncate font-medium">
+                            Renewal
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded border-2 border-primary-500 dark:border-primary-400"></div>
+                <span>Renewal Date</span>
+              </div>
+            </div>
           </div>
         </Card>
 

@@ -108,7 +108,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (categoryError && (categoryError as any)?.response?.status === 403) {
       console.warn('Category analytics not available - user may need to upgrade plan');
-      showToast('Category analytics requires Pro plan', 'info');
+      showToast('Category analytics requires Pro or Ultimate plan', 'info');
     }
   }, [categoryError, showToast]);
 

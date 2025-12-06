@@ -1,15 +1,17 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Poppins } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { ToastProvider } from '@/lib/context/ToastContext';
 import { ViewModeProvider } from '@/lib/context/ViewModeContext';
 import { PWASetup } from '@/components/layout/PWASetup';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { PostHogProvider } from '@/components/providers/PostHogProvider';
 
-const inter = Inter({
+const poppins = Poppins({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-poppins',
   display: 'swap',
 });
 
@@ -114,17 +116,19 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className={`${inter.variable} font-inter bg-gray-50 dark:bg-gray-900`}>
+      <body className={`${poppins.variable} font-poppins bg-gray-50 dark:bg-gray-900`}>
         <PWASetup />
-        <ThemeProvider>
-          <ToastProvider>
-            <QueryProvider>
-              <ViewModeProvider>
-                {children}
-              </ViewModeProvider>
-            </QueryProvider>
-          </ToastProvider>
-        </ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <QueryProvider>
+                <ViewModeProvider>
+                  {children}
+                </ViewModeProvider>
+              </QueryProvider>
+            </ToastProvider>
+          </ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

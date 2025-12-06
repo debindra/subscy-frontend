@@ -21,22 +21,19 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
   preferredCurrency = 'USD',
 }) => {
   const [timeRange, setTimeRange] = useState<'7' | '30' | '90'>('7');
-  const [showOverdue, setShowOverdue] = useState(true);
 
   const filteredSubscriptions = useMemo(() => {
     const daysFromNow = parseInt(timeRange);
 
     return subscriptions.filter(sub => {
       const daysUntilRenewal = getDaysUntil(sub.nextRenewalDate);
-
-      if (showOverdue && daysUntilRenewal < 0) return true;
       return daysUntilRenewal >= 0 && daysUntilRenewal <= daysFromNow;
     }).sort((a, b) => {
       const dateA = new Date(a.nextRenewalDate);
       const dateB = new Date(b.nextRenewalDate);
       return dateA.getTime() - dateB.getTime();
     });
-  }, [subscriptions, timeRange, showOverdue]);
+  }, [subscriptions, timeRange]);
 
   // Group subscription amounts by currency for bulk conversion
   const amountsByCurrency = useMemo(() => {
@@ -60,17 +57,9 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
       ? totalConvertedAmount
       : filteredSubscriptions.reduce((total, sub) => total + sub.amount, 0);
 
-    const overdueCount = filteredSubscriptions.filter(sub => {
-      const daysUntilRenewal = getDaysUntil(sub.nextRenewalDate);
-      return daysUntilRenewal < 0;
-    }).length;
-
-    const upcomingCount = filteredSubscriptions.length - overdueCount;
-
     return {
       totalAmount,
-      overdueCount,
-      upcomingCount,
+      upcomingCount: filteredSubscriptions.length,
       isConverted: totalConvertedAmount !== undefined,
     };
   }, [filteredSubscriptions, totalConvertedAmount]);
@@ -89,7 +78,6 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Upcoming Renewals</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Subscriptions renewing in the next {timeRange} days
-            {showOverdue && ' (including overdue)'}
           </p>
         </div>
 
@@ -111,17 +99,6 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
               ))}
             </select>
           </div>
-
-          {/* Overdue Toggle */}
-          <label className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showOverdue}
-              onChange={(e) => setShowOverdue(e.target.checked)}
-              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-            />
-            <span>Show Overdue</span>
-          </label>
         </div>
       </div>
 
@@ -173,29 +150,6 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
               </p>
             </div>
           </Card>
-
-          <Card className={`p-4 bg-gradient-to-br ${
-            renewalStats.overdueCount > 0
-              ? 'from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20'
-              : 'from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20'
-          }`}>
-            <div className="text-center">
-              <p className={`text-sm font-semibold mb-1 ${
-                renewalStats.overdueCount > 0
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-gray-600 dark:text-gray-400'
-              }`}>
-                Overdue
-              </p>
-              <p className={`text-2xl font-bold ${
-                renewalStats.overdueCount > 0
-                  ? 'text-red-700 dark:text-red-300'
-                  : 'text-gray-700 dark:text-gray-300'
-              }`}>
-                {renewalStats.overdueCount}
-              </p>
-            </div>
-          </Card>
         </div>
       )} */}
 
@@ -227,7 +181,6 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
             No upcoming renewals in the next {timeRange} days
-            {!showOverdue && ' (overdue subscriptions are hidden)'}
           </p>
         </Card>
       )}
