@@ -102,6 +102,10 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
+// Force dynamic rendering for all pages to prevent static generation errors
+// This is safe with 'standalone' output mode as pages are server-rendered
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({
   children,
 }: {
