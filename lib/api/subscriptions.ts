@@ -22,6 +22,7 @@ export interface Subscription {
   cardBrand?: string;
   isTrial: boolean;
   trialEndDate?: string | null;
+  needToNotify?: boolean; // Computed field: true if notification should be sent (within reminder window)
   createdAt: string;
   updatedAt: string;
 }

@@ -22,6 +22,7 @@ import { useUpcomingSubscriptions } from '@/lib/hooks/useSubscriptions';
 import { Modal } from '@/components/ui/Modal';
 import { SubscriptionForm } from '@/components/dashboard/SubscriptionForm';
 import {
+  useCreateSubscription,
   useUpdateSubscription,
   useDeleteSubscription,
 } from '@/lib/hooks/useSubscriptionMutations';
@@ -33,6 +34,7 @@ import {
 import { useSubscriptionStats } from '@/lib/hooks/useSubscriptionStats';
 import { settingsApi, UserSettings } from '@/lib/api/settings';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { getUserDisplayName } from '@/lib/utils/userUtils';
 
 function getGreeting(): string {
@@ -55,10 +57,13 @@ export default function DashboardPage() {
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
-  const [showPrimaryBreakdown, setShowPrimaryBreakdown] = useState(false);
+  const [showPrimaryBreakdown, setShowPrimaryBreakdown] = useState(true); // Default to visible
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   // Edit modal state for upcoming renewals
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | undefined>();
+  const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false);
+  const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
   const { showToast } = useToast();
   const { hasCategorization, loading: planFeaturesLoading } = usePlanFeatures();
   const { user } = useAuth();
@@ -70,6 +75,12 @@ export default function DashboardPage() {
     data: upcoming = [],
     isLoading: upcomingLoading,
   } = useUpcomingSubscriptions();
+
+  // Define handleCloseEditModal early so it can be used in useEffect
+  const handleCloseEditModal = React.useCallback(() => {
+    setIsEditModalOpen(false);
+    setEditingSubscription(undefined);
+  }, []);
 
   const {
     data: spending,
@@ -104,6 +115,46 @@ export default function DashboardPage() {
 
     loadSettings();
   }, []);
+
+  // Keyboard shortcuts with page-specific handlers
+  useKeyboardShortcuts({
+    onNewSubscription: () => setIsQuickAddModalOpen(true),
+    onShowShortcuts: () => setIsKeyboardShortcutsOpen(true),
+  });
+
+  // Handle Escape key for closing modals (page-specific)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle Escape for closing modals
+      if (e.key === 'Escape') {
+        const target = e.target as HTMLElement;
+        // Don't close modals if user is typing in an input
+        const isInputElement = 
+          (target.tagName === 'INPUT' && (target as HTMLInputElement).type !== 'button' && (target as HTMLInputElement).type !== 'submit' && (target as HTMLInputElement).type !== 'reset') ||
+          target.tagName === 'TEXTAREA' ||
+          (target.isContentEditable && target.getAttribute('contenteditable') === 'true');
+        
+        if (isInputElement) {
+          return; // Let the input handle Escape
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+        if (isKeyboardShortcutsOpen) {
+          setIsKeyboardShortcutsOpen(false);
+        } else if (isEditModalOpen) {
+          handleCloseEditModal();
+        } else if (isQuickAddModalOpen) {
+          setIsQuickAddModalOpen(false);
+        } else if (isBudgetModalOpen) {
+          setIsBudgetModalOpen(false);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isEditModalOpen, isQuickAddModalOpen, isBudgetModalOpen, isKeyboardShortcutsOpen, handleCloseEditModal]);
 
   useEffect(() => {
     if (categoryError && (categoryError as any)?.response?.status === 403) {
@@ -281,6 +332,7 @@ export default function DashboardPage() {
     showToast('Budget settings saved', 'success');
   };
 
+  const createSubscription = useCreateSubscription();
   const updateSubscription = useUpdateSubscription();
   const deleteSubscription = useDeleteSubscription();
 
@@ -316,11 +368,6 @@ export default function DashboardPage() {
       console.error('Error deleting subscription from dashboard:', error);
       showToast('Failed to delete subscription', 'error');
     }
-  };
-
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-    setEditingSubscription(undefined);
   };
 
   const renderCurrencyIcon = (currency: string) => {
@@ -437,32 +484,81 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-gradient-to-b from-gray-50/95 to-white/95 dark:from-gray-900/95 dark:to-gray-950/95 py-4 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mb-8 animate-fade-in flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary-700 dark:text-primary-300 mb-2">
-            {getGreeting()}
-          </p>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white bg-clip-text">
-            {displayName}! 👋
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2 text-base sm:text-sm">
-            Here's your subscription overview
-          </p>
+      {/* Header - Collapsible on mobile */}
+      <div className={`sticky top-0 z-50 bg-gradient-to-b from-gray-50/95 to-white/95 dark:from-gray-900/95 dark:to-gray-950/95 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mb-8 animate-fade-in backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 ${
+        isHeaderCollapsed ? 'py-2' : 'py-4'
+      }`}>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex-1 min-w-0">
+            {!isHeaderCollapsed && (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-700 dark:text-primary-300 mb-2">
+                  {getGreeting()}
+                </p>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white bg-clip-text">
+                  {displayName}! 👋
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-2 text-base sm:text-sm">
+                  Here's your subscription overview
+                </p>
+              </>
+            )}
+            {isHeaderCollapsed && (
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                {displayName}'s Dashboard
+              </h1>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Keyboard Shortcuts Button - Desktop */}
+            <button
+              onClick={() => setIsKeyboardShortcutsOpen(true)}
+              className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-200 dark:border-gray-700"
+              title="Keyboard shortcuts (Press ?)"
+              aria-label="Show keyboard shortcuts"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              <span className="hidden lg:inline text-xs font-medium">Shortcuts</span>
+            </button>
+            {/* Keyboard Shortcuts Button - Mobile */}
+            <button
+              onClick={() => setIsKeyboardShortcutsOpen(true)}
+              className="sm:hidden p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title="Keyboard shortcuts"
+              aria-label="Show keyboard shortcuts"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </button>
+            {/* Mobile collapse button */}
+            <button
+              onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
+              className="md:hidden p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label={isHeaderCollapsed ? 'Expand header' : 'Collapse header'}
+            >
+              <svg 
+                className={`w-5 h-5 transition-transform ${isHeaderCollapsed ? 'rotate-180' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+            <Link
+              href="/dashboard/subscriptions"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white rounded-lg hover:from-brand-accent-600 hover:to-brand-accent-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
+            >
+              Manage Subscriptions
+              <svg className="w-5 h-5 ml-2 transform -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
         </div>
-        <Link
-          href="/dashboard/subscriptions"
-          className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white rounded-lg hover:from-brand-accent-600 hover:to-brand-accent-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
-        >
-          {/* <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg> */}
-          Manage Subscriptions
-          <svg className="w-5 h-5 ml-2 transform -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </Link>
       </div>
 
       {/* Primary Total Spending Summary */}
@@ -470,10 +566,9 @@ export default function DashboardPage() {
         <Card
           variant="outline-primary"
           className="bg-gradient-to-br from-primary-50 to-primary-100/60 dark:from-primary-900/20 dark:to-primary-900/10 text-gray-900 dark:text-white"
-          onDoubleClick={() => setShowPrimaryBreakdown((prev) => !prev)}
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-100 mb-2">
                 {primarySpending.source === 'converted'
                   ? `Total Spending (Converted to ${primarySpending.currency})`
@@ -509,40 +604,73 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Inline breakdown, revealed on double-click */}
-          {showPrimaryBreakdown && currencySummaries.length > 0 && (
+          {/* Currency breakdown - visible by default with toggle */}
+          {currencySummaries.length > 0 && (
             <div className="mt-4 pt-4 border-t border-primary-100/70 dark:border-primary-800/70">
-              <p className="text-xs font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-100 mb-2">
-                Breakdown by currency
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                {currencySummaries.map((summary) => (
-                  <div
-                    key={summary.currency}
-                    className="flex items-center justify-between rounded-lg bg-white/70 dark:bg-gray-900/60 px-3 py-2"
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-100">
+                  Breakdown by currency
+                </p>
+                <button
+                  onClick={() => setShowPrimaryBreakdown((prev) => !prev)}
+                  className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center gap-1 transition-colors"
+                  aria-label={showPrimaryBreakdown ? 'Hide breakdown' : 'Show breakdown'}
+                >
+                  {showPrimaryBreakdown ? 'Hide' : 'Show'}
+                  <svg 
+                    className={`w-3 h-3 transition-transform ${showPrimaryBreakdown ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
                   >
-                    <span className="font-medium text-gray-800 dark:text-gray-100">
-                      {summary.currency}
-                    </span>
-                    <span className="text-right text-gray-700 dark:text-gray-200">
-                      <span className="block">
-                        {formatCurrency(summary.monthlyTotal, summary.currency)}{' '}
-                        <span className="text-xs text-gray-500 dark:text-gray-400">/ month</span>
-                      </span>
-                      <span className="block text-xs text-gray-500 dark:text-gray-400">
-                        {formatCurrency(summary.yearlyTotal, summary.currency)} / year
-                      </span>
-                    </span>
-                  </div>
-                ))}
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
               </div>
-              <p className="mt-2 text-[11px] text-primary-700/80 dark:text-primary-100/70">
-                Double-click the card again to hide this breakdown.
-              </p>
+              {showPrimaryBreakdown && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm animate-fade-in">
+                  {currencySummaries.map((summary) => (
+                    <div
+                      key={summary.currency}
+                      className="flex items-center justify-between rounded-lg bg-white/70 dark:bg-gray-900/60 px-3 py-2"
+                    >
+                      <span className="font-medium text-gray-800 dark:text-gray-100">
+                        {summary.currency}
+                      </span>
+                      <span className="text-right text-gray-700 dark:text-gray-200">
+                        <span className="block">
+                          {formatCurrency(summary.monthlyTotal, summary.currency)}{' '}
+                          <span className="text-xs text-gray-500 dark:text-gray-400">/ month</span>
+                        </span>
+                        <span className="block text-xs text-gray-500 dark:text-gray-400">
+                          {formatCurrency(summary.yearlyTotal, summary.currency)} / year
+                        </span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </Card>
       )}
+
+      {/* Quick Actions - Added prominently after spending summary */}
+      {subscriptionStats && (
+        <QuickActions
+          subscriptionCount={subscriptionStats.total}
+          upcomingCount={upcomingSubscriptions.length}
+          onQuickAdd={() => setIsQuickAddModalOpen(true)}
+        />
+      )}
+
+      {/* Upcoming Renewals - Moved up for better priority */}
+      <EnhancedUpcomingRenewals
+        subscriptions={upcomingSubscriptions}
+        onEdit={handleUpcomingEdit}
+        onDelete={handleUpcomingDelete}
+        preferredCurrency={userSettings?.defaultCurrency || primarySpending?.currency || 'USD'}
+      />
 
       {/* Stats Cards grouped by currency */}
       <div className="space-y-6">
@@ -734,14 +862,6 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Enhanced Upcoming Renewals */}
-      <EnhancedUpcomingRenewals
-        subscriptions={upcomingSubscriptions}
-        onEdit={handleUpcomingEdit}
-        onDelete={handleUpcomingDelete}
-        preferredCurrency={userSettings?.defaultCurrency || primarySpending?.currency || 'USD'}
-      />
-
       {/* Budget Settings Modal */}
       <BudgetSettingsModal
         isOpen={isBudgetModalOpen}
@@ -760,6 +880,107 @@ export default function DashboardPage() {
           onSubmit={handleUpcomingUpdate}
           onCancel={handleCloseEditModal}
         />
+      </Modal>
+
+      {/* Quick Add Subscription Modal */}
+      <Modal
+        isOpen={isQuickAddModalOpen}
+        onClose={() => setIsQuickAddModalOpen(false)}
+        title="Add New Subscription"
+        size="lg"
+      >
+        <SubscriptionForm
+          onSubmit={async (data) => {
+            try {
+              await createSubscription.mutateAsync(data);
+              setIsQuickAddModalOpen(false);
+              showToast('Subscription added successfully!', 'success');
+            } catch (error: any) {
+              const errorMessage = error?.response?.data?.message || error?.response?.data?.detail || 'Failed to add subscription';
+              showToast(errorMessage, 'error');
+              throw error; // Re-throw to let form handle it
+            }
+          }}
+          onCancel={() => setIsQuickAddModalOpen(false)}
+        />
+      </Modal>
+
+      {/* Keyboard Shortcuts Modal */}
+      <Modal
+        isOpen={isKeyboardShortcutsOpen}
+        onClose={() => setIsKeyboardShortcutsOpen(false)}
+        title="Keyboard Shortcuts"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            Use these keyboard shortcuts to navigate and perform actions quickly.
+          </p>
+          
+          <div className="space-y-3">
+            <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="flex-1">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">Add New Subscription</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Open the subscription form</p>
+              </div>
+              <div className="flex items-center gap-1 ml-4">
+                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                  {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}
+                </kbd>
+                <span className="text-gray-400 dark:text-gray-500">+</span>
+                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                  N
+                </kbd>
+              </div>
+            </div>
+
+            <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="flex-1">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">Search (Coming Soon)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Quick search for subscriptions</p>
+              </div>
+              <div className="flex items-center gap-1 ml-4">
+                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                  {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}
+                </kbd>
+                <span className="text-gray-400 dark:text-gray-500">+</span>
+                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                  K
+                </kbd>
+              </div>
+            </div>
+
+            <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="flex-1">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">Show Shortcuts</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Open this help dialog</p>
+              </div>
+              <div className="ml-4">
+                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                  ?
+                </kbd>
+              </div>
+            </div>
+
+            <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="flex-1">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">Close Modal</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Close any open dialog or modal</p>
+              </div>
+              <div className="ml-4">
+                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                  Esc
+                </kbd>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+              Tip: Press <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded">?</kbd> anytime to see this help
+            </p>
+          </div>
+        </div>
       </Modal>
     </div>
   );

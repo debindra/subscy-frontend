@@ -79,9 +79,22 @@ export const MobileSubscriptionCard: React.FC<MobileSubscriptionCardProps> = ({
         <div className="flex-1 min-w-0">
           {/* Title - First Line */}
           <div className="mb-1.5">
-            <h3 className="text-base font-bold text-black dark:text-white leading-tight">
-              {subscription.name}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-black dark:text-white leading-tight">
+                {subscription.name}
+              </h3>
+              {/* Notification Needed Badge */}
+              {subscription.needToNotify && (
+                <span
+                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 font-semibold border border-red-200 dark:border-red-700 animate-pulse"
+                  aria-label="Notification reminder scheduled"
+                >
+                  <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                  </svg>
+                </span>
+              )}
+            </div>
             {subscription.plan && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subscription.plan}</p>
             )}

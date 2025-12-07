@@ -8,7 +8,7 @@ import { ExportButton } from '@/components/dashboard/ExportButton';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/lib/context/ToastContext';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { usePlanFeatures } from '@/lib/hooks/usePlanFeatures';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
 import { useSubscriptions } from '@/lib/hooks/useSubscriptions';
@@ -21,6 +21,7 @@ import { useDashboardSpending } from '@/lib/hooks/useDashboardAnalytics';
 import { settingsApi, UserSettings } from '@/lib/api/settings';
 import { SpendingSummaryResponse } from '@/lib/api/analytics';
 import { useViewMode } from '@/lib/context/ViewModeContext';
+import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 
 export default function SubscriptionsPage() {
   const PAGE_SIZE = 6;
@@ -46,6 +47,7 @@ export default function SubscriptionsPage() {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { showToast } = useToast();
   const { hasCategorization } = usePlanFeatures();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
@@ -91,6 +93,28 @@ export default function SubscriptionsPage() {
       setCurrency('all');
     }
   }, [searchParamsString]);
+
+  // Handle action=add to open the modal
+  useEffect(() => {
+    const actionParam = searchParams.get('action');
+    if (actionParam === 'add' && !isModalOpen) {
+      setIsModalOpen(true);
+      setEditingSubscription(undefined);
+      // Clean up the URL by removing the action parameter
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.delete('action');
+      const newQuery = newSearchParams.toString();
+      router.replace(`/dashboard/subscriptions${newQuery ? `?${newQuery}` : ''}`, { scroll: false });
+    }
+  }, [searchParamsString, isModalOpen, router, searchParams]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onNewSubscription: () => {
+      setIsModalOpen(true);
+      setEditingSubscription(undefined);
+    },
+  });
 
   // Prevent body scroll when mobile filter drawer is open
   useEffect(() => {

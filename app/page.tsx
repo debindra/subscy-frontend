@@ -835,16 +835,25 @@ export default function Home() {
                 </p>
               </div>
               <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
-                {FEATURES.map((feature, index) => (
-                  <article
-                    key={feature.title}
-                    className="group rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 transition-all duration-300 hover:border-primary-300 hover:shadow-lg"
-                  >
-                    <div className="text-4xl mb-6">{feature.icon}</div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
-                    <p className="text-base leading-relaxed text-slate-600">{feature.description}</p>
-                  </article>
-                ))}
+                {FEATURES.map((feature, index) => {
+                  // Safely render icon - handle both string and object cases
+                  const iconContent = typeof feature.icon === 'string' 
+                    ? feature.icon 
+                    : typeof feature.icon === 'object' && feature.icon !== null
+                    ? (feature.icon as any).icon || (feature.icon as any).text || ''
+                    : String(feature.icon || '');
+                  
+                  return (
+                    <article
+                      key={feature.title}
+                      className="group rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 transition-all duration-300 hover:border-primary-300 hover:shadow-lg"
+                    >
+                      <div className="text-4xl mb-6">{iconContent}</div>
+                      <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
+                      <p className="text-base leading-relaxed text-slate-600">{feature.description}</p>
+                    </article>
+                  );
+                })}
               </div>
             </div>
           </section>

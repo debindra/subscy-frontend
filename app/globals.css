@@ -77,6 +77,18 @@ body {
     -webkit-user-select: auto;
     user-select: auto;
   }
+
+  /* Ensure minimum touch target size (44x44px) */
+  button, a[role="button"], [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better touch targets for interactive elements */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
 }
 
 /* Prevent zoom on input focus on iOS */
@@ -377,6 +389,35 @@ body {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  /* Improve spacing on mobile */
+  .space-y-8 > * + * {
+    margin-top: 1.5rem;
+  }
+
+  /* Better card padding on mobile */
+  .card-mobile {
+    padding: 1rem;
+  }
+
+  /* Larger text on mobile for better readability */
+  h1 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  /* Improve button spacing on mobile */
+  button + button {
+    margin-left: 0.5rem;
   }
 }
 

@@ -20,7 +20,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const showToast = useCallback((message: string, type: ToastType) => {
     const id = Math.random().toString(36).substring(7);
-    setToasts((prev) => [...prev, { id, message, type }]);
+    // Safely convert message to string if it's accidentally an object
+    const messageString = typeof message === 'string' 
+      ? message 
+      : typeof message === 'object' && message !== null
+      ? (message as any).text || (message as any).message || 'Notification'
+      : String(message);
+    setToasts((prev) => [...prev, { id, message: messageString, type }]);
   }, []);
 
   const removeToast = useCallback((id: string) => {

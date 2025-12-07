@@ -52,12 +52,19 @@ export const Toast: React.FC<ToastProps> = ({
     ),
   };
 
+  // Safely convert message to string if it's an object
+  const messageText = typeof message === 'string' 
+    ? message 
+    : typeof message === 'object' && message !== null
+    ? (message as any).text || (message as any).message || JSON.stringify(message)
+    : String(message);
+
   return (
     <div className={`${typeStyles[type]} text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out animate-slide-in flex items-center space-x-3 min-w-[300px] max-w-md`}>
       <div className="flex-shrink-0">
         {icons[type]}
       </div>
-      <p className="flex-1 font-medium">{message}</p>
+      <p className="flex-1 font-medium">{messageText}</p>
       <button
         onClick={onClose}
         className="flex-shrink-0 hover:bg-white/20 rounded p-1 transition-colors"

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Subscription } from '@/lib/api/subscriptions';
 import { SubscriptionCard } from './SubscriptionCard';
 import { Card } from '../ui/Card';
@@ -190,20 +191,31 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
           ))}
         </div>
       ) : (
-        <Card className="text-center py-16 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-full">
-              <svg className="w-12 h-12 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+        <Card className="text-center py-16 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col items-center">
+            <div className="flex justify-center mb-6">
+              <div className="p-6 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-800/40 rounded-full shadow-lg">
+                <svg className="w-16 h-16 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
             </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+              All Clear! 🎉
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
+              No upcoming renewals or trial expirations in the next {timeRange} days. You're all set!
+            </p>
+            <Link
+              href="/dashboard/subscriptions"
+              className="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Manage Subscriptions
+            </Link>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            All Clear!
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400">
-            No upcoming renewals or trial expirations in the next {timeRange} days
-          </p>
         </Card>
       )}
     </div>

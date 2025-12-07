@@ -70,6 +70,10 @@ export const CompactSubscriptionCard: React.FC<CompactSubscriptionCardProps> = (
                 {subscription.isTrial && (
                   <div className="w-2 h-2 rounded-full bg-blue-500" />
                 )}
+                {/* Notification Needed Indicator */}
+                {subscription.needToNotify && (
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" title="Reminder scheduled" />
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">

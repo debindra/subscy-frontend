@@ -8,6 +8,7 @@ import { Card } from '../ui/Card';
 import { useTheme } from '@/lib/context/ThemeContext';
 import { useExchangeRates, calculateConversion } from '@/lib/hooks/useExchangeRates';
 import { formatCurrency } from '@/lib/utils/format';
+import Link from 'next/link';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title);
 
@@ -167,12 +168,19 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
         padding: 12,
         displayColors: true,
         callbacks: {
+          title: function(context: any) {
+            return context[0]?.label || 'Category';
+          },
           label: function(context: any) {
             const label = context.label || '';
             const value = context.parsed || 0;
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
             const percentage = ((value / total) * 100).toFixed(1);
-            return `${label}: ${formatCurrency(value, targetCurrency)} (${percentage}%)`;
+            return [
+              `${label}`,
+              `Amount: ${formatCurrency(value, targetCurrency)}`,
+              `Percentage: ${percentage}%`,
+            ];
           },
         },
       },
@@ -199,8 +207,23 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
         padding: 12,
         displayColors: false,
         callbacks: {
+          title: function(context: any) {
+            return context[0]?.label || 'Month';
+          },
           label: function(context: any) {
-            return `Spending: ${formatCurrency(context.parsed.y, targetCurrency)}`;
+            const value = context.parsed.y;
+            const previousValue = context.dataset.data[context.dataIndex - 1];
+            let changeText = '';
+            if (previousValue !== undefined) {
+              const change = value - previousValue;
+              const changePercent = previousValue > 0 ? ((change / previousValue) * 100).toFixed(1) : '0.0';
+              const isPositive = change >= 0;
+              changeText = ` (${isPositive ? '+' : ''}${formatCurrency(change, targetCurrency)}, ${isPositive ? '+' : ''}${changePercent}%)`;
+            }
+            return [
+              `Spending: ${formatCurrency(value, targetCurrency)}`,
+              previousValue !== undefined ? `Change: ${changeText}` : '',
+            ].filter(Boolean);
           },
         },
       },
@@ -240,7 +263,7 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
-      <Card variant="glass" className="transition-all duration-300 transform hover:-translate-y-1">
+      <Card variant="glass" className="transition-all duration-300 transform hover:-translate-y-1 touch-manipulation">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">Spending by Category</h3>
           <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
@@ -254,16 +277,34 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
           {convertedCategoryData.length > 0 && !ratesLoading ? (
             <Pie key={`pie-${chartKey}`} data={pieData} options={pieOptions} />
           ) : (
-            <div className="text-center py-12">
-              <div className="text-gray-400 dark:text-gray-600 text-5xl mb-4">📊</div>
-              <p className="text-gray-500 dark:text-gray-400 font-medium">No category data available</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Add subscriptions to see your spending breakdown</p>
+            <div className="text-center py-12 px-4">
+              <div className="flex justify-center mb-6">
+                <div className="p-4 bg-primary-100 dark:bg-primary-900/30 rounded-full">
+                  <svg className="w-12 h-12 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                  </svg>
+                </div>
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Category Data Yet</h4>
+              <p className="text-gray-500 dark:text-gray-400 mb-4 max-w-sm mx-auto">
+                Add subscriptions with categories to see your spending breakdown by category
+              </p>
+              <Link
+                href="/dashboard/subscriptions"
+                className="inline-flex items-center px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Add Subscription
+                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
             </div>
           )}
         </div>
       </Card>
 
-      <Card variant="glass" className="transition-all duration-300 transform hover:-translate-y-1">
+      <Card variant="glass" className="transition-all duration-300 transform hover:-translate-y-1 touch-manipulation">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">Monthly Trend</h3>
           <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
@@ -276,11 +317,28 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
           {convertedMonthlyData.length > 0 && !ratesLoading ? (
             <Line key={`line-${chartKey}`} data={lineData} options={lineOptions} />
           ) : (
-            <div className="flex items-center justify-center h-full text-center">
+            <div className="flex items-center justify-center h-full text-center px-4">
               <div>
-                <div className="text-gray-400 dark:text-gray-600 text-5xl mb-4">📈</div>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">No trend data available</p>
-                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Your spending history will appear here</p>
+                <div className="flex justify-center mb-6">
+                  <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-full">
+                    <svg className="w-12 h-12 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                  </div>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Trend Data Yet</h4>
+                <p className="text-gray-500 dark:text-gray-400 mb-4 max-w-sm mx-auto">
+                  Your monthly spending trends will appear here as you track your subscriptions over time
+                </p>
+                <Link
+                  href="/dashboard/subscriptions"
+                  className="inline-flex items-center px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  View Subscriptions
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
               </div>
             </div>
           )}
