@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { supabase } from '../supabase';
+import { logger } from '../utils/logger';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -106,7 +107,7 @@ apiClient.interceptors.response.use(
       response.data?.detail?.includes('csrf') ||
       response.data?.detail?.includes('Invalid or missing CSRF token')
     )) {
-      console.warn('CSRF token error, attempting to refresh token...');
+      logger.warn('CSRF token error, attempting to refresh token...');
 
       try {
         // Clear the cached token
@@ -133,7 +134,7 @@ apiClient.interceptors.response.use(
           return apiClient.request(retryConfig);
         }
       } catch (csrfError: any) {
-        console.error('Failed to refresh CSRF token:', csrfError);
+        logger.error('Failed to refresh CSRF token', csrfError);
         // If we can't refresh, show error to user
         if (typeof window !== 'undefined') {
           alert('Security session expired. Please refresh the page.');

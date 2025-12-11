@@ -5,6 +5,7 @@ import { supabase } from '../supabase';
 import { businessApi } from '../api/business';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '../utils/passwordRules';
 import { fetchCsrfToken } from '../utils/csrf';
+import { logger } from '../utils/logger';
 
 type AccountType = 'free' | 'pro' | 'family' | 'personal' | 'business';
 
@@ -67,7 +68,7 @@ export function useAuth() {
           setError(null); // Clear any previous errors
         }
       } catch (error) {
-        console.error('Error initializing auth session:', error);
+        logger.error('Error initializing auth session', error);
         // Always set loading to false, even on error
         if (isMounted) {
           setUser(null);
@@ -175,7 +176,7 @@ export function useAuth() {
         );
       }
     } else if (accountType === 'business' && !data.session) {
-      console.warn('Business profile will be created after email confirmation.');
+      logger.warn('Business profile will be created after email confirmation.');
     }
 
     // Fetch CSRF token if user is automatically signed in
@@ -183,7 +184,7 @@ export function useAuth() {
       try {
         await fetchCsrfToken();
       } catch (csrfError) {
-        console.warn('Failed to fetch CSRF token after signup:', csrfError);
+        logger.warn('Failed to fetch CSRF token after signup', { error: csrfError });
       }
     }
 
@@ -212,7 +213,7 @@ export function useAuth() {
       try {
         await fetchCsrfToken();
       } catch (csrfError) {
-        console.warn('Failed to fetch CSRF token after login:', csrfError);
+        logger.warn('Failed to fetch CSRF token after login', { error: csrfError });
         // Continue even if CSRF token fetch fails
       }
     }

@@ -37,6 +37,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { getUserDisplayName } from '@/lib/utils/userUtils';
+import { logger } from '@/lib/utils/logger';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -111,7 +112,7 @@ export default function DashboardPage() {
         const response = await settingsApi.getSettings();
         setUserSettings(response.data);
       } catch (error) {
-        console.error('Failed to load user settings for dashboard', error);
+        logger.error('Failed to load user settings for dashboard', error);
       }
     };
 
@@ -165,7 +166,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (categoryError && (categoryError as any)?.response?.status === 403) {
-      console.warn('Category analytics not available - user may need to upgrade plan');
+      logger.warn('Category analytics not available - user may need to upgrade plan');
       showToast('Category analytics requires Pro or Ultimate plan', 'info');
     }
   }, [categoryError, showToast]);
@@ -237,7 +238,7 @@ export default function DashboardPage() {
           setMonths(limit);
         }
       } catch (error) {
-        console.error('Failed to load plan information', error);
+        logger.error('Failed to load plan information', error);
       } finally {
         setPlanLoading(false);
       }
@@ -360,7 +361,7 @@ export default function DashboardPage() {
       setEditingSubscription(undefined);
       showToast('Subscription updated successfully!', 'success');
     } catch (error) {
-      console.error('Error updating subscription from dashboard:', error);
+      logger.error('Error updating subscription from dashboard', error);
       showToast('Failed to update subscription', 'error');
     }
   };
@@ -372,7 +373,7 @@ export default function DashboardPage() {
       await deleteSubscription.mutateAsync(id);
       showToast('Subscription deleted successfully', 'success');
     } catch (error) {
-      console.error('Error deleting subscription from dashboard:', error);
+      logger.error('Error deleting subscription from dashboard', error);
       showToast('Failed to delete subscription', 'error');
     }
   };

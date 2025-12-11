@@ -23,6 +23,7 @@ import { SpendingSummaryResponse } from '@/lib/api/analytics';
 import { useViewMode } from '@/lib/context/ViewModeContext';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
+import { logger } from '@/lib/utils/logger';
 
 export default function SubscriptionsPage() {
   const PAGE_SIZE = 6;
@@ -66,7 +67,7 @@ export default function SubscriptionsPage() {
         const response = await settingsApi.getSettings();
         setUserSettings(response.data);
       } catch (error) {
-        console.error('Failed to load user settings', error);
+        logger.error('Failed to load user settings', error);
       }
     };
     loadSettings();
@@ -158,7 +159,7 @@ export default function SubscriptionsPage() {
       showToast(`"${data.name}" subscription created successfully!`, 'success');
     } catch (error) {
       showToast(`Failed to create "${data.name}" subscription`, 'error');
-      console.error('Error creating subscription:', error);
+      logger.error('Error creating subscription', error);
       throw error;
     }
   };
@@ -176,7 +177,7 @@ export default function SubscriptionsPage() {
       showToast(`"${data.name}" subscription updated successfully!`, 'success');
     } catch (error) {
       showToast(`Failed to update "${data.name}" subscription`, 'error');
-      console.error('Error updating subscription:', error);
+      logger.error('Error updating subscription', error);
       throw error;
     }
   };
@@ -194,7 +195,7 @@ export default function SubscriptionsPage() {
       showToast(`"${subscription.name}" subscription deleted successfully`, 'success');
     } catch (error) {
       showToast(`Failed to delete "${subscription.name}" subscription`, 'error');
-      console.error('Error deleting subscription:', error);
+      logger.error('Error deleting subscription', error);
     }
   };
 

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { currencyApi } from '@/lib/api/currency';
+import { logger } from '@/lib/utils/logger';
 
 interface CurrencyConversionParams {
   amount: number;
@@ -23,7 +24,7 @@ export const useCurrencyConversion = (params: CurrencyConversionParams) => {
         );
         return response.data.convertedAmount;
       } catch (error) {
-        console.error('Currency conversion error:', error);
+        logger.error('Currency conversion error', error);
         // Fallback: return original amount if conversion fails
         return params.amount;
       }
@@ -59,7 +60,7 @@ export const useBulkCurrencyConversion = (params: BulkCurrencyConversionParams) 
         );
         return response.data.totalConvertedAmount;
       } catch (error) {
-        console.error('Bulk currency conversion error:', error);
+        logger.error('Bulk currency conversion error', error);
 
         // Fallback: try individual conversions if bulk fails
         try {
@@ -77,7 +78,7 @@ export const useBulkCurrencyConversion = (params: BulkCurrencyConversionParams) 
           const results = await Promise.all(individualPromises);
           return results.reduce((sum, amount) => sum + amount, 0);
         } catch (fallbackError) {
-          console.error('Individual conversion fallback also failed:', fallbackError);
+          logger.error('Individual conversion fallback also failed', fallbackError);
 
           // Final fallback: simple sum (current behavior)
           return Object.values(params.amountsByCurrency).reduce((sum, amount) => sum + amount, 0);
