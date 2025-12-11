@@ -18,13 +18,10 @@ export const Toast: React.FC<ToastProps> = ({
   duration = 5000,
 }) => {
   useEffect(() => {
-    console.log('🔥 Toast mounted:', message, 'duration:', duration);
     const timer = setTimeout(() => {
-      console.log('🔥 Toast timer expired, closing:', message);
       onClose();
     }, duration);
     return () => {
-      console.log('🔥 Toast unmounting:', message);
       clearTimeout(timer);
     };
   }, [duration, onClose, message]);

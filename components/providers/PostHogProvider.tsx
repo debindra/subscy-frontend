@@ -234,23 +234,26 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
           setIsInitialized(true);
           
           // Wrap PostHog's capture method to catch errors
-          const originalCapture = ph.capture.bind(ph);
-          ph.capture = function(...args: any[]) {
-            try {
-              return originalCapture.apply(ph, args as any);
-            } catch (error: any) {
-              const errorMsg = String(error?.message || error || '').toLowerCase();
-              if (
-                errorMsg.includes('err_blocked_by_client') ||
-                errorMsg.includes('failed to fetch') ||
-                errorMsg.includes('networkerror')
-              ) {
-                isPostHogBlocked = true;
-                return; // Silently fail
+          // Only wrap if capture method exists
+          if (ph && typeof ph.capture === 'function') {
+            const originalCapture = ph.capture.bind(ph);
+            ph.capture = function(...args: any[]) {
+              try {
+                return originalCapture.apply(ph, args as any);
+              } catch (error: any) {
+                const errorMsg = String(error?.message || error || '').toLowerCase();
+                if (
+                  errorMsg.includes('err_blocked_by_client') ||
+                  errorMsg.includes('failed to fetch') ||
+                  errorMsg.includes('networkerror')
+                ) {
+                  isPostHogBlocked = true;
+                  return; // Silently fail
+                }
+                throw error; // Re-throw non-blocked errors
               }
-              throw error; // Re-throw non-blocked errors
-            }
-          };
+            };
+          }
           
           if (process.env.NODE_ENV === 'development') {
             console.log('✅ PostHog initialized successfully');
