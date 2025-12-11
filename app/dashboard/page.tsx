@@ -35,6 +35,7 @@ import { useSubscriptionStats } from '@/lib/hooks/useSubscriptionStats';
 import { settingsApi, UserSettings } from '@/lib/api/settings';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
+import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { getUserDisplayName } from '@/lib/utils/userUtils';
 
 function getGreeting(): string {
@@ -68,6 +69,7 @@ export default function DashboardPage() {
   const { hasCategorization, loading: planFeaturesLoading } = usePlanFeatures();
   const { user } = useAuth();
   const router = useRouter();
+  const isMobile = useIsMobile();
   
   const displayName = getUserDisplayName(user);
 
@@ -116,11 +118,16 @@ export default function DashboardPage() {
     loadSettings();
   }, []);
 
-  // Keyboard shortcuts with page-specific handlers
-  useKeyboardShortcuts({
-    onNewSubscription: () => setIsQuickAddModalOpen(true),
-    onShowShortcuts: () => setIsKeyboardShortcutsOpen(true),
-  });
+  // Keyboard shortcuts with page-specific handlers - disabled on mobile
+  useKeyboardShortcuts(
+    isMobile
+      ? { disabled: true } // Disable all shortcuts on mobile
+      : {
+          onNewSubscription: () => setIsQuickAddModalOpen(true),
+          onShowShortcuts: () => setIsKeyboardShortcutsOpen(true),
+          // Search is handled globally in layout, but we can override if needed
+        }
+  );
 
   // Handle Escape key for closing modals (page-specific)
   useEffect(() => {
@@ -510,29 +517,20 @@ export default function DashboardPage() {
             )}
           </div>
           <div className="flex items-center gap-3">
-            {/* Keyboard Shortcuts Button - Desktop */}
-            <button
-              onClick={() => setIsKeyboardShortcutsOpen(true)}
-              className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-200 dark:border-gray-700"
-              title="Keyboard shortcuts (Press ?)"
-              aria-label="Show keyboard shortcuts"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-              <span className="hidden lg:inline text-xs font-medium">Shortcuts</span>
-            </button>
-            {/* Keyboard Shortcuts Button - Mobile */}
-            <button
-              onClick={() => setIsKeyboardShortcutsOpen(true)}
-              className="sm:hidden p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              title="Keyboard shortcuts"
-              aria-label="Show keyboard shortcuts"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-            </button>
+            {/* Keyboard Shortcuts Button - Desktop only (hidden on mobile since shortcuts are disabled) */}
+            {!isMobile && (
+              <button
+                onClick={() => setIsKeyboardShortcutsOpen(true)}
+                className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-200 dark:border-gray-700"
+                title="Keyboard shortcuts (Press ?)"
+                aria-label="Show keyboard shortcuts"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <span className="hidden lg:inline text-xs font-medium">Shortcuts</span>
+              </button>
+            )}
             {/* Mobile collapse button */}
             <button
               onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
@@ -550,7 +548,7 @@ export default function DashboardPage() {
             </button>
             <Link
               href="/dashboard/subscriptions"
-              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white rounded-lg hover:from-brand-accent-600 hover:to-brand-accent-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
+              className="w-full md:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white rounded-lg hover:from-brand-accent-600 hover:to-brand-accent-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
             >
               Manage Subscriptions
               <svg className="w-5 h-5 ml-2 transform -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -936,8 +934,8 @@ export default function DashboardPage() {
 
             <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
               <div className="flex-1">
-                <p className="font-semibold text-gray-900 dark:text-white text-sm">Search (Coming Soon)</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Quick search for subscriptions</p>
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">Spotlight Search</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Quick search for subscriptions, actions, and navigation (Web only)</p>
               </div>
               <div className="flex items-center gap-1 ml-4">
                 <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">

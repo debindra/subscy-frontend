@@ -93,7 +93,7 @@ export const SubscriptionHealth: React.FC<SubscriptionHealthProps> = ({
                   {stats.active}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  ({Math.round((stats.active / stats.total) * 100)}%)
+                  ({stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}%)
                 </span>
               </div>
             </div>
@@ -104,14 +104,14 @@ export const SubscriptionHealth: React.FC<SubscriptionHealthProps> = ({
                   {stats.inactive}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  ({Math.round((stats.inactive / stats.total) * 100)}%)
+                  ({stats.total > 0 ? Math.round((stats.inactive / stats.total) * 100) : 0}%)
                 </span>
               </div>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${(stats.active / stats.total) * 100}%` }}
+                style={{ width: `${stats.total > 0 ? (stats.active / stats.total) * 100 : 0}%` }}
               />
             </div>
           </div>
@@ -167,7 +167,7 @@ export const SubscriptionHealth: React.FC<SubscriptionHealthProps> = ({
                       {count}
                     </span>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      ({Math.round((count / stats.active) * 100)}%)
+                      ({stats.active > 0 ? Math.round((count / stats.active) * 100) : 0}%)
                     </span>
                   </div>
                 </div>

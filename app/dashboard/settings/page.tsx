@@ -93,9 +93,28 @@ export default function ReminderSettingsPage() {
     };
 
     try {
-      await settingsApi.updateSettings(payload);
-      showToast('Reminder settings saved', 'success');
+      console.log('Saving reminder settings...', payload);
+      const response = await settingsApi.updateSettings(payload);
+      console.log('Settings saved successfully:', response.data);
+      const updatedSettings = response.data;
+      
+      // Update local state with the saved settings
+      if (updatedSettings) {
+        setSettings(updatedSettings);
+        setFormData({
+          timezone: updatedSettings.timezone,
+          notificationTime: updatedSettings.notificationTime || DEFAULT_NOTIFICATION_TIME,
+          defaultCurrency: updatedSettings.defaultCurrency ?? 'USD',
+          emailAlertEnabled: updatedSettings.emailAlertEnabled ?? true,
+          pushNotificationEnabled: updatedSettings.pushNotificationEnabled ?? true,
+        });
+      }
+      
+      // Show success message
+      console.log('Showing success toast...');
+      showToast('Reminder settings saved successfully!', 'success');
     } catch (err: any) {
+      console.error('Error saving reminder settings:', err);
       const message =
         err?.response?.data?.detail ||
         err?.response?.data?.message ||

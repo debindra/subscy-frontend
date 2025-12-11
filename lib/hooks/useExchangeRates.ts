@@ -1,10 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-
-export interface ExchangeRatesResponse {
-  base: string;
-  rates: Record<string, number>;
-  timestamp: number;
-}
+import { currencyApi } from '@/lib/api/currency';
+import type { ExchangeRatesResponse } from '@/lib/api/currency';
 
 export interface UseExchangeRatesParams {
   baseCurrency?: string;
@@ -18,23 +14,8 @@ export const useExchangeRates = (params: UseExchangeRatesParams = {}) => {
     queryKey: ['exchange-rates', baseCurrency, targetCurrencies?.sort()],
     queryFn: async () => {
       try {
-        // Build query parameters
-        const queryParams = new URLSearchParams({
-          base_currency: baseCurrency,
-        });
-
-        if (targetCurrencies && targetCurrencies.length > 0) {
-          queryParams.append('target_currencies', targetCurrencies.join(','));
-        }
-
-        const response = await fetch(`/api/currency/rates?${queryParams}`);
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch exchange rates');
-        }
-
-        const data = await response.json();
-        return data as ExchangeRatesResponse;
+        const response = await currencyApi.getExchangeRates(baseCurrency, targetCurrencies);
+        return response.data;
       } catch (error) {
         console.error('Exchange rates fetch error:', error);
         throw error;

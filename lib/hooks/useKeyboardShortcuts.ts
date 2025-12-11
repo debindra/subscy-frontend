@@ -8,15 +8,21 @@ interface UseKeyboardShortcutsOptions {
   onNewSubscription?: () => void;
   onSearch?: () => void;
   onShowShortcuts?: () => void;
+  disabled?: boolean; // Option to disable all shortcuts
 }
 
 export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const { showToast } = useToast();
-  const { onNewSubscription, onSearch, onShowShortcuts } = options;
+  const { onNewSubscription, onSearch, onShowShortcuts, disabled } = options;
 
   useEffect(() => {
+    // Don't register shortcuts if disabled
+    if (disabled) {
+      return;
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // More precise input detection - only skip if actually typing in an input field
       const target = e.target as HTMLElement;
@@ -89,6 +95,6 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     // Use capture phase to catch events early, before browser defaults
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [router, pathname, showToast, onNewSubscription, onSearch, onShowShortcuts]);
+  }, [router, pathname, showToast, onNewSubscription, onSearch, onShowShortcuts, disabled]);
 }
 

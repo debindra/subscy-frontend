@@ -71,12 +71,31 @@ export const Navbar: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/dashboard" className="flex items-center group" aria-label="Subsy Home">
+              {/* Mobile Logo */}
+              <img
+                src={theme === 'dark' ? '/subsy-logo-darktheme.png' : '/subsy-logo.png'}
+                alt="Subsy logo"
+                width={120}
+                height={36}
+                className="md:hidden h-10 w-auto transition-transform duration-200 group-hover:scale-105"
+                loading="eager"
+                onError={(e) => {
+                  // Fallback: try to reload or use a different path
+                  const target = e.target as HTMLImageElement;
+                  if (!target.src.includes('data:')) {
+                    target.src = theme === 'dark' 
+                      ? '/subsy-logo-darktheme.png?t=' + Date.now()
+                      : '/subsy-logo.png?t=' + Date.now();
+                  }
+                }}
+              />
+              {/* Desktop Logo */}
               <img
                 src={theme === 'dark' ? '/subsy-full-logo-darktheme.png' : '/subsy-full-logo.png'}
                 alt="Subsy logo"
                 width={120}
                 height={36}
-                className="h-12 w-auto transition-transform duration-200 group-hover:scale-105"
+                className="hidden md:block h-10 w-auto transition-transform duration-200 group-hover:scale-105"
                 loading="eager"
                 onError={(e) => {
                   // Fallback: try to reload or use a different path

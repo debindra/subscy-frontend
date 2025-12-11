@@ -15,12 +15,19 @@ export const Toast: React.FC<ToastProps> = ({
   message,
   type,
   onClose,
-  duration = 3000,
+  duration = 5000,
 }) => {
   useEffect(() => {
-    const timer = setTimeout(onClose, duration);
-    return () => clearTimeout(timer);
-  }, [duration, onClose]);
+    console.log('🔥 Toast mounted:', message, 'duration:', duration);
+    const timer = setTimeout(() => {
+      console.log('🔥 Toast timer expired, closing:', message);
+      onClose();
+    }, duration);
+    return () => {
+      console.log('🔥 Toast unmounting:', message);
+      clearTimeout(timer);
+    };
+  }, [duration, onClose, message]);
 
   const typeStyles = {
     success: 'bg-green-500 dark:bg-green-600',
@@ -60,7 +67,11 @@ export const Toast: React.FC<ToastProps> = ({
     : String(message);
 
   return (
-    <div className={`${typeStyles[type]} text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out animate-slide-in flex items-center space-x-3 min-w-[300px] max-w-md`}>
+    <div 
+      className={`${typeStyles[type]} text-white px-6 py-4 rounded-lg shadow-2xl transition-all duration-300 ease-in-out animate-slide-in flex items-center space-x-3 min-w-[300px] max-w-md`}
+      role="alert"
+      aria-live="assertive"
+    >
       <div className="flex-shrink-0">
         {icons[type]}
       </div>
@@ -68,6 +79,7 @@ export const Toast: React.FC<ToastProps> = ({
       <button
         onClick={onClose}
         className="flex-shrink-0 hover:bg-white/20 rounded p-1 transition-colors"
+        aria-label="Close notification"
       >
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

@@ -1,5 +1,6 @@
 import { Subscription } from '../api/subscriptions';
 import { formatCurrency, formatDate } from './format';
+import DOMPurify from 'dompurify';
 
 export function exportToCSV(subscriptions: Subscription[], filename: string = 'subscriptions.csv') {
   // CSV headers
@@ -65,7 +66,7 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
   const { subscriptions, monthlyTotal, yearlyTotal, totalSubscriptions, activeSubscriptions, currency } = data;
   const displayCurrency = currency || 'USD';
 
-  // Generate HTML for the summary
+  // Generate HTML for the summary with escaped user data
   return `
 <!DOCTYPE html>
 <html>
@@ -253,17 +254,17 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
   <div class="container">
     <div class="header">
       <h1>📄 Subscription Report</h1>
-      <p>Generated on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}${currency ? ` • Currency: ${currency}` : ''}</p>
+      <p>Generated on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}${currency ? ` • Currency: ${escapeHTML(currency)}` : ''}</p>
     </div>
 
     <div class="summary-grid">
       <div class="summary-card">
-        <h3>Monthly Total${currency ? ` (${currency})` : ''}</h3>
-        <p>${formatCurrency(monthlyTotal, displayCurrency)}</p>
+        <h3>Monthly Total${currency ? ` (${escapeHTML(currency)})` : ''}</h3>
+        <p>${escapeHTML(formatCurrency(monthlyTotal, displayCurrency))}</p>
       </div>
       <div class="summary-card">
-        <h3>Yearly Total${currency ? ` (${currency})` : ''}</h3>
-        <p>${formatCurrency(yearlyTotal, displayCurrency)}</p>
+        <h3>Yearly Total${currency ? ` (${escapeHTML(currency)})` : ''}</h3>
+        <p>${escapeHTML(formatCurrency(yearlyTotal, displayCurrency))}</p>
       </div>
       <div class="summary-card">
         <h3>Total Subscriptions</h3>
@@ -281,16 +282,16 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
         <div class="subscription-item">
           <div class="subscription-info">
             <h4>
-              ${sub.name}
+              ${escapeHTML(sub.name)}
               <span class="badge ${sub.isActive ? 'badge-active' : 'badge-inactive'}">
                 ${sub.isActive ? 'Active' : 'Inactive'}
               </span>
             </h4>
-            <p>${sub.category} • ${sub.billingCycle} • Next renewal: ${formatDate(sub.nextRenewalDate)}</p>
-            ${sub.description ? `<p style="margin-top: 6px; color: #9ca3af;">${sub.description}</p>` : ''}
+            <p>${escapeHTML(sub.category)} • ${escapeHTML(sub.billingCycle)} • Next renewal: ${escapeHTML(formatDate(sub.nextRenewalDate))}</p>
+            ${sub.description ? `<p style="margin-top: 6px; color: #9ca3af;">${escapeHTML(sub.description)}</p>` : ''}
           </div>
           <div class="subscription-amount">
-            ${formatCurrency(sub.amount, sub.currency)}
+            ${escapeHTML(formatCurrency(sub.amount, sub.currency))}
           </div>
         </div>
       `).join('')}
@@ -306,12 +307,47 @@ export function exportSummaryToHTML(data: ExportSummaryData): string {
   `.trim();
 }
 
+/**
+ * Escapes HTML entities to prevent XSS attacks
+ */
+function escapeHTML(text: string): string {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/**
+ * Sanitizes HTML content to prevent XSS attacks
+ */
+function sanitizeHTML(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'strong', 'em', 'b', 'i', 'u', 'a', 'ul', 'ol', 'li',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'img', 'br', 'hr', 'style', 'meta', 'title', 'link'
+    ],
+    ALLOWED_ATTR: [
+      'class', 'style', 'href', 'target', 'src', 'alt', 'title',
+      'width', 'height', 'border', 'cellpadding', 'cellspacing',
+      'colspan', 'rowspan'
+    ],
+    ALLOW_DATA_ATTR: false,
+    USE_PROFILES: { html: true }
+  });
+}
+
 export function printHTML(htmlContent: string) {
   const printWindow = window.open('', '_blank');
   if (printWindow) {
-    printWindow.document.write(htmlContent);
+    // Sanitize HTML before writing to document
+    const sanitizedContent = sanitizeHTML(htmlContent);
+
+    // Use safer alternative to document.write
+    printWindow.document.open();
+    printWindow.document.write(sanitizedContent);
     printWindow.document.close();
-    
+
     // Wait for content to load before printing
     printWindow.onload = () => {
       printWindow.print();
@@ -369,7 +405,10 @@ export async function downloadPDFFromHTML(htmlContent: string, filename: string 
   container.style.top = '0';
   container.style.width = '794px'; // A4 width at 96 DPI approx
   container.style.background = '#ffffff';
-  container.innerHTML = htmlContent;
+
+  // Sanitize HTML before setting innerHTML
+  const sanitizedContent = sanitizeHTML(htmlContent);
+  container.innerHTML = sanitizedContent;
   document.body.appendChild(container);
 
   // Wait for images and content to load

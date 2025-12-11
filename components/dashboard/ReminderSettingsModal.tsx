@@ -6,6 +6,7 @@ import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Switch } from '../ui/Switch';
+import { useToast } from '@/lib/context/ToastContext';
 
 interface ReminderSettingsModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export const ReminderSettingsModal: React.FC<ReminderSettingsModalProps> = ({
   onClose,
   onSave,
 }) => {
+  const { showToast } = useToast();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [formData, setFormData] = useState<Pick<UpdateSettingsData, 'timezone' | 'notificationTime' | 'emailAlertEnabled' | 'pushNotificationEnabled'>>({
     timezone: null,
@@ -89,11 +91,30 @@ export const ReminderSettingsModal: React.FC<ReminderSettingsModalProps> = ({
     };
 
     try {
-      await settingsApi.updateSettings(payload);
+      const response = await settingsApi.updateSettings(payload);
+      const updatedSettings = response.data;
+      
+      // Update local state with the saved settings
+      if (updatedSettings) {
+        setSettings(updatedSettings);
+        setFormData({
+          timezone: updatedSettings.timezone,
+          notificationTime: updatedSettings.notificationTime || DEFAULT_NOTIFICATION_TIME,
+          emailAlertEnabled: updatedSettings.emailAlertEnabled ?? true,
+          pushNotificationEnabled: updatedSettings.pushNotificationEnabled ?? true,
+        });
+      }
+      
+      // Show success message
+      console.log('Showing success toast in modal...');
+      showToast('Reminder settings saved successfully!', 'success');
       if (onSave) onSave();
       onClose();
     } catch (err: any) {
-      setError(err?.response?.data?.detail || err?.response?.data?.message || 'Failed to save reminder settings');
+      console.error('Error saving reminder settings:', err);
+      const message = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to save reminder settings';
+      setError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }

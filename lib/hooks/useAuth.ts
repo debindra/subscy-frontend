@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../supabase';
 import { businessApi } from '../api/business';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '../utils/passwordRules';
+import { fetchCsrfToken } from '../utils/csrf';
 
 type AccountType = 'free' | 'pro' | 'family' | 'personal' | 'business';
 
@@ -177,6 +178,15 @@ export function useAuth() {
       console.warn('Business profile will be created after email confirmation.');
     }
 
+    // Fetch CSRF token if user is automatically signed in
+    if (data.session) {
+      try {
+        await fetchCsrfToken();
+      } catch (csrfError) {
+        console.warn('Failed to fetch CSRF token after signup:', csrfError);
+      }
+    }
+
     return data;
   };
 
@@ -196,6 +206,17 @@ export function useAuth() {
       }
       throw error;
     }
+
+    // Fetch CSRF token after successful login
+    if (data.session) {
+      try {
+        await fetchCsrfToken();
+      } catch (csrfError) {
+        console.warn('Failed to fetch CSRF token after login:', csrfError);
+        // Continue even if CSRF token fetch fails
+      }
+    }
+
     return data;
   };
 

@@ -26,30 +26,58 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       : typeof message === 'object' && message !== null
       ? (message as any).text || (message as any).message || 'Notification'
       : String(message);
-    setToasts((prev) => [...prev, { id, message: messageString, type }]);
+    
+    console.log('🔥 Toast triggered:', { id, message: messageString, type });
+    
+    setToasts((prev) => {
+      const newToasts = [...prev, { id, message: messageString, type }];
+      console.log('🔥 Current toasts state:', newToasts.length, 'toasts');
+      return newToasts;
+    });
   }, []);
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
+  console.log('🔥 ToastProvider render - toasts count:', toasts.length);
+
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-y-3 flex flex-col items-center"
+        className="fixed top-4 left-1/2 z-[9999] space-y-3 flex flex-col items-center pointer-events-none"
+        style={{ 
+          transform: 'translateX(-50%)',
+        }}
         aria-live="polite"
         aria-atomic="true"
         role="status"
       >
-        {toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            onClose={() => removeToast(toast.id)}
-          />
-        ))}
+        {toasts.length > 0 && (
+          <>
+            {console.log('🔥 Rendering', toasts.length, 'toasts')}
+            {toasts.map((toast) => {
+              console.log('🔥 Rendering toast:', toast.id, toast.message);
+              return (
+                <div 
+                  key={toast.id} 
+                  className="pointer-events-auto"
+                  style={{ transform: 'translateX(-50%)' }}
+                >
+                  <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => {
+                      console.log('🔥 Closing toast:', toast.id);
+                      removeToast(toast.id);
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </>
+        )}
       </div>
     </ToastContext.Provider>
   );

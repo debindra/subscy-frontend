@@ -22,6 +22,7 @@ import { settingsApi, UserSettings } from '@/lib/api/settings';
 import { SpendingSummaryResponse } from '@/lib/api/analytics';
 import { useViewMode } from '@/lib/context/ViewModeContext';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
+import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 
 export default function SubscriptionsPage() {
   const PAGE_SIZE = 6;
@@ -44,6 +45,7 @@ export default function SubscriptionsPage() {
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const { viewMode, setViewMode } = useViewMode();
+  const isMobile = useIsMobile();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { showToast } = useToast();
   const { hasCategorization } = usePlanFeatures();
@@ -115,6 +117,13 @@ export default function SubscriptionsPage() {
       setEditingSubscription(undefined);
     },
   });
+
+  // Force detailed (list) view on desktop only
+  useEffect(() => {
+    if (!isMobile && viewMode !== 'detailed') {
+      setViewMode('detailed');
+    }
+  }, [isMobile, viewMode, setViewMode]);
 
   // Prevent body scroll when mobile filter drawer is open
   useEffect(() => {
@@ -476,37 +485,39 @@ export default function SubscriptionsPage() {
               <span className="hidden min-[375px]:inline">+ Add Subscription</span>
               <span className="min-[375px]:hidden">+ Add</span>
             </Button>
-            {/* View Mode Toggle - Next to Add Subscription button */}
-            <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('detailed')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'detailed'
-                    ? 'bg-brand-accent-500 text-white'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                aria-label="List view"
-                aria-pressed={viewMode === 'detailed'}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setViewMode('compact')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'compact'
-                    ? 'bg-brand-accent-500 text-white'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                aria-label="Grid view"
-                aria-pressed={viewMode === 'compact'}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </button>
-            </div>
+            {/* View Mode Toggle - Visible on mobile only */}
+            {isMobile && (
+              <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('detailed')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'detailed'
+                      ? 'bg-brand-accent-500 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                  aria-label="List view"
+                  aria-pressed={viewMode === 'detailed'}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setViewMode('compact')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'compact'
+                      ? 'bg-brand-accent-500 text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                  aria-label="Grid view"
+                  aria-pressed={viewMode === 'compact'}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

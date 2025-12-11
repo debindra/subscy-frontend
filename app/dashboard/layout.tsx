@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Navbar } from '@/components/layout/Navbar';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { InstallPrompt } from '@/components/layout/InstallPrompt';
+import { SpotlightSearch } from '@/components/dashboard/SpotlightSearch';
+import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 
 export default function DashboardLayout({
   children,
@@ -14,12 +16,18 @@ export default function DashboardLayout({
 }) {
   const { user, loading, error, retryAuth } = useAuth();
   const router = useRouter();
+  const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/auth/login');
     }
   }, [user, loading, router]);
+
+  // Global keyboard shortcuts for spotlight search
+  useKeyboardShortcuts({
+    onSearch: () => setIsSpotlightOpen(true),
+  });
 
   if (loading) {
     return (
@@ -67,6 +75,10 @@ export default function DashboardLayout({
       </main>
       <BottomNavigation />
       <InstallPrompt />
+      <SpotlightSearch
+        isOpen={isSpotlightOpen}
+        onClose={() => setIsSpotlightOpen(false)}
+      />
     </div>
   );
 }

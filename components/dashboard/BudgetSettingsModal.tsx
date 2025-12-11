@@ -54,12 +54,21 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
     setError('');
 
     try {
-      await settingsApi.updateSettings(formData);
-      showToast('Budget settings saved', 'success');
+      const response = await settingsApi.updateSettings(formData);
+      // Update local state with the saved settings
+      if (response.data) {
+        setSettings(response.data);
+        setFormData({
+          monthlyBudget: response.data.monthlyBudget,
+          budgetAlertsEnabled: response.data.budgetAlertsEnabled ?? true,
+          budgetAlertThreshold: response.data.budgetAlertThreshold ?? 90,
+        });
+      }
+      showToast('Budget settings saved successfully', 'success');
       onSave();
       onClose();
     } catch (err: any) {
-      const message = err?.response?.data?.message || 'Failed to save budget settings';
+      const message = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to save budget settings';
       setError(message);
       showToast(message, 'error');
     } finally {

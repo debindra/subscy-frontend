@@ -61,14 +61,14 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  const { hasSmartRenewalManagement } = usePlanFeatures();
+  const { hasSmartRenewalManagement, hasCategorization } = usePlanFeatures();
   const [formData, setFormData] = useState<CreateSubscriptionData>({
     name: '',
     amount: 0,
     currency: 'USD',
     billingCycle: 'monthly',
     nextRenewalDate: '',
-    category: 'Entertainment',
+    category: 'Uncategorized',
     description: '',
     website: '',
     email: '',
@@ -259,7 +259,7 @@ export const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         </div>
       </div>
 
-      {/* Category Section - Always shown */}
+      {/* Category Section - Available for all users */}
       <div className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Select

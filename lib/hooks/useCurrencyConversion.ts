@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { currencyApi } from '@/lib/api/currency';
 
 interface CurrencyConversionParams {
   amount: number;
@@ -15,12 +16,12 @@ export const useCurrencyConversion = (params: CurrencyConversionParams) => {
       }
 
       try {
-        const response = await fetch(`/api/currency/convert?amount=${params.amount}&from_currency=${params.fromCurrency}&to_currency=${params.toCurrency}`);
-        if (!response.ok) {
-          throw new Error('Currency conversion failed');
-        }
-        const data = await response.json();
-        return data.convertedAmount;
+        const response = await currencyApi.convert(
+          params.amount,
+          params.fromCurrency,
+          params.toCurrency
+        );
+        return response.data.convertedAmount;
       } catch (error) {
         console.error('Currency conversion error:', error);
         // Fallback: return original amount if conversion fails
@@ -52,23 +53,11 @@ export const useBulkCurrencyConversion = (params: BulkCurrencyConversionParams) 
       }
 
       try {
-        const response = await fetch('/api/currency/convert-multiple', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amounts_by_currency: params.amountsByCurrency,
-            to_currency: params.toCurrency,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Bulk currency conversion failed');
-        }
-
-        const data = await response.json();
-        return data.totalConvertedAmount;
+        const response = await currencyApi.convertMultiple(
+          params.amountsByCurrency,
+          params.toCurrency
+        );
+        return response.data.totalConvertedAmount;
       } catch (error) {
         console.error('Bulk currency conversion error:', error);
 
@@ -80,12 +69,8 @@ export const useBulkCurrencyConversion = (params: BulkCurrencyConversionParams) 
                 return amount;
               }
 
-              const response = await fetch(`/api/currency/convert?amount=${amount}&from_currency=${currency}&to_currency=${params.toCurrency}`);
-              if (!response.ok) {
-                throw new Error(`Failed to convert ${currency} to ${params.toCurrency}`);
-              }
-              const data = await response.json();
-              return data.convertedAmount;
+              const response = await currencyApi.convert(amount, currency, params.toCurrency);
+              return response.data.convertedAmount;
             }
           );
 
