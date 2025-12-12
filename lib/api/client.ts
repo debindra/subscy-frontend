@@ -154,8 +154,29 @@ apiClient.interceptors.response.use(
       const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
 
       if (refreshError || !session) {
-        // Redirect to login
-        window.location.href = '/auth/login';
+        // Only redirect to login if we're on a protected route
+        // Public routes should not redirect (e.g., landing page, auth pages)
+        if (typeof window !== 'undefined') {
+          const currentPath = window.location.pathname;
+          const publicRoutes = [
+            '/',
+            '/auth/login',
+            '/auth/signup',
+            '/auth/callback',
+            '/auth/update-password',
+            '/privacy',
+            '/terms',
+          ];
+          
+          const isPublicRoute = publicRoutes.some(route => 
+            currentPath === route || currentPath.startsWith(route + '/')
+          );
+          
+          // Only redirect if we're NOT on a public route
+          if (!isPublicRoute) {
+            window.location.href = '/auth/login';
+          }
+        }
         return Promise.reject(error);
       }
 
