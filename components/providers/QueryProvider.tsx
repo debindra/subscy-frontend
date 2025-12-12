@@ -4,7 +4,6 @@ import React, { ReactNode, useState, useEffect } from 'react';
 import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createQueryClient } from '@/lib/queryClient';
-import { useToast } from '@/lib/context/ToastContext';
 
 interface QueryProviderProps {
   children: ReactNode;
@@ -13,7 +12,6 @@ interface QueryProviderProps {
 // Component to handle query errors globally
 function QueryErrorHandler() {
   const queryClient = useQueryClient();
-  const { showToast } = useToast();
 
   useEffect(() => {
     // Only run on client side
@@ -51,49 +49,18 @@ function QueryErrorHandler() {
           sorted.slice(0, 50).forEach(([key, time]) => recentErrors.set(key, time));
         }
         
-        // Don't show toast for 401 errors (handled by auth interceptor)
-        if (error?.response?.status === 401) {
-          return;
-        }
-
-        // Don't show toast for 403 errors (plan limitations - handled in components)
-        if (error?.response?.status === 403) {
-          return;
-        }
-
-        // Extract error message
-        const errorMessage = 
-          error?.response?.data?.message ||
-          error?.response?.data?.detail ||
-          error?.message ||
-          'An error occurred while loading data. Please try again.';
-
-        // Show toast for network errors, timeouts, and server errors (5xx)
-        const statusCode = error?.response?.status;
-        const isNetworkError = error?.code === 'ERR_NETWORK' || 
-                             error?.code === 'ECONNABORTED' || 
-                             error?.message?.includes('Network Error') ||
-                             error?.message?.includes('timeout');
-        
-        if (isNetworkError || (statusCode && statusCode >= 500)) {
-          const displayMessage = isNetworkError 
-            ? 'Network error: Unable to connect to the server. Please check your connection and try again.'
-            : errorMessage;
-          showToast(displayMessage, 'error');
-        } else if (statusCode && statusCode >= 400 && statusCode < 500) {
-          // For 4xx errors (except 401, 403), show a user-friendly message
-          const displayMessage = statusCode === 404
-            ? 'The requested resource was not found.'
-            : errorMessage;
-          showToast(displayMessage, 'error');
-        }
+        // Don't show toast for query errors - only mutations (add/edit) should show toasts
+        // Mutations handle their own error toasts in component code (handleCreate, handleUpdate, etc.)
+        // Query errors (404s, network errors, etc.) are silent failures for better UX
+        // Users don't need to be notified about failed data fetches - the UI will show empty/loading states
+        return;
       }
     });
 
     return () => {
       unsubscribe();
     };
-  }, [queryClient, showToast]);
+  }, [queryClient]);
 
   return null;
 }
