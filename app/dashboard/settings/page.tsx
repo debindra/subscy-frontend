@@ -21,6 +21,8 @@ const COMMON_TIMEZONES: { value: string; label: string }[] = [
   { value: 'Europe/Berlin', label: 'Central Europe' },
   { value: 'Europe/Paris', label: 'Paris' },
   { value: 'Asia/Kolkata', label: 'India (IST)' },
+  { value: 'Asia/Dubai', label: 'Dubai (UAE)' },
+  { value: 'Asia/Kathmandu', label: 'Kathmandu (Nepal)' },
   { value: 'Asia/Singapore', label: 'Singapore' },
   { value: 'Asia/Tokyo', label: 'Japan (JST)' },
   { value: 'Australia/Sydney', label: 'Australia (Sydney)' },
