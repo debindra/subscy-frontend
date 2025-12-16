@@ -275,8 +275,8 @@ export default function ReminderSettingsPage() {
               </p>
             </div>
 
-            <div className="flex items-center justify-end">
-              <Button type="submit" variant="accent" disabled={loading} className="px-6">
+            <div className="flex items-center justify-start">
+              <Button type="submit" variant="accent" disabled={loading} className="px-6 w-full sm:w-1/3">
                 {loading ? 'Saving...' : 'Save changes'}
               </Button>
             </div>

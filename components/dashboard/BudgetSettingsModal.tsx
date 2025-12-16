@@ -141,12 +141,24 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
           )}
         </div>
 
-        <div className="flex space-x-3 pt-4">
-          <Button type="submit" variant="accent" disabled={loading} fullWidth>
-            {loading ? 'Saving...' : 'Save Settings'}
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <Button 
+            type="submit" 
+            variant="accent" 
+            disabled={loading} 
+            className="w-full sm:w-[70%] text-base py-3 font-semibold m-0"
+          >
+            <span className="flex items-center justify-center w-full">
+              {loading ? 'Saving...' : 'Save Settings'}
+            </span>
           </Button>
-          <Button type="button" variant="outline" onClick={onClose} fullWidth>
-            Cancel
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onClose} 
+            className="w-full sm:w-[30%] text-base py-3 font-semibold m-0"
+          >
+            <span className="flex items-center justify-center w-full">Cancel</span>
           </Button>
         </div>
       </form>

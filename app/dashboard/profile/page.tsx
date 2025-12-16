@@ -151,8 +151,8 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <div className="flex items-center justify-end">
-              <Button type="submit" variant="accent" disabled={saving} className="px-6">
+            <div className="flex items-center justify-start">
+              <Button type="submit" variant="accent" disabled={saving} className="px-6 w-full sm:w-1/3">
                 {saving ? 'Saving...' : 'Save changes'}
               </Button>
             </div>
