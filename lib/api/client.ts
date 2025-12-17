@@ -15,6 +15,10 @@ export const apiClient = axios.create({
 // In-memory storage for CSRF token (since HTTP-only cookies can't be read by JS)
 let csrfTokenCache: string | null = null;
 
+// Track if we're currently refreshing to avoid multiple simultaneous refresh attempts
+let isRefreshing = false;
+let refreshPromise: Promise<{ session: any; error: any } | null> | null = null;
+
 // Helper function to get CSRF token from cache or cookies
 function getCsrfToken(): string | null {
   // First try the cache
@@ -151,9 +155,41 @@ apiClient.interceptors.response.use(
 
     // Handle authentication errors (401)
     if (response?.status === 401) {
-      const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
+      // Check if we already have a valid session (might be a stale token issue)
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      // If we have a current session, try using it first before refreshing
+      if (currentSession?.access_token && !error.config._retry) {
+        error.config._retry = true;
+        error.config.headers.Authorization = `Bearer ${currentSession.access_token}`;
+        return apiClient.request(error.config);
+      }
+
+      // Use shared refresh promise to avoid multiple simultaneous refresh attempts
+      if (!isRefreshing) {
+        isRefreshing = true;
+        refreshPromise = supabase.auth.refreshSession();
+      }
+      
+      // Wait for refresh (either new or existing)
+      const refreshResult = await refreshPromise!;
+      isRefreshing = false;
+      refreshPromise = null;
+
+      const { data: { session }, error: refreshError } = refreshResult || { data: { session: null }, error: null };
 
       if (refreshError || !session) {
+        // Give it one more chance - check if session exists after a brief delay
+        // This handles race conditions where Supabase is still refreshing
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { data: { session: finalSession } } = await supabase.auth.getSession();
+        
+        if (finalSession?.access_token) {
+          // Session recovered - retry with new token
+          error.config.headers.Authorization = `Bearer ${finalSession.access_token}`;
+          return apiClient.request(error.config);
+        }
+
         // Only redirect to login if we're on a protected route
         // Public routes should not redirect (e.g., landing page, auth pages)
         if (typeof window !== 'undefined') {
@@ -174,6 +210,7 @@ apiClient.interceptors.response.use(
           
           // Only redirect if we're NOT on a public route
           if (!isPublicRoute) {
+            logger.warn('Session refresh failed, redirecting to login', refreshError);
             window.location.href = '/auth/login';
           }
         }

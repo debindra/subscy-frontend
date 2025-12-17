@@ -8,6 +8,8 @@ import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { InstallPrompt } from '@/components/layout/InstallPrompt';
 import { SpotlightSearch } from '@/components/dashboard/SpotlightSearch';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
+import { ProductTour } from '@/components/dashboard/ProductTour';
+import { resetTour } from '@/lib/utils/tour';
 
 export default function DashboardLayout({
   children,
@@ -17,6 +19,18 @@ export default function DashboardLayout({
   const { user, loading, error, retryAuth } = useAuth();
   const router = useRouter();
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+
+  // Listen for tour start events from child components
+  useEffect(() => {
+    const handleStartTour = () => {
+      resetTour();
+      setShowTour(true);
+    };
+
+    window.addEventListener('startTour', handleStartTour);
+    return () => window.removeEventListener('startTour', handleStartTour);
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -69,7 +83,10 @@ export default function DashboardLayout({
           </div>
         </div>
       )}
-      <Navbar />
+      <Navbar onStartTour={() => {
+        resetTour();
+        setShowTour(true);
+      }} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-8">
         {children}
       </main>
@@ -79,6 +96,9 @@ export default function DashboardLayout({
         isOpen={isSpotlightOpen}
         onClose={() => setIsSpotlightOpen(false)}
       />
+      
+      {/* Product Tour - Shows for all users until dismissed */}
+      <ProductTour forceShow={showTour} onClose={() => setShowTour(false)} />
     </div>
   );
 }

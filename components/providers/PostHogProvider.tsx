@@ -9,6 +9,11 @@ let isPostHogBlocked = false;
 
 // Comprehensive error suppression for PostHog blocked requests
 if (typeof window !== 'undefined') {
+  // Store original console methods before any overrides
+  const originalConsoleError = console.error.bind(console);
+  const originalConsoleWarn = console.warn.bind(console);
+  const originalConsoleLog = console.log.bind(console);
+
   // Helper to check if an error is PostHog-related
   const isPostHogError = (args: any[]): boolean => {
     // Convert all arguments to strings and check for PostHog-related blocked errors
@@ -46,37 +51,31 @@ if (typeof window !== 'undefined') {
 
   // Override console.error (only if not already overridden)
   if (!(console.error as any).__posthogOverridden) {
-    const originalError = console.error;
     console.error = (...args: any[]) => {
       if (isPostHogError(args)) {
         isPostHogBlocked = true;
         if (process.env.NODE_ENV === 'development' && !(window as any).__posthogBlockedLogged) {
-          console.warn(
+          originalConsoleWarn(
             '⚠️ PostHog requests are being blocked by an ad blocker. Analytics will be disabled.',
           );
-          console.warn('💡 To enable analytics: whitelist us.i.posthog.com in your ad blocker');
+          originalConsoleWarn('💡 To enable analytics: whitelist us.i.posthog.com in your ad blocker');
           (window as any).__posthogBlockedLogged = true;
         }
         return;
       }
-      if (typeof originalError === 'function') {
-        originalError.apply(console, args);
-      }
+      originalConsoleError.apply(console, args);
     };
     (console.error as any).__posthogOverridden = true;
   }
 
   // Override console.warn (only if not already overridden)
   if (!(console.warn as any).__posthogOverridden) {
-    const originalWarn = console.warn;
     console.warn = (...args: any[]) => {
       if (isPostHogError(args)) {
         isPostHogBlocked = true;
         return;
       }
-      if (typeof originalWarn === 'function') {
-        originalWarn.apply(console, args);
-      }
+      originalConsoleWarn.apply(console, args);
     };
     (console.warn as any).__posthogOverridden = true;
   }

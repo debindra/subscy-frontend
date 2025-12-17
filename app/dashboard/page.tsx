@@ -38,6 +38,7 @@ import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { getUserDisplayName } from '@/lib/utils/userUtils';
 import { logger } from '@/lib/utils/logger';
+import { resetTour } from '@/lib/utils/tour';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -518,6 +519,21 @@ export default function DashboardPage() {
             )}
           </div>
           <div className="flex items-center gap-3">
+            {/* Take Tour Button */}
+            <button
+              onClick={() => {
+                resetTour();
+                window.dispatchEvent(new CustomEvent('startTour'));
+              }}
+              className="group flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-white dark:hover:text-white hover:bg-gradient-to-r hover:from-primary-600 hover:to-primary-700 dark:hover:from-primary-500 dark:hover:to-primary-600 rounded-lg transition-all duration-200 border border-primary-200 dark:border-primary-800 hover:border-transparent shadow-sm hover:shadow-md transform hover:scale-105"
+              title="Take a guided tour of the dashboard"
+              aria-label="Take tour"
+            >
+              <svg className="w-4 h-4 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span className="hidden sm:inline text-xs font-semibold">Take Tour</span>
+            </button>
             {/* Keyboard Shortcuts Button - Desktop only (hidden on mobile since shortcuts are disabled) */}
             {!isMobile && (
               <button
@@ -550,6 +566,7 @@ export default function DashboardPage() {
             <Link
               href="/dashboard/subscriptions"
               className="w-full md:w-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white rounded-lg hover:from-brand-accent-600 hover:to-brand-accent-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
+              data-tour="manage-button"
             >
               Manage Subscriptions
               <svg className="w-5 h-5 ml-2 transform -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -565,6 +582,7 @@ export default function DashboardPage() {
         <Card
           variant="outline-primary"
           className="bg-gradient-to-br from-primary-50 to-primary-100/60 dark:from-primary-900/20 dark:to-primary-900/10 text-gray-900 dark:text-white"
+          data-tour="spending-summary"
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
@@ -656,20 +674,24 @@ export default function DashboardPage() {
 
       {/* Quick Actions - Added prominently after spending summary */}
       {subscriptionStats && (
-        <QuickActions
-          subscriptionCount={subscriptionStats.total}
-          upcomingCount={upcomingSubscriptions.length}
-          onQuickAdd={() => setIsQuickAddModalOpen(true)}
-        />
+        <div data-tour="quick-actions">
+          <QuickActions
+            subscriptionCount={subscriptionStats.total}
+            upcomingCount={upcomingSubscriptions.length}
+            onQuickAdd={() => setIsQuickAddModalOpen(true)}
+          />
+        </div>
       )}
 
       {/* Upcoming Renewals - Moved up for better priority */}
-      <EnhancedUpcomingRenewals
-        subscriptions={upcomingSubscriptions}
-        onEdit={handleUpcomingEdit}
-        onDelete={handleUpcomingDelete}
-        preferredCurrency={userSettings?.defaultCurrency || primarySpending?.currency || 'USD'}
-      />
+      <div data-tour="upcoming-renewals">
+        <EnhancedUpcomingRenewals
+          subscriptions={upcomingSubscriptions}
+          onEdit={handleUpcomingEdit}
+          onDelete={handleUpcomingDelete}
+          preferredCurrency={userSettings?.defaultCurrency || primarySpending?.currency || 'USD'}
+        />
+      </div>
 
       {/* Stats Cards grouped by currency */}
       <div className="space-y-6">
@@ -807,7 +829,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-fade-in" data-tour="analytics">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Spending Insights</h2>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           {plan && (

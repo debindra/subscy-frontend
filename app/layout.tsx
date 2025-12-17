@@ -1,12 +1,19 @@
 import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
+import dynamicImport from 'next/dynamic';
 import './globals.css';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { ToastProvider } from '@/lib/context/ToastContext';
 import { ViewModeProvider } from '@/lib/context/ViewModeContext';
-import { PWASetup } from '@/components/layout/PWASetup';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
+
+// Dynamically import PWASetup to prevent webpack module loading issues
+// ssr: false ensures it only loads on the client side
+const PWASetup = dynamicImport(
+  () => import('@/components/layout/PWASetup').then((mod) => ({ default: mod.PWASetup })),
+  { ssr: false }
+);
 
 const poppins = Poppins({
   subsets: ['latin'],

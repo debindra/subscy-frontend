@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../supabase';
@@ -37,6 +37,14 @@ export function useAuth() {
   const [loading, setLoading] = useState(!E2E_BYPASS);
   const [error, setError] = useState<Error | null>(null);
   const queryClient = useQueryClient();
+  // Use ref to track current user state in closures
+  const userRef = useRef<User | null>(E2E_BYPASS ? MOCK_USER : null);
+  
+  // Helper function to update both state and ref
+  const updateUser = (newUser: User | null) => {
+    userRef.current = newUser;
+    setUser(newUser);
+  };
 
   useEffect(() => {
     if (E2E_BYPASS) {
@@ -63,7 +71,7 @@ export function useAuth() {
         ]);
 
         if (isMounted) {
-          setUser(session?.user ?? null);
+          updateUser(session?.user ?? null);
           setLoading(false);
           setError(null); // Clear any previous errors
         }
@@ -71,7 +79,7 @@ export function useAuth() {
         logger.error('Error initializing auth session', error);
         // Always set loading to false, even on error
         if (isMounted) {
-          setUser(null);
+          updateUser(null);
           setLoading(false);
           setError(error instanceof Error ? error : new Error('Failed to initialize authentication'));
         }
@@ -84,23 +92,129 @@ export function useAuth() {
 
     initializeAuth();
 
+    // Track if we're currently refreshing to avoid false logout detection
+    let isRefreshing = false;
+    let refreshTimeoutId: NodeJS.Timeout | null = null;
+
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (isMounted) {
-        setUser(session?.user ?? null);
-        setLoading(false);
-        setError(null); // Clear errors on successful auth state change
-        // Clear cache when user logs out (session becomes null)
-        if (!session) {
-          queryClient.clear();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
+      // Handle different auth events
+      if (event === 'TOKEN_REFRESHED') {
+        // Token was successfully refreshed
+        isRefreshing = false;
+        if (refreshTimeoutId) {
+          clearTimeout(refreshTimeoutId);
+          refreshTimeoutId = null;
         }
+        updateUser(session?.user ?? null);
+        setLoading(false);
+        setError(null);
+        return;
       }
+
+      if (event === 'SIGNED_OUT') {
+        // Explicit sign out - clear everything immediately
+        isRefreshing = false;
+        if (refreshTimeoutId) {
+          clearTimeout(refreshTimeoutId);
+          refreshTimeoutId = null;
+        }
+        updateUser(null);
+        setLoading(false);
+        queryClient.clear();
+        return;
+      }
+
+      // For other events (SIGNED_IN, USER_UPDATED, etc.), update user immediately
+      if (session?.user) {
+        isRefreshing = false;
+        if (refreshTimeoutId) {
+          clearTimeout(refreshTimeoutId);
+          refreshTimeoutId = null;
+        }
+        updateUser(session.user);
+        setLoading(false);
+        setError(null);
+        return;
+      }
+
+      // Session is null but not explicitly signed out - could be refresh in progress
+      // Give it a moment to recover before clearing user state
+      if (!session && userRef.current) {
+        // Only set refreshing flag if we had a user before
+        if (!isRefreshing) {
+          isRefreshing = true;
+          logger.warn('Session became null, attempting to recover...');
+          
+          // Try to get the session again after a short delay
+          refreshTimeoutId = setTimeout(async () => {
+            if (!isMounted) return;
+            
+            try {
+              const { data: { session: recoveredSession }, error: sessionError } = await supabase.auth.getSession();
+              
+              if (recoveredSession?.user) {
+                // Session recovered - user is still logged in
+                logger.info('Session recovered successfully');
+                isRefreshing = false;
+                updateUser(recoveredSession.user);
+                setLoading(false);
+                setError(null);
+              } else if (sessionError) {
+                // Failed to recover - might be network issue, try refresh
+                logger.warn('Session recovery failed, attempting refresh...', sessionError);
+                const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+                
+                if (refreshedSession?.user) {
+                  logger.info('Session refreshed successfully');
+                  isRefreshing = false;
+                  updateUser(refreshedSession.user);
+                  setLoading(false);
+                  setError(null);
+                } else {
+                  // Truly logged out or refresh failed
+                  logger.error('Session refresh failed, user logged out', refreshError);
+                  isRefreshing = false;
+                  updateUser(null);
+                  setLoading(false);
+                  queryClient.clear();
+                }
+              } else {
+                // No session and no error - user is logged out
+                logger.info('No session found, user logged out');
+                isRefreshing = false;
+                updateUser(null);
+                setLoading(false);
+                queryClient.clear();
+              }
+            } catch (err) {
+              logger.error('Error during session recovery', err);
+              // On error, don't immediately clear user - might be temporary network issue
+              // Set error state instead so user can retry
+              isRefreshing = false;
+              setError(err instanceof Error ? err : new Error('Session check failed. Please try refreshing the page.'));
+            }
+          }, 1000); // Wait 1 second before checking again
+        }
+        // Don't update user state immediately - wait for recovery attempt
+        return;
+      }
+
+      // No user and no previous user - initial state
+      updateUser(null);
+      setLoading(false);
+      setError(null);
     });
 
     return () => {
       isMounted = false;
       if (timeoutId) {
         clearTimeout(timeoutId);
+      }
+      if (refreshTimeoutId) {
+        clearTimeout(refreshTimeoutId);
       }
       subscription.unsubscribe();
     };
@@ -303,7 +417,7 @@ export function useAuth() {
     setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+      updateUser(session?.user ?? null);
       setLoading(false);
       setError(null);
     } catch (err) {
