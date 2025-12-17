@@ -17,7 +17,7 @@ let csrfTokenCache: string | null = null;
 
 // Track if we're currently refreshing to avoid multiple simultaneous refresh attempts
 let isRefreshing = false;
-let refreshPromise: Promise<{ data: { session: any; error: any } }> | null = null;
+let refreshPromise: ReturnType<typeof supabase.auth.refreshSession> | null = null;
 
 // Helper function to get CSRF token from cache or cookies
 function getCsrfToken(): string | null {
@@ -217,7 +217,7 @@ apiClient.interceptors.response.use(
           
           // Only redirect if we're NOT on a public route
           if (!isPublicRoute) {
-            logger.warn('Session refresh failed, redirecting to login', refreshError);
+            logger.warn('Session refresh failed, redirecting to login', refreshError ? { error: refreshError } : undefined);
             window.location.href = '/auth/login';
           }
         }

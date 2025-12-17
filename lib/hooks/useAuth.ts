@@ -164,7 +164,7 @@ export function useAuth() {
                 setError(null);
               } else if (sessionError) {
                 // Failed to recover - might be network issue, try refresh
-                logger.warn('Session recovery failed, attempting refresh...', sessionError);
+                logger.warn('Session recovery failed, attempting refresh...', { error: sessionError });
                 const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
                 
                 if (refreshedSession?.user) {
@@ -175,7 +175,7 @@ export function useAuth() {
                   setError(null);
                 } else {
                   // Truly logged out or refresh failed
-                  logger.error('Session refresh failed, user logged out', refreshError);
+                  logger.error('Session refresh failed, user logged out', refreshError ? { error: refreshError } : undefined);
                   isRefreshing = false;
                   updateUser(null);
                   setLoading(false);
