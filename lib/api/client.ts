@@ -17,7 +17,7 @@ let csrfTokenCache: string | null = null;
 
 // Track if we're currently refreshing to avoid multiple simultaneous refresh attempts
 let isRefreshing = false;
-let refreshPromise: Promise<{ session: any; error: any } | null> | null = null;
+let refreshPromise: Promise<{ data: { session: any; error: any } }> | null = null;
 
 // Helper function to get CSRF token from cache or cookies
 function getCsrfToken(): string | null {
@@ -166,17 +166,24 @@ apiClient.interceptors.response.use(
       }
 
       // Use shared refresh promise to avoid multiple simultaneous refresh attempts
-      if (!isRefreshing) {
+      if (!isRefreshing || !refreshPromise) {
         isRefreshing = true;
-        refreshPromise = supabase.auth.refreshSession();
+        refreshPromise = supabase.auth.refreshSession().finally(() => {
+          // Reset flag after promise completes (success or failure)
+          isRefreshing = false;
+        });
       }
       
       // Wait for refresh (either new or existing)
-      const refreshResult = await refreshPromise!;
-      isRefreshing = false;
-      refreshPromise = null;
+      if (!refreshPromise) {
+        // Fallback - shouldn't happen but TypeScript needs it
+        return Promise.reject(error);
+      }
+      
+      const refreshResult = await refreshPromise;
+      refreshPromise = null; // Clear after all waiters get the result
 
-      const { data: { session }, error: refreshError } = refreshResult || { data: { session: null }, error: null };
+      const { data: { session }, error: refreshError } = refreshResult;
 
       if (refreshError || !session) {
         // Give it one more chance - check if session exists after a brief delay
