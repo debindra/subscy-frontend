@@ -43,7 +43,7 @@ const tourSteps: TourStep[] = [
     target: '[data-tour="upcoming-renewals"]',
     title: 'Upcoming Renewals',
     content: 'Never miss a payment! View all subscriptions renewing soon. Edit or cancel them directly from your dashboard.',
-    icon: '📅',
+    icon: '📆',
     position: 'top',
   },
   {
@@ -51,8 +51,8 @@ const tourSteps: TourStep[] = [
     target: '[data-tour="analytics"]',
     title: 'Spending Insights',
     content: 'Get detailed analytics and charts to understand your spending patterns. Identify opportunities to save money.',
-    icon: '📊',
-    position: 'top',
+    icon: '📈',
+    position: 'bottom',
   },
   {
     id: 'manage',
@@ -78,6 +78,8 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
   const overlayRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const highlightedElementRef = useRef<HTMLElement | null>(null);
+  const originalStylesRef = useRef<{ zIndex: string | null; position: string | null } | null>(null);
   
   // Use refs for touch positions to avoid stale state issues
   const touchStartXRef = useRef<number | null>(null);
@@ -97,42 +99,107 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Restore element styles when tour closes or step changes
+  const restoreElementStyles = useCallback(() => {
+    if (highlightedElementRef.current && originalStylesRef.current) {
+      // Restore z-index
+      if (originalStylesRef.current.zIndex === 'auto' || !originalStylesRef.current.zIndex) {
+        highlightedElementRef.current.style.zIndex = '';
+      } else {
+        highlightedElementRef.current.style.zIndex = originalStylesRef.current.zIndex;
+      }
+      
+      // Restore position
+      if (originalStylesRef.current.position === 'static') {
+        // Remove the relative position we added
+        highlightedElementRef.current.style.position = '';
+      } else {
+        highlightedElementRef.current.style.position = originalStylesRef.current.position || '';
+      }
+      
+      highlightedElementRef.current = null;
+      originalStylesRef.current = null;
+    }
+  }, []);
+
+  // Reset tour to beginning when manually started via forceShow
+  // Also handle hiding when forceShow becomes false
   useEffect(() => {
-    if (user) {
+    if (forceShow) {
+      // Reset all tour state when manually starting
+      restoreElementStyles(); // Restore any previous element styles
+      setCurrentStep(0);
+      setHighlightRect(null);
+      setIsTransitioning(false);
+      // Small delay to ensure reset happens before showing
+      const showTimer = setTimeout(() => {
+        setIsVisible(true);
+      }, 100);
+      return () => clearTimeout(showTimer);
+    } else {
+      // Hide tour when forceShow becomes false
+      restoreElementStyles(); // Restore element styles when hiding
+      setIsVisible(false);
+      setHighlightRect(null);
+      setIsTransitioning(false);
+    }
+  }, [forceShow, restoreElementStyles]);
+
+  useEffect(() => {
+    if (user && !forceShow) {
       // Only auto-show on first login (when user hasn't seen tour before)
-      // Or if manually triggered via forceShow
-      if (forceShow || shouldShowTourOnFirstLogin()) {
+      // Skip auto-start on mobile to avoid interrupting users
+      if (shouldShowTourOnFirstLogin() && !isMobile) {
         const timer = setTimeout(() => {
           setIsVisible(true);
-          // Mark as seen when tour is shown (but not dismissed yet)
-          if (!forceShow) {
-            markTourAsSeen();
-          }
-        }, forceShow ? 300 : 1000);
+          markTourAsSeen();
+        }, 1000);
         return () => clearTimeout(timer);
       }
     }
-  }, [user, forceShow]);
+  }, [user, forceShow, isMobile]);
 
   const handleDone = useCallback(() => {
-    if (!forceShow) {
-      dismissTour();
-    }
+    // Always dismiss when user completes tour to prevent auto-restart
+    // Even if manually started, we want to respect user's completion
+    dismissTour();
+    restoreElementStyles();
     setIsVisible(false);
     setHighlightRect(null);
     setIsTransitioning(false);
     onClose?.();
-  }, [forceShow, onClose]);
+  }, [onClose, restoreElementStyles]);
 
   const handleSkip = useCallback(() => {
-    if (!forceShow) {
-      dismissTour();
-    }
+    // Always dismiss when user skips tour to prevent auto-restart
+    // User explicitly chose to skip, so respect that decision
+    dismissTour();
+    restoreElementStyles();
     setIsVisible(false);
     setHighlightRect(null);
     setIsTransitioning(false);
     onClose?.();
-  }, [forceShow, onClose]);
+  }, [onClose, restoreElementStyles]);
+
+  const handleNext = useCallback(() => {
+    if (currentStep < tourSteps.length - 1) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentStep(currentStep + 1);
+      }, 200);
+    } else {
+      handleDone();
+    }
+  }, [currentStep, handleDone]);
+
+  const handlePrevious = useCallback(() => {
+    if (currentStep > 0) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentStep(currentStep - 1);
+      }, 200);
+    }
+  }, [currentStep]);
 
   // Debounced update function
   const updateHighlight = useCallback(() => {
@@ -175,13 +242,47 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
       if (step.target === 'body') {
         setHighlightRect(null);
         setIsTransitioning(false);
+        // Restore previous element styles if any
+        if (highlightedElementRef.current && originalStylesRef.current) {
+          highlightedElementRef.current.style.zIndex = originalStylesRef.current.zIndex || '';
+          if (originalStylesRef.current.position) {
+            highlightedElementRef.current.style.position = originalStylesRef.current.position;
+          }
+          highlightedElementRef.current = null;
+          originalStylesRef.current = null;
+        }
         return;
+      }
+
+      // Restore previous element styles if any
+      if (highlightedElementRef.current && originalStylesRef.current) {
+        highlightedElementRef.current.style.zIndex = originalStylesRef.current.zIndex || '';
+        if (originalStylesRef.current.position) {
+          highlightedElementRef.current.style.position = originalStylesRef.current.position;
+        }
       }
 
       const targetElement = document.querySelector(step.target) as HTMLElement;
 
       if (targetElement) {
         setIsTransitioning(true);
+        
+        // Store original styles and bring element to front
+        const computedStyle = window.getComputedStyle(targetElement);
+        const wasStatic = computedStyle.position === 'static';
+        originalStylesRef.current = {
+          zIndex: targetElement.style.zIndex || computedStyle.zIndex || 'auto',
+          position: wasStatic ? 'static' : (targetElement.style.position || computedStyle.position || 'auto'),
+        };
+        highlightedElementRef.current = targetElement;
+        
+        // Ensure element has positioning context for z-index to work
+        if (wasStatic) {
+          targetElement.style.position = 'relative';
+        }
+        
+        // Bring element above tour overlay (z-index 9998) and tooltip (z-index 10000)
+        targetElement.style.zIndex = '10001';
         
         // Smooth scroll to element
         targetElement.scrollIntoView({
@@ -223,8 +324,10 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
       }
+      // Restore element styles when step changes or tour closes
+      restoreElementStyles();
     };
-  }, [currentStep, isVisible, updateHighlight]);
+  }, [currentStep, isVisible, updateHighlight, restoreElementStyles]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -242,7 +345,7 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isVisible, currentStep]);
+  }, [isVisible, currentStep, handleSkip, handleNext, handlePrevious]);
 
   // Focus management
   useEffect(() => {
@@ -261,26 +364,6 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
   const step = tourSteps[currentStep];
   const isLastStep = currentStep === tourSteps.length - 1;
   const isWelcomeStep = step.target === 'body';
-
-  const handleNext = () => {
-    if (currentStep < tourSteps.length - 1) {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentStep(currentStep + 1);
-      }, 200);
-    } else {
-      handleDone();
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentStep(currentStep - 1);
-      }, 200);
-    }
-  };
 
   // Minimum swipe distance (in pixels)
   const minSwipeDistance = 50;
@@ -362,6 +445,7 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
         left: '50%',
         transform: 'translate(-50%, -50%)',
         maxWidth: '90vw',
+        actualPosition: 'center' as const,
       };
     }
 
@@ -373,6 +457,7 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
     let top = 0;
     let left = 0;
     let transform = '';
+    let actualPosition: 'top' | 'bottom' | 'left' | 'right' | 'center' = position;
 
     switch (position) {
       case 'top':
@@ -411,26 +496,78 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
       if (top < padding) {
         top = highlightRect.bottom + padding;
         transform = 'translate(-50%, 0)';
+        actualPosition = 'bottom';
       }
       if (top + tooltipHeight > viewportHeight - padding) {
-        top = highlightRect.top - tooltipHeight - padding;
+        top = Math.max(padding, highlightRect.top - tooltipHeight - padding);
         transform = 'translate(-50%, -100%)';
+        actualPosition = 'top';
       }
     } else {
+      // Desktop positioning with smart flipping
+      // Handle horizontal positioning
       if (left < padding) left = padding;
       if (left + tooltipWidth > viewportWidth - padding) {
         left = viewportWidth - tooltipWidth - padding;
       }
-      if (top < padding) top = padding;
+      
+      // Handle vertical positioning with smart flipping
+      if (position === 'top') {
+        // Check if there's enough space above
+        const spaceAbove = highlightRect.top;
+        const spaceBelow = viewportHeight - highlightRect.bottom;
+        
+        if (spaceAbove < tooltipHeight + padding && spaceBelow > spaceAbove) {
+          // Not enough space above, flip to bottom if more space below
+          top = highlightRect.bottom + padding;
+          transform = 'translate(-50%, 0)';
+          actualPosition = 'bottom';
+        } else if (top < padding) {
+          // Ensure tooltip doesn't go above viewport
+          top = padding;
+        }
+      } else if (position === 'bottom') {
+        // Check if there's enough space below
+        const spaceBelow = viewportHeight - highlightRect.bottom;
+        const spaceAbove = highlightRect.top;
+        
+        if (spaceBelow < tooltipHeight + padding && spaceAbove > spaceBelow) {
+          // Not enough space below, flip to top if more space above
+          top = highlightRect.top - tooltipHeight - padding;
+          transform = 'translate(-50%, -100%)';
+          actualPosition = 'top';
+        } else if (top + tooltipHeight > viewportHeight - padding) {
+          // Ensure tooltip doesn't go below viewport
+          top = viewportHeight - tooltipHeight - padding;
+        }
+      }
+      
+      // Final safety check - ensure tooltip is always within viewport
+      if (top < padding) {
+        top = padding;
+      }
       if (top + tooltipHeight > viewportHeight - padding) {
-        top = viewportHeight - tooltipHeight - padding;
+        top = Math.max(padding, viewportHeight - tooltipHeight - padding);
       }
     }
 
-    return { top: `${top}px`, left: `${left}px`, transform, maxWidth: `${tooltipWidth}px` };
+    return { 
+      top: `${top}px`, 
+      left: `${left}px`, 
+      transform, 
+      maxWidth: `${tooltipWidth}px`,
+      actualPosition 
+    };
   };
 
-  const tooltipStyle = getTooltipPosition();
+  const tooltipPositionData = getTooltipPosition();
+  const tooltipStyle = {
+    top: tooltipPositionData.top,
+    left: tooltipPositionData.left,
+    transform: tooltipPositionData.transform,
+    maxWidth: tooltipPositionData.maxWidth,
+  };
+  const actualPosition = tooltipPositionData.actualPosition;
 
   return (
     <>
@@ -645,29 +782,29 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
         </div>
 
         {/* Arrow pointing to element */}
-        {highlightRect && step.position && step.position !== 'center' && (
+        {highlightRect && actualPosition && actualPosition !== 'center' && (
           <div
             className="absolute pointer-events-none transition-all duration-300"
             style={{
-              ...(step.position === 'bottom' && {
+              ...(actualPosition === 'bottom' && {
                 bottom: '100%',
                 left: '50%',
                 transform: 'translateX(-50%)',
                 marginBottom: '-1px',
               }),
-              ...(step.position === 'top' && {
+              ...(actualPosition === 'top' && {
                 top: '100%',
                 left: '50%',
                 transform: 'translateX(-50%)',
                 marginTop: '-1px',
               }),
-              ...(step.position === 'left' && {
+              ...(actualPosition === 'left' && {
                 left: '100%',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 marginLeft: '-1px',
               }),
-              ...(step.position === 'right' && {
+              ...(actualPosition === 'right' && {
                 right: '100%',
                 top: '50%',
                 transform: 'translateY(-50%)',
@@ -677,11 +814,11 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
           >
             <div
               className={`w-0 h-0 border-8 border-transparent ${
-                step.position === 'bottom'
+                actualPosition === 'bottom'
                   ? 'border-b-white dark:border-b-gray-800'
-                  : step.position === 'top'
+                  : actualPosition === 'top'
                   ? 'border-t-white dark:border-t-gray-800'
-                  : step.position === 'left'
+                  : actualPosition === 'left'
                   ? 'border-l-white dark:border-l-gray-800'
                   : 'border-r-white dark:border-r-gray-800'
               }`}

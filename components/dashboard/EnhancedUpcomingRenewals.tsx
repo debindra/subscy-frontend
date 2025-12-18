@@ -98,9 +98,9 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
       {/* Header with Filters */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Upcoming Renewals & Trial Expirations</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Upcoming renewals</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Subscriptions renewing and trials expiring in the next {timeRange} days
+            Subscriptions renewing and trials expiring in the next {timeRange} days.
           </p>
         </div>
 
@@ -108,7 +108,7 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
           {/* Time Range Selector */}
           <div className="flex items-center space-x-2">
             <label className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-              Time Range:
+              Time range:
             </label>
             <select
               value={timeRange}

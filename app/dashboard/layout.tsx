@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Navbar } from '@/components/layout/Navbar';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { InstallPrompt } from '@/components/layout/InstallPrompt';
+// import { InstallPrompt } from '@/components/layout/InstallPrompt'; // PWA disabled
 import { SpotlightSearch } from '@/components/dashboard/SpotlightSearch';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { ProductTour } from '@/components/dashboard/ProductTour';
@@ -25,7 +25,12 @@ export default function DashboardLayout({
   useEffect(() => {
     const handleStartTour = () => {
       resetTour();
-      setShowTour(true);
+      // Always reset to false first, then true to ensure state change triggers reset
+      setShowTour(false);
+      // Use setTimeout to ensure state update completes before setting to true
+      setTimeout(() => {
+        setShowTour(true);
+      }, 0);
     };
 
     window.addEventListener('startTour', handleStartTour);
@@ -85,13 +90,16 @@ export default function DashboardLayout({
       )}
       <Navbar onStartTour={() => {
         resetTour();
-        setShowTour(true);
+        setShowTour(false);
+        setTimeout(() => {
+          setShowTour(true);
+        }, 0);
       }} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-8">
         {children}
       </main>
       <BottomNavigation />
-      <InstallPrompt />
+      {/* <InstallPrompt /> PWA disabled */}
       <SpotlightSearch
         isOpen={isSpotlightOpen}
         onClose={() => setIsSpotlightOpen(false)}

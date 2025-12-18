@@ -34,7 +34,11 @@ export const SpotlightSearch: React.FC<SpotlightSearchProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
-  const { data: subscriptions = [] } = useSubscriptions();
+  
+  // Only fetch subscriptions when the search modal is actually open
+  const { data: subscriptions = [] } = useSubscriptions({
+    enabled: isOpen && !isMobile, // Only fetch when modal is open and not on mobile
+  });
 
   // Focus input when opened
   useEffect(() => {

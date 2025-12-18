@@ -4,13 +4,19 @@ import { subscriptionsApi, Subscription } from '@/lib/api/subscriptions';
 const SUBSCRIPTIONS_KEY = ['subscriptions'] as const;
 const UPCOMING_SUBSCRIPTIONS_KEY = ['subscriptions', 'upcoming'] as const;
 
-export const useSubscriptions = () => {
+export const useSubscriptions = (options?: { enabled?: boolean }) => {
   return useQuery<Subscription[]>({
     queryKey: SUBSCRIPTIONS_KEY,
     queryFn: async () => {
       const res = await subscriptionsApi.getAll();
       return res.data;
     },
+    enabled: options?.enabled !== false, // Default to true, but allow disabling
+    staleTime: 5 * 60 * 1000, // cache as fresh for 5 minutes
+    cacheTime: 30 * 60 * 1000, // keep in cache for 30 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    keepPreviousData: true,
   });
 };
 
@@ -21,6 +27,11 @@ export const useUpcomingSubscriptions = () => {
       const res = await subscriptionsApi.getUpcoming();
       return res.data;
     },
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    keepPreviousData: true,
   });
 };
 
@@ -32,6 +43,11 @@ export const useSubscription = (id: string) => {
       return res.data;
     },
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    keepPreviousData: true,
   });
 };
 

@@ -101,13 +101,18 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quick Actions</h2>
-        <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-2 md:space-y-0">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quick actions</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Jump straight into the most common subscription tasks.
+          </p>
+        </div>
+        <div className="flex items-center justify-between md:justify-end md:space-x-2 text-sm text-gray-500 dark:text-gray-400">
           <span>{subscriptionCount} total subscriptions</span>
           {upcomingCount > 0 && (
             <>
-              <span>•</span>
+              <span className="hidden md:inline">•</span>
               <span className="text-orange-600 dark:text-orange-400 font-semibold">
                 {upcomingCount} upcoming
               </span>
@@ -137,7 +142,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                     {action.title}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {action.description}
                   </p>
                 </div>

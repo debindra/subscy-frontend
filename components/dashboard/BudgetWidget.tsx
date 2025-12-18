@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { settingsApi, BudgetStatus } from '@/lib/api/settings';
 import { formatCurrency } from '@/lib/utils/format';
 import { Card } from '../ui/Card';
@@ -44,7 +45,29 @@ export const BudgetWidget: React.FC<BudgetWidgetProps> = ({ monthlySpending, pre
   }
 
   if (!budgetStatus || !budgetStatus.budgetAmount) {
-    return null; // Don't show widget if no budget is set
+    return (
+      <Card className="border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-950">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              No monthly budget set yet
+            </h3>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Set a monthly budget so we can show you how close your subscriptions are to your limit.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/settings#budget"
+            className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm hover:shadow-md"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Set budget
+          </Link>
+        </div>
+      </Card>
+    );
   }
 
   const { budgetAmount, spendingAmount, percentageUsed, withinBudget, alertTriggered } = budgetStatus;

@@ -10,11 +10,11 @@ import { HeroSection } from '@/app/components/landing/HeroSection';
 import { MetricsSection } from '@/app/components/landing/MetricsSection';
 import { NotificationChannelsSection } from '@/app/components/landing/NotificationChannelsSection';
 import { FeaturesSection } from '@/app/components/landing/FeaturesSection';
-import { StepsSection } from '@/app/components/landing/StepsSection';
-import { TestimonialsSection } from '@/app/components/landing/TestimonialsSection';
+// import { StepsSection } from '@/app/components/landing/StepsSection';
+// import { TestimonialsSection } from '@/app/components/landing/TestimonialsSection';
 import { PricingSection } from '@/app/components/landing/PricingSection';
 import { FAQSection } from '@/app/components/landing/FAQSection';
-import { ContactSection } from '@/app/components/landing/ContactSection';
+// import { ContactSection } from '@/app/components/landing/ContactSection';
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -222,11 +222,11 @@ export default function Home() {
           <MetricsSection />
           <NotificationChannelsSection />
           <FeaturesSection />
-          <StepsSection />
-          <TestimonialsSection />
+          {/* <StepsSection /> */}
+          {/* <TestimonialsSection /> */}
           <PricingSection />
           <FAQSection />
-          <ContactSection />
+          {/* <ContactSection /> */}
         </main>
 
         {/* Cleaner Footer */}

@@ -49,7 +49,7 @@ export function HeroSection({ user }: HeroSectionProps) {
             <Link
               href={user ? '/dashboard' : '/auth/signup'}
               className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-4 sm:px-5 md:px-6 lg:px-8 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base font-bold text-white shadow-xl shadow-brand-accent-500/30 transition-all hover:shadow-2xl hover:shadow-brand-accent-500/40 hover:scale-105 hover:from-brand-accent-600 hover:to-brand-accent-700 w-full sm:w-auto min-h-[44px] sm:min-h-[48px]"
-              aria-label={user ? 'Go to dashboard' : 'Start free trial'}
+              aria-label={user ? 'Go to dashboard' : 'Start free trial - No credit card required'}
             >
               {user ? 'Dashboard' : 'Start Free Trial'}
               <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,6 +68,67 @@ export function HeroSection({ user }: HeroSectionProps) {
               {user ? 'View Insights' : 'Watch Demo'}
             </Link>
           </div>
+          {/* Trust signals - 0.35s delay */}
+          {!user && (
+            <div className="mt-3 sm:mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-600 animate-fade-in-up animate-delay-350">
+              <span className="inline-flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                No credit card required
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="inline-flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                14-day free trial
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="inline-flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Cancel anytime
+              </span>
+            </div>
+          )}
+          {/* User count social proof - 0.36s delay */}
+          {!user && (
+            <div className="mt-4 sm:mt-5 flex items-center justify-center gap-2 text-sm sm:text-base text-slate-600 animate-fade-in-up animate-delay-360">
+              <div className="flex items-center -space-x-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 border-2 border-white flex items-center justify-center text-white text-xs font-bold">A</div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-accent-400 to-brand-accent-600 border-2 border-white flex items-center justify-center text-white text-xs font-bold">B</div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 border-2 border-white flex items-center justify-center text-white text-xs font-bold">C</div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-white flex items-center justify-center text-white text-xs font-bold">+</div>
+              </div>
+              <span className="font-medium text-slate-700">
+                Join <strong className="text-slate-900">10,000+</strong> users managing their subscriptions
+              </span>
+            </div>
+          )}
+          {/* Dashboard Preview - 0.38s delay */}
+          {/* Disabled for now - uncomment when dashboard screenshot is ready
+          <div className="mt-8 sm:mt-10 md:mt-12 lg:mt-16 max-w-5xl mx-auto px-4 sm:px-0 animate-fade-in-up animate-delay-380">
+            <div className="relative rounded-2xl shadow-2xl border border-slate-200/50 overflow-hidden bg-white">
+              <div className="aspect-video bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+                <div className="text-center p-8">
+                  <svg className="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-sm text-slate-500 font-medium">Dashboard Preview</p>
+                  <p className="text-xs text-slate-400 mt-1">Replace with actual screenshot</p>
+                </div>
+                <img 
+                  src="/dashboard-preview.png" 
+                  alt="Subsy Dashboard - Track all your subscriptions in one place"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+          */}
+
           {/* Trust indicators (stats) - 0.4s delay */}
           <div className="mt-6 sm:mt-8 md:mt-10 lg:mt-12 xl:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8 max-w-3xl mx-auto px-4 sm:px-0 animate-fade-in-up animate-delay-400">
             <div className="text-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">

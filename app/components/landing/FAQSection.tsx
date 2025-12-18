@@ -38,7 +38,7 @@ export function FAQSection() {
               >
                 <button
                   onClick={() => toggleFaq(index)}
-                  className="w-full flex items-center justify-between p-4 sm:p-6 text-left focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-xl min-h-[60px] sm:min-h-[70px]"
+                  className="w-full flex items-center justify-between p-4 sm:p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded-xl min-h-[60px] sm:min-h-[70px]"
                   aria-expanded={isExpanded}
                   aria-controls={`faq-answer-${index}`}
                   aria-label={`${isExpanded ? 'Collapse' : 'Expand'} question: ${faq.question}`}

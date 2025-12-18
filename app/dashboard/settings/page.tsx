@@ -9,6 +9,9 @@ import { Switch } from '@/components/ui/Switch';
 import { useToast } from '@/lib/context/ToastContext';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
 import { SUPPORTED_CURRENCIES } from '@/lib/constants/currencies';
+import { BudgetSettingsForm } from '@/components/settings/BudgetSettingsForm';
+import { useUserSettings } from '@/lib/hooks/useUserSettings';
+import { useQueryClient } from '@tanstack/react-query';
 
 // A curated list of common timezones, to avoid pulling in a heavy dependency
 const COMMON_TIMEZONES: { value: string; label: string }[] = [
@@ -31,10 +34,11 @@ const COMMON_TIMEZONES: { value: string; label: string }[] = [
 const DEFAULT_NOTIFICATION_TIME = '09:00';
 
 export default function ReminderSettingsPage() {
-  usePageTitle('Reminder Settings');
+  usePageTitle('Settings');
 
   const { showToast } = useToast();
-  const [settings, setSettings] = useState<UserSettings | null>(null);
+  const queryClient = useQueryClient();
+  const { data: settings, isLoading: loadingInitial } = useUserSettings();
   const [formData, setFormData] = useState<
     Pick<UpdateSettingsData, 'timezone' | 'notificationTime' | 'defaultCurrency' | 'emailAlertEnabled' | 'pushNotificationEnabled'>
   >({
@@ -45,39 +49,27 @@ export default function ReminderSettingsPage() {
     pushNotificationEnabled: true,
   });
   const [loading, setLoading] = useState(false);
-  const [loadingInitial, setLoadingInitial] = useState(true);
   const [error, setError] = useState('');
 
+  // When settings are loaded from the shared query, initialize the form state
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const response = await settingsApi.getSettings();
-        setSettings(response.data);
+    if (!settings) return;
 
-        const currentTimezone = response.data.timezone;
-        const currentNotificationTime =
-          response.data.notificationTime || DEFAULT_NOTIFICATION_TIME;
-        const currentDefaultCurrency = response.data.defaultCurrency ?? 'USD';
-        const currentEmailAlertEnabled = response.data.emailAlertEnabled ?? true;
-        const currentPushNotificationEnabled = response.data.pushNotificationEnabled ?? true;
+    const currentTimezone = settings.timezone;
+    const currentNotificationTime =
+      settings.notificationTime || DEFAULT_NOTIFICATION_TIME;
+    const currentDefaultCurrency = settings.defaultCurrency ?? 'USD';
+    const currentEmailAlertEnabled = settings.emailAlertEnabled ?? true;
+    const currentPushNotificationEnabled = settings.pushNotificationEnabled ?? true;
 
-        setFormData({
-          timezone: currentTimezone,
-          notificationTime: currentNotificationTime,
-          defaultCurrency: currentDefaultCurrency,
-          emailAlertEnabled: currentEmailAlertEnabled,
-          pushNotificationEnabled: currentPushNotificationEnabled,
-        });
-      } catch (err) {
-        console.error('Error loading reminder settings:', err);
-        setError('Failed to load settings. Please try again.');
-      } finally {
-        setLoadingInitial(false);
-      }
-    };
-
-    loadSettings();
-  }, []);
+    setFormData({
+      timezone: currentTimezone,
+      notificationTime: currentNotificationTime,
+      defaultCurrency: currentDefaultCurrency,
+      emailAlertEnabled: currentEmailAlertEnabled,
+      pushNotificationEnabled: currentPushNotificationEnabled,
+    });
+  }, [settings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,9 +92,9 @@ export default function ReminderSettingsPage() {
       console.log('Settings saved successfully:', response.data);
       const updatedSettings = response.data;
       
-      // Update local state with the saved settings
+      // Update shared query cache so all consumers see fresh settings
       if (updatedSettings) {
-        setSettings(updatedSettings);
+        queryClient.setQueryData(['user-settings'], updatedSettings);
         setFormData({
           timezone: updatedSettings.timezone,
           notificationTime: updatedSettings.notificationTime || DEFAULT_NOTIFICATION_TIME,
@@ -161,14 +153,14 @@ export default function ReminderSettingsPage() {
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="space-y-3 text-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Reminder Settings</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Configure your timezone, reminder time, and preferred default currency for your dashboard.
+              Configure reminders, currency, and budgeting preferences for your dashboard.
             </p>
           </div>
         </div>
 
-        <Card className="p-6 space-y-6">
+        <Card id="reminders" className="p-6 space-y-6">
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Notification preferences</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -187,23 +179,31 @@ export default function ReminderSettingsPage() {
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Timezone
               </label>
-              <select
-                value={formData.timezone ?? effectiveTimezone}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    timezone: e.target.value || null,
-                  })
-                }
-                className="w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 border-gray-300 dark:border-gray-600"
-              >
-                <option value="">Use browser default ({effectiveTimezone})</option>
-                {COMMON_TIMEZONES.map((tz) => (
-                  <option key={tz.value} value={tz.value}>
-                    {tz.label} ({tz.value})
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={formData.timezone ?? effectiveTimezone}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      timezone: e.target.value || null,
+                    })
+                  }
+                  className="w-full px-4 py-2.5 pr-10 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 border-gray-300 dark:border-gray-600 appearance-none"
+                >
+                  <option value="">Use browser default ({effectiveTimezone})</option>
+                  {COMMON_TIMEZONES.map((tz) => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.label} ({tz.value})
+                    </option>
+                  ))}
+                </select>
+                {/* Custom dropdown arrow */}
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 This timezone will be used to interpret your daily reminder time.
               </p>
@@ -256,22 +256,30 @@ export default function ReminderSettingsPage() {
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Default currency
               </label>
-              <select
-                value={formData.defaultCurrency ?? 'USD'}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    defaultCurrency: e.target.value || null,
-                  })
-                }
-                className="w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 border-gray-300 dark:border-gray-600"
-              >
-                {SUPPORTED_CURRENCIES.map((currency) => (
-                  <option key={currency.value} value={currency.value}>
-                    {currency.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={formData.defaultCurrency ?? 'USD'}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      defaultCurrency: e.target.value || null,
+                    })
+                  }
+                  className="w-full px-4 py-2.5 pr-10 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 border-gray-300 dark:border-gray-600 appearance-none"
+                >
+                  {SUPPORTED_CURRENCIES.map((currency) => (
+                    <option key={currency.value} value={currency.value}>
+                      {currency.label}
+                    </option>
+                  ))}
+                </select>
+                {/* Custom dropdown arrow */}
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 Spending totals on your dashboard will be converted to this currency for unified viewing. Individual subscription prices remain in their original currencies.
               </p>
@@ -283,6 +291,17 @@ export default function ReminderSettingsPage() {
               </Button>
             </div>
           </form>
+        </Card>
+
+        <Card id="budget" className="p-6 space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Budget</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Set your monthly budget and alerts so the dashboard can highlight when you&apos;re close to your limit.
+            </p>
+          </div>
+
+          <BudgetSettingsForm />
         </Card>
       </div>
     </div>

@@ -18,6 +18,11 @@ export const useDashboardSpending = (baseCurrency?: string) =>
       const res = await analyticsApi.getSpending(baseCurrency);
       return res.data;
     },
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    keepPreviousData: true,
   });
 
 export const useDashboardMonthlyTrend = (months: number) =>
@@ -27,6 +32,11 @@ export const useDashboardMonthlyTrend = (months: number) =>
       const res = await analyticsApi.getMonthlyTrend(months);
       return res.data;
     },
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    keepPreviousData: true,
   });
 
 export const useDashboardCategorySpending = (enabled: boolean) =>
@@ -37,6 +47,11 @@ export const useDashboardCategorySpending = (enabled: boolean) =>
       return Array.isArray(res.data) ? res.data : [];
     },
     enabled,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    keepPreviousData: true,
   });
 
 

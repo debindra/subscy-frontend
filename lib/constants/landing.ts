@@ -3,7 +3,9 @@
 export interface Feature {
   title: string;
   description: string;
-  icon: string;
+  iconName: string;
+  benefit: string;
+  hoverImage?: string;
 }
 
 export interface Metric {
@@ -55,26 +57,29 @@ export const FEATURES: Feature[] = [
     title: 'Unlimited Subscription Tracking',
     description:
       'Track unlimited subscriptions with Pro plan. Organize everything in one centralized dashboard with smart categorization and advanced analytics.',
-    icon: '🔔',
+    iconName: 'tracking',
+    benefit: 'Save $240/year',
   },
   {
     title: 'Customizable Alerts & Notifications',
     description:
       'Set custom reminder windows and receive alerts via email and push notifications. Pro and Ultimate plans offer flexible timing options for every subscription.',
-    icon: '📱',
+    iconName: 'alerts',
+    benefit: 'Never miss a renewal',
   },
   {
     title: 'Advanced Budgeting & Analytics',
     description:
       'Monitor spending with advanced analytics, category-wise budgeting, and smart renewal management. Export data and collaborate with your team on Ultimate plan.',
-    icon: '⚡',
+    iconName: 'analytics',
+    benefit: 'Get 2 hours back every month',
   },
 ];
 
 export const METRICS: Metric[] = [
-  { label: 'Alerts Delivered', value: '2.5M+', trend: '▲ 99.9% delivery rate', trendColor: 'text-primary-600' },
-  { label: 'Renewals Prevented', value: '94%', trend: 'Users avoid unwanted charges', trendColor: 'text-primary-600' },
-  { label: 'Average Time Saved', value: '12 hrs', trend: 'Per month per user', trendColor: 'text-primary-600' },
+  { label: 'Average Subscriptions', value: '12', trend: 'Per person', trendColor: 'text-primary-600' },
+  { label: 'Money Wasted', value: '$240', trend: 'Per year on forgotten renewals', trendColor: 'text-primary-600' },
+  { label: 'Time Spent Tracking', value: '2 hrs', trend: 'Per month manually', trendColor: 'text-primary-600' },
 ];
 
 export const STEPS: Step[] = [
@@ -257,6 +262,21 @@ export const PRICING: PricingTier[] = [
 ];
 
 export const FAQ_ITEMS: FAQItem[] = [
+  {
+    question: 'Is there a free trial?',
+    answer:
+      'Yes! All paid plans come with a 14-day free trial. No credit card required to start. You can explore all features risk-free and cancel anytime during the trial period.',
+  },
+  {
+    question: 'Can I cancel anytime?',
+    answer:
+      'Absolutely. Cancel your subscription at any time with no penalties or fees. Your access will continue until the end of your current billing period, and you won\'t be charged again.',
+  },
+  {
+    question: 'What payment methods do you accept?',
+    answer:
+      'We accept all major credit cards and process payments securely through Stripe. Your payment information is encrypted and never stored on our servers. All transactions are PCI-compliant.',
+  },
   {
     question: 'How reliable are the subscription alerts?',
     answer:

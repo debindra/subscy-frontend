@@ -24,6 +24,7 @@ import { useViewMode } from '@/lib/context/ViewModeContext';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { logger } from '@/lib/utils/logger';
+import { useUserSettings } from '@/lib/hooks/useUserSettings';
 
 export default function SubscriptionsPage() {
   const PAGE_SIZE = 6;
@@ -53,25 +54,12 @@ export default function SubscriptionsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
-  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
+  const { data: userSettings } = useUserSettings();
 
   const {
     data: subscriptions = [],
     isLoading,
   } = useSubscriptions();
-
-  // Fetch user settings to get defaultCurrency
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const response = await settingsApi.getSettings();
-        setUserSettings(response.data);
-      } catch (error) {
-        logger.error('Failed to load user settings', error);
-      }
-    };
-    loadSettings();
-  }, []);
 
   // Get converted spending totals if defaultCurrency is set
   const {
@@ -381,7 +369,7 @@ export default function SubscriptionsPage() {
         </div>
 
         {/* Enhanced Subscription Cards Loading State - Responsive Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-all duration-300 animate-fade-in">
               {/* Card Header with Icon - Responsive */}
@@ -622,20 +610,24 @@ export default function SubscriptionsPage() {
 
       {/* Desktop Filters - Hidden on mobile */}
       <div className="hidden md:block space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          {/* Search */}
-          <input
-            type="text"
-            placeholder="Search name, category, description..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            aria-label="Search subscriptions"
-          />
+        {/* Main filters: Search, Status buttons, and Sort - Responsive for tablet */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {/* Search - Takes full width on tablet, normal width on desktop */}
+          <div className="md:col-span-3 lg:col-span-1">
+            <input
+              type="text"
+              placeholder="Search name, category, description..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              aria-label="Search subscriptions"
+            />
+          </div>
 
+          {/* Status Filter Buttons - Grouped on tablet */}
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
+            className={`px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap ${
               filter === 'all'
                 ? 'bg-primary-600 dark:bg-primary-500 text-white'
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -647,7 +639,7 @@ export default function SubscriptionsPage() {
           </button>
           <button
             onClick={() => setFilter('active')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
+            className={`px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap ${
               filter === 'active'
                 ? 'bg-primary-600 dark:bg-primary-500 text-white'
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -659,7 +651,7 @@ export default function SubscriptionsPage() {
           </button>
           <button
             onClick={() => setFilter('inactive')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
+            className={`px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap ${
               filter === 'inactive'
                 ? 'bg-primary-600 dark:bg-primary-500 text-white'
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -669,19 +661,27 @@ export default function SubscriptionsPage() {
           >
             Inactive ({subscriptions.filter((s) => !s.isActive).length})
           </button>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            aria-label="Sort subscriptions"
-          >
-            <option value="renewalDate-asc">Renewal Date (Earliest)</option>
-            <option value="renewalDate-desc">Renewal Date (Latest)</option>
-            <option value="name-asc">Name (A-Z)</option>
-            <option value="name-desc">Name (Z-A)</option>
-            <option value="price-asc">Price (Low to High)</option>
-            <option value="price-desc">Price (High to Low)</option>
-          </select>
+          {/* Sort Dropdown - Takes full width on tablet, normal width on desktop */}
+          <div className="relative md:col-span-3 lg:col-span-1">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer text-sm"
+              aria-label="Sort subscriptions"
+            >
+              <option value="renewalDate-asc">Renewal Date (Earliest)</option>
+              <option value="renewalDate-desc">Renewal Date (Latest)</option>
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="price-asc">Price (Low to High)</option>
+              <option value="price-desc">Price (High to Low)</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
         </div>
 
         {/* Expand/Collapse Filters Button */}
@@ -706,20 +706,28 @@ export default function SubscriptionsPage() {
 
         {/* Advanced Filters - Only shown when expanded */}
         {isFiltersExpanded && (
-          <div id="advanced-filters-section" role="region" aria-label="Advanced filters">
-            <div className={`grid grid-cols-1 md:grid-cols-${hasCategorization ? '3' : '2'} gap-3`}>
+          <div id="advanced-filters-section" role="region" aria-label="Advanced filters" className="space-y-3">
+            {/* First Row: Category, Billing Cycle, Currency */}
+            <div className={hasCategorization ? "grid grid-cols-1 md:grid-cols-3 gap-3" : "grid grid-cols-1 md:grid-cols-2 gap-3"}>
               {hasCategorization ? (
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  aria-label="Filter by category"
-                >
-                  <option value="all">All Categories</option>
-                  {Array.from(new Set(subscriptions.map((s) => s.category))).sort().map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+                    aria-label="Filter by category"
+                  >
+                    <option value="all">All Categories</option>
+                    {Array.from(new Set(subscriptions.map((s) => s.category))).sort().map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               ) : (
                 <div className="px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-sm"
                      role="status"
@@ -729,34 +737,49 @@ export default function SubscriptionsPage() {
                 </div>
               )}
 
-              <select
-                value={billing}
-                onChange={(e) => setBilling(e.target.value as any)}
-                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Filter by billing cycle"
-              >
-                <option value="all">All Billing Cycles</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-                <option value="weekly">Weekly</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={billing}
+                  onChange={(e) => setBilling(e.target.value as any)}
+                  className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+                  aria-label="Filter by billing cycle"
+                >
+                  <option value="all">All Billing Cycles</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                  <option value="weekly">Weekly</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
 
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Filter by currency"
-              >
-                <option value="all">All Currencies</option>
-                {currencyOptions.map((code) => (
-                  <option key={code} value={code}>{code}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+                  aria-label="Filter by currency"
+                >
+                  <option value="all">All Currencies</option>
+                  {currencyOptions.map((code) => (
+                    <option key={code} value={code}>{code}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
-            {/* Enhanced Filters */}
+            {/* Second Row: Price Range, Trial Status, Date Range */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Price Range - Min and Max */}
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="number"
@@ -775,31 +798,40 @@ export default function SubscriptionsPage() {
                   aria-label="Maximum price"
                 />
               </div>
-              <select
-                value={trial}
-                onChange={(e) => setTrial(e.target.value as any)}
-                className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Filter by trial status"
-              >
-                <option value="all">All Trials</option>
-                <option value="trial">Trials only</option>
-                <option value="nontrial">Non-trials (paid)</option>
-              </select>
+
+              {/* Trial Status */}
+              <div className="relative">
+                <select
+                  value={trial}
+                  onChange={(e) => setTrial(e.target.value as any)}
+                  className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+                  aria-label="Filter by trial status"
+                >
+                  <option value="all">All Trials</option>
+                  <option value="trial">Trials only</option>
+                  <option value="nontrial">Non-trials (paid)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Date Range - Start and End */}
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="date"
-                  placeholder="From"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 [color-scheme:light] dark:[color-scheme:dark]"
                   aria-label="Filter from date"
                 />
                 <input
                   type="date"
-                  placeholder="To"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 [color-scheme:light] dark:[color-scheme:dark]"
                   aria-label="Filter to date"
                 />
               </div>
@@ -821,7 +853,7 @@ export default function SubscriptionsPage() {
           </div>
 
           {/* Subscription Cards */}
-          <div className="space-y-3 md:grid md:grid-cols-1 md:gap-6 lg:grid-cols-2 xl:grid-cols-3 md:space-y-0">
+          <div className="space-y-3 md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-3 md:space-y-0">
             {visibleSubscriptions.map((subscription) => (
               <SubscriptionCard
                 key={subscription.id}
@@ -1045,17 +1077,24 @@ export default function SubscriptionsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Category
                 </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  aria-label="Filter by category"
-                >
-                  <option value="all">All Categories</option>
-                  {Array.from(new Set(subscriptions.map((s) => s.category))).sort().map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+                    aria-label="Filter by category"
+                  >
+                    <option value="all">All Categories</option>
+                    {Array.from(new Set(subscriptions.map((s) => s.category))).sort().map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1064,18 +1103,25 @@ export default function SubscriptionsPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Billing Cycle
               </label>
-              <select
-                value={billing}
-                onChange={(e) => setBilling(e.target.value as any)}
-                className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Filter by billing cycle"
-              >
-                <option value="all">All Billing Cycles</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-                <option value="weekly">Weekly</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={billing}
+                  onChange={(e) => setBilling(e.target.value as any)}
+                  className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+                  aria-label="Filter by billing cycle"
+                >
+                  <option value="all">All Billing Cycles</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                  <option value="weekly">Weekly</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {/* Currency Filter */}
@@ -1083,17 +1129,24 @@ export default function SubscriptionsPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Currency
               </label>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Filter by currency"
-              >
-                <option value="all">All Currencies</option>
-                {currencyOptions.map((code) => (
-                  <option key={code} value={code}>{code}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+                  aria-label="Filter by currency"
+                >
+                  <option value="all">All Currencies</option>
+                  {currencyOptions.map((code) => (
+                    <option key={code} value={code}>{code}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {/* Price Range */}
@@ -1126,16 +1179,23 @@ export default function SubscriptionsPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Trial Status
               </label>
-              <select
-                value={trial}
-                onChange={(e) => setTrial(e.target.value as any)}
-                className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Filter by trial status"
-              >
-                <option value="all">All</option>
-                <option value="trial">Trials only</option>
-                <option value="nontrial">Non-trials (paid)</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={trial}
+                  onChange={(e) => setTrial(e.target.value as any)}
+                  className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+                  aria-label="Filter by trial status"
+                >
+                  <option value="all">All</option>
+                  <option value="trial">Trials only</option>
+                  <option value="nontrial">Non-trials (paid)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {/* Date Range */}
@@ -1168,19 +1228,26 @@ export default function SubscriptionsPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Sort By
               </label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Sort subscriptions"
-              >
-                <option value="renewalDate-asc">Renewal Date (Earliest)</option>
-                <option value="renewalDate-desc">Renewal Date (Latest)</option>
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="name-desc">Name (Z-A)</option>
-                <option value="price-asc">Price (Low to High)</option>
-                <option value="price-desc">Price (High to Low)</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full px-4 py-2 pr-10 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer"
+                  aria-label="Sort subscriptions"
+                >
+                  <option value="renewalDate-asc">Renewal Date (Earliest)</option>
+                  <option value="renewalDate-desc">Renewal Date (Latest)</option>
+                  <option value="name-asc">Name (A-Z)</option>
+                  <option value="name-desc">Name (Z-A)</option>
+                  <option value="price-asc">Price (Low to High)</option>
+                  <option value="price-desc">Price (High to Low)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
 

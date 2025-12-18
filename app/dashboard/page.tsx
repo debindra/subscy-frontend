@@ -1,16 +1,80 @@
 'use client';
 
 import React, { useEffect, useMemo, useState, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/Card';
-import { SpendingChart } from '@/components/dashboard/SpendingChart';
-import { BudgetWidget } from '@/components/dashboard/BudgetWidget';
-import { BudgetSettingsModal } from '@/components/dashboard/BudgetSettingsModal';
-import { SubscriptionSummaryCards } from '@/components/dashboard/SubscriptionSummaryCards';
-import { SubscriptionHealth } from '@/components/dashboard/SubscriptionHealth';
-import { EnhancedUpcomingRenewals } from '@/components/dashboard/EnhancedUpcomingRenewals';
-import { QuickActions } from '@/components/dashboard/QuickActions';
+// Lazily load heavier dashboard widgets to improve initial dashboard load time
+const SpendingChart = dynamic(
+  () =>
+    import('@/components/dashboard/SpendingChart').then(
+      (mod) => mod.SpendingChart
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="mt-4 h-64 bg-gray-200 dark:bg-gray-800 rounded-lg animate-shimmer" />
+    ),
+  }
+);
+
+const BudgetWidget = dynamic(
+  () =>
+    import('@/components/dashboard/BudgetWidget').then(
+      (mod) => mod.BudgetWidget
+    ),
+  {
+    loading: () => (
+      <div className="h-48 bg-gray-100 dark:bg-gray-900 rounded-lg animate-shimmer" />
+    ),
+  }
+);
+
+const SubscriptionSummaryCards = dynamic(
+  () =>
+    import('@/components/dashboard/SubscriptionSummaryCards').then(
+      (mod) => mod.SubscriptionSummaryCards
+    ),
+  {
+    loading: () => (
+      <div className="h-32 bg-gray-100 dark:bg-gray-900 rounded-lg animate-shimmer" />
+    ),
+  }
+);
+
+const EnhancedUpcomingRenewals = dynamic(
+  () =>
+    import('@/components/dashboard/EnhancedUpcomingRenewals').then(
+      (mod) => mod.EnhancedUpcomingRenewals
+    ),
+  {
+    loading: () => (
+      <div className="h-40 bg-gray-100 dark:bg-gray-900 rounded-lg animate-shimmer" />
+    ),
+  }
+);
+
+const QuickActions = dynamic(
+  () =>
+    import('@/components/dashboard/QuickActions').then(
+      (mod) => mod.QuickActions
+    ),
+  {
+    loading: () => (
+      <div className="h-24 bg-gray-100 dark:bg-gray-900 rounded-lg animate-shimmer" />
+    ),
+  }
+);
+// SubscriptionHealth is currently not rendered on the page, so keep it as a regular import if re-enabled
+// import { SubscriptionHealth } from '@/components/dashboard/SubscriptionHealth';
 import { Subscription, CreateSubscriptionData } from '@/lib/api/subscriptions';
-import { CurrencySpendingSummary, CategorySpending, MonthlyTrend, SpendingSummaryResponse, ConvertedSpendingSummary } from '@/lib/api/analytics';
+import {
+  CurrencySpendingSummary,
+  CategorySpending,
+  MonthlyTrend,
+  SpendingSummaryResponse,
+  ConvertedSpendingSummary,
+  SubscriptionStats,
+} from '@/lib/api/analytics';
 import { formatCurrency } from '@/lib/utils/format';
 import { useToast } from '@/lib/context/ToastContext';
 import Link from 'next/link';
@@ -35,10 +99,11 @@ import { useSubscriptionStats } from '@/lib/hooks/useSubscriptionStats';
 import { settingsApi, UserSettings } from '@/lib/api/settings';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
-import { useIsMobile } from '@/lib/hooks/useMediaQuery';
+import { useIsMobile, useIsTablet } from '@/lib/hooks/useMediaQuery';
 import { getUserDisplayName } from '@/lib/utils/userUtils';
 import { logger } from '@/lib/utils/logger';
 import { resetTour } from '@/lib/utils/tour';
+import { useUserSettings } from '@/lib/hooks/useUserSettings';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -49,14 +114,9 @@ function getGreeting(): string {
 
 export default function DashboardPage() {
   usePageTitle('Dashboard');
-  const [upcomingSubscriptions, setUpcomingSubscriptions] = useState<Subscription[]>([]);
   const [currencySummaries, setCurrencySummaries] = useState<CurrencySpendingSummary[]>([]);
   const [convertedSummary, setConvertedSummary] = useState<ConvertedSpendingSummary | null>(null);
-  const [categoryData, setCategoryData] = useState<CategorySpending[]>([]);
-  const [monthlyData, setMonthlyData] = useState<MonthlyTrend[]>([]);
   const [months, setMonths] = useState<number>(6);
-  const [plan, setPlan] = useState<PlanResponse | null>(null);
-  const [planLoading, setPlanLoading] = useState(true);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
@@ -68,17 +128,23 @@ export default function DashboardPage() {
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false);
   const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
   const { showToast } = useToast();
-  const { hasCategorization, loading: planFeaturesLoading } = usePlanFeatures();
+  const { hasCategorization, loading: planFeaturesLoading, plan } = usePlanFeatures() as {
+    hasCategorization: boolean;
+    loading: boolean;
+    plan: PlanResponse | null;
+  };
+  const { data: settingsData } = useUserSettings() as { data: UserSettings | undefined };
   const { user } = useAuth();
   const router = useRouter();
   const isMobile = useIsMobile();
-  
+  const isTablet = useIsTablet();
   const displayName = getUserDisplayName(user);
 
   const {
-    data: upcoming = [],
+    data: upcomingSubscriptionsRaw,
     isLoading: upcomingLoading,
   } = useUpcomingSubscriptions();
+  const upcomingSubscriptions = (upcomingSubscriptionsRaw || []) as Subscription[];
 
   // Define handleCloseEditModal early so it can be used in useEffect
   const handleCloseEditModal = React.useCallback(() => {
@@ -92,12 +158,12 @@ export default function DashboardPage() {
   } = useDashboardSpending(userSettings?.defaultCurrency || undefined);
 
   const {
-    data: trend = [],
+    data: monthlyData = [] as MonthlyTrend[],
     isLoading: trendLoading,
   } = useDashboardMonthlyTrend(months);
 
   const {
-    data: categorySpending = [],
+    data: categoryData = [] as CategorySpending[],
     isLoading: categoryLoading,
     error: categoryError,
   } = useDashboardCategorySpending(hasCategorization);
@@ -107,18 +173,12 @@ export default function DashboardPage() {
     isLoading: statsLoading,
   } = useSubscriptionStats();
 
+  // Sync user settings from shared query cache into local state used by existing logic
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const response = await settingsApi.getSettings();
-        setUserSettings(response.data);
-      } catch (error) {
-        logger.error('Failed to load user settings for dashboard', error);
-      }
-    };
-
-    loadSettings();
-  }, []);
+    if (settingsData) {
+      setUserSettings(settingsData);
+    }
+  }, [settingsData]);
 
   // Keyboard shortcuts with page-specific handlers - disabled on mobile
   useKeyboardShortcuts(
@@ -172,27 +232,19 @@ export default function DashboardPage() {
     }
   }, [categoryError, showToast]);
 
-  // Use refs to track previous stringified values and prevent infinite loops
-  const prevUpcomingStrRef = useRef<string>();
+  // Use refs to track previous stringified values and prevent unnecessary re-processing
   const prevSpendingStrRef = useRef<string>();
   const prevCategorySpendingStrRef = useRef<string>();
   const prevTrendStrRef = useRef<string>();
 
   useEffect(() => {
     if (!planFeaturesLoading) {
-      // Only update if upcoming actually changed (using stringified comparison)
-      const upcomingStr = JSON.stringify(upcoming);
-      if (prevUpcomingStrRef.current !== upcomingStr) {
-        setUpcomingSubscriptions(upcoming);
-        prevUpcomingStrRef.current = upcomingStr;
-      }
-      
       // Only update if spending actually changed
       const spendingStr = JSON.stringify(spending);
       if (prevSpendingStrRef.current !== spendingStr) {
         // Handle spending data - can be new format (SpendingSummaryResponse) or legacy (array)
-        if (spending && typeof spending === 'object' && 'converted' in spending) {
-          const response = spending as SpendingSummaryResponse;
+        if (spending && !Array.isArray(spending)) {
+          const response = spending as unknown as SpendingSummaryResponse;
           setConvertedSummary(response.converted || null);
           setCurrencySummaries(response.byCurrency || []);
         } else if (Array.isArray(spending)) {
@@ -207,47 +259,31 @@ export default function DashboardPage() {
       }
       
       // Only update if categorySpending actually changed
-      const categoryStr = JSON.stringify(categorySpending);
+      const categoryStr = JSON.stringify(categoryData as CategorySpending[]);
       if (prevCategorySpendingStrRef.current !== categoryStr) {
-        setCategoryData(categorySpending);
         prevCategorySpendingStrRef.current = categoryStr;
       }
       
       // Only update if trend actually changed
-      const trendStr = JSON.stringify(trend);
+      const trendStr = JSON.stringify(monthlyData as MonthlyTrend[]);
       if (prevTrendStrRef.current !== trendStr) {
-        setMonthlyData(trend);
         prevTrendStrRef.current = trendStr;
       }
     }
   }, [
-    upcoming,
     spending,
-    categorySpending,
-    trend,
+    categoryData,
+    monthlyData,
     planFeaturesLoading,
   ]);
 
+  // Ensure selected months value respects plan limits once plan is loaded
   useEffect(() => {
-    const fetchPlan = async () => {
-      try {
-        const response = await businessApi.getCurrentPlan();
-        setPlan(response.data);
-
-        const limit = response.data.limits.analytics?.monthly_trend?.max_months ?? null;
-        if (limit && months > limit) {
-          setMonths(limit);
-        }
-      } catch (error) {
-        logger.error('Failed to load plan information', error);
-      } finally {
-        setPlanLoading(false);
-      }
-    };
-
-    fetchPlan();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const limit = plan?.limits.analytics?.monthly_trend?.max_months ?? null;
+    if (limit && months > limit) {
+      setMonths(limit);
+    }
+  }, [plan, months]);
 
   const monthOptions = useMemo(() => {
     const baseOptions = [3, 6, 12, 24];
@@ -451,7 +487,21 @@ export default function DashboardPage() {
     }
   };
 
-  if (upcomingLoading || spendingLoading || trendLoading || planFeaturesLoading || statsLoading) {
+  // Treat as "initial loading" only when we have no data yet; once we have data,
+  // React Query will keep showing it while it refetches in the background.
+  const hasUpcoming = upcomingSubscriptions && (upcomingSubscriptions as Subscription[]).length > 0;
+  const hasSpending = convertedSummary !== null || currencySummaries.length > 0;
+  const hasTrend = monthlyData && (monthlyData as MonthlyTrend[]).length > 0;
+  const hasStats = !!(subscriptionStats as SubscriptionStats | undefined);
+
+  const isInitialLoading =
+    (!hasUpcoming && upcomingLoading) ||
+    (!hasSpending && spendingLoading) ||
+    (!hasTrend && trendLoading) ||
+    (!hasStats && statsLoading) ||
+    planFeaturesLoading;
+
+  if (isInitialLoading) {
     return (
       <div className="space-y-6 sm:space-y-8 animate-fade-in">
         {/* Header Skeleton - Responsive */}
@@ -520,7 +570,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-3">
             {/* Take Tour Button */}
-            <button
+           { !isMobile && !isTablet && (  <button
               onClick={() => {
                 resetTour();
                 window.dispatchEvent(new CustomEvent('startTour'));
@@ -534,8 +584,9 @@ export default function DashboardPage() {
               </svg>
               <span className="hidden sm:inline text-xs font-semibold">Take Tour</span>
             </button>
+            )}
             {/* Keyboard Shortcuts Button - Desktop only (hidden on mobile since shortcuts are disabled) */}
-            {!isMobile && (
+            {!isMobile && !isTablet && (
               <button
                 onClick={() => setIsKeyboardShortcutsOpen(true)}
                 className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors border border-gray-200 dark:border-gray-700"
@@ -676,7 +727,9 @@ export default function DashboardPage() {
       {subscriptionStats && (
         <div data-tour="quick-actions">
           <QuickActions
-            subscriptionCount={subscriptionStats.total}
+            subscriptionCount={
+              (subscriptionStats as unknown as SubscriptionStats).total
+            }
             upcomingCount={upcomingSubscriptions.length}
             onQuickAdd={() => setIsQuickAddModalOpen(true)}
           />
@@ -798,10 +851,15 @@ export default function DashboardPage() {
 
         {/* Budget Widget */}
         <div className="animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Budget Tracking</h2>
-            <button
-              onClick={() => setIsBudgetModalOpen(true)}
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Budget Tracking</h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                See how your current monthly spending compares to your budget.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/settings#budget"
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               title="Configure budget settings"
             >
@@ -810,7 +868,7 @@ export default function DashboardPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span className="hidden sm:inline">Settings</span>
-            </button>
+            </Link>
           </div>
           <BudgetWidget
             key={budgetRefreshKey}
@@ -822,7 +880,9 @@ export default function DashboardPage() {
         {/* Subscription Summary Cards */}
         {subscriptionStats && (
           <div className="animate-fade-in">
-            <SubscriptionSummaryCards stats={subscriptionStats} />
+            <SubscriptionSummaryCards
+              stats={subscriptionStats as unknown as SubscriptionStats}
+            />
           </div>
         )}
 
@@ -844,7 +904,7 @@ export default function DashboardPage() {
               onChange={(e) => setMonths(parseInt(e.target.value, 10))}
               className="px-3 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
               aria-label="Months to display in Monthly Trend chart"
-              disabled={planLoading}
+              disabled={planFeaturesLoading}
             >
               {monthOptions.map((option) => (
                 <option key={option} value={option}>
@@ -856,10 +916,14 @@ export default function DashboardPage() {
         </div>
       </div>
       {hasCategorization ? (
-        <SpendingChart 
-          categoryData={categoryData} 
-          monthlyData={monthlyData}
-          preferredCurrency={userSettings?.defaultCurrency || primarySpending?.currency || 'USD'}
+        <SpendingChart
+          categoryData={categoryData as CategorySpending[]}
+          monthlyData={monthlyData as MonthlyTrend[]}
+          preferredCurrency={
+            userSettings?.defaultCurrency ||
+            primarySpending?.currency ||
+            'USD'
+          }
         />
       ) : (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6 text-center">
@@ -874,135 +938,160 @@ export default function DashboardPage() {
       )}
 
       {/* Subscription Health */}
-      {subscriptionStats && (
+      {/* {subscriptionStats && (
         <SubscriptionHealth
           subscriptions={upcomingSubscriptions}
           stats={subscriptionStats}
           totalMonthlySpending={monthlySpending}
           preferredCurrency={userSettings?.defaultCurrency || primarySpending?.currency || 'USD'}
         />
+      )} */}
+
+      {/* Edit Subscription Modal for Upcoming Renewals */}
+      {isEditModalOpen && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          title="Edit Subscription"
+          size="lg"
+        >
+          <SubscriptionForm
+            subscription={editingSubscription}
+            onSubmit={handleUpcomingUpdate}
+            onCancel={handleCloseEditModal}
+          />
+        </Modal>
       )}
 
-      {/* Budget Settings Modal */}
-      <BudgetSettingsModal
-        isOpen={isBudgetModalOpen}
-        onClose={() => setIsBudgetModalOpen(false)}
-        onSave={handleBudgetSettingsSave}
-      />
-      {/* Edit Subscription Modal for Upcoming Renewals */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={handleCloseEditModal}
-        title="Edit Subscription"
-        size="lg"
-      >
-        <SubscriptionForm
-          subscription={editingSubscription}
-          onSubmit={handleUpcomingUpdate}
-          onCancel={handleCloseEditModal}
-        />
-      </Modal>
-
       {/* Quick Add Subscription Modal */}
-      <Modal
-        isOpen={isQuickAddModalOpen}
-        onClose={() => setIsQuickAddModalOpen(false)}
-        title="Add New Subscription"
-        size="lg"
-      >
-        <SubscriptionForm
-          onSubmit={async (data) => {
-            try {
-              await createSubscription.mutateAsync(data);
-              setIsQuickAddModalOpen(false);
-              showToast('Subscription added successfully!', 'success');
-            } catch (error: any) {
-              const errorMessage = error?.response?.data?.message || error?.response?.data?.detail || 'Failed to add subscription';
-              showToast(errorMessage, 'error');
-              throw error; // Re-throw to let form handle it
-            }
-          }}
-          onCancel={() => setIsQuickAddModalOpen(false)}
-        />
-      </Modal>
+      {isQuickAddModalOpen && (
+        <Modal
+          isOpen={isQuickAddModalOpen}
+          onClose={() => setIsQuickAddModalOpen(false)}
+          title="Add New Subscription"
+          size="lg"
+        >
+          <SubscriptionForm
+            onSubmit={async (data) => {
+              try {
+                await createSubscription.mutateAsync(data);
+                setIsQuickAddModalOpen(false);
+                showToast('Subscription added successfully!', 'success');
+              } catch (error: any) {
+                const errorMessage =
+                  error?.response?.data?.message ||
+                  error?.response?.data?.detail ||
+                  'Failed to add subscription';
+                showToast(errorMessage, 'error');
+                throw error; // Re-throw to let form handle it
+              }
+            }}
+            onCancel={() => setIsQuickAddModalOpen(false)}
+          />
+        </Modal>
+      )}
 
       {/* Keyboard Shortcuts Modal */}
-      <Modal
-        isOpen={isKeyboardShortcutsOpen}
-        onClose={() => setIsKeyboardShortcutsOpen(false)}
-        title="Keyboard Shortcuts"
-        size="md"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            Use these keyboard shortcuts to navigate and perform actions quickly.
-          </p>
-          
-          <div className="space-y-3">
-            <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900 dark:text-white text-sm">Add New Subscription</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Open the subscription form</p>
-              </div>
-              <div className="flex items-center gap-1 ml-4">
-                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
-                  {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}
-                </kbd>
-                <span className="text-gray-400 dark:text-gray-500">+</span>
-                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
-                  N
-                </kbd>
-              </div>
-            </div>
-
-            <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900 dark:text-white text-sm">Spotlight Search</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Quick search for subscriptions, actions, and navigation (Web only)</p>
-              </div>
-              <div className="flex items-center gap-1 ml-4">
-                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
-                  {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}
-                </kbd>
-                <span className="text-gray-400 dark:text-gray-500">+</span>
-                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
-                  K
-                </kbd>
-              </div>
-            </div>
-
-            <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900 dark:text-white text-sm">Show Shortcuts</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Open this help dialog</p>
-              </div>
-              <div className="ml-4">
-                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
-                  ?
-                </kbd>
-              </div>
-            </div>
-
-            <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900 dark:text-white text-sm">Close Modal</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Close any open dialog or modal</p>
-              </div>
-              <div className="ml-4">
-                <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
-                  Esc
-                </kbd>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              Tip: Press <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded">?</kbd> anytime to see this help
+      {isKeyboardShortcutsOpen && (
+        <Modal
+          isOpen={isKeyboardShortcutsOpen}
+          onClose={() => setIsKeyboardShortcutsOpen(false)}
+          title="Keyboard Shortcuts"
+          size="md"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Use these keyboard shortcuts to navigate and perform actions
+              quickly.
             </p>
+
+            <div className="space-y-3">
+              <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                    Add New Subscription
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Open the subscription form
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 ml-4">
+                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                    {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}
+                  </kbd>
+                  <span className="text-gray-400 dark:text-gray-500">+</span>
+                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                    N
+                  </kbd>
+                </div>
+              </div>
+
+              <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                    Spotlight Search
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Quick search for subscriptions, actions, and navigation (Web
+                    only)
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 ml-4">
+                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                    {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}
+                  </kbd>
+                  <span className="text-gray-400 dark:text-gray-500">+</span>
+                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                    K
+                  </kbd>
+                </div>
+              </div>
+
+              <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                    Show Shortcuts
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Open this help dialog
+                  </p>
+                </div>
+                <div className="ml-4">
+                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                    ?
+                  </kbd>
+                </div>
+              </div>
+
+              <div className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                    Close Modal
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Close any open dialog or modal
+                  </p>
+                </div>
+                <div className="ml-4">
+                  <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-sm">
+                    Esc
+                  </kbd>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                Tip:{' '}
+                <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded">
+                  ?
+                </kbd>{' '}
+                anytime to see this help
+              </p>
+            </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 }

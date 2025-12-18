@@ -8,12 +8,14 @@ import { ViewModeProvider } from '@/lib/context/ViewModeContext';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
 
+// PWA Setup - Commented out to disable PWA functionality
 // Dynamically import PWASetup to prevent webpack module loading issues
 // ssr: false ensures it only loads on the client side
-const PWASetup = dynamicImport(
-  () => import('@/components/layout/PWASetup').then((mod) => ({ default: mod.PWASetup })),
-  { ssr: false }
-);
+// const PWASetup = dynamicImport(
+//   () => import('@/components/layout/PWASetup').then((mod) => ({ default: mod.PWASetup })),
+//   { ssr: false }
+// );
+
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -43,7 +45,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Subsy' }],
   creator: 'Subsy',
   publisher: 'Subsy',
-  manifest: '/manifest.json',
+  // manifest: '/manifest.json', // PWA disabled
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://subsy.com'),
   alternates: {
     canonical: '/',
@@ -90,11 +92,11 @@ export const metadata: Metadata = {
     shortcut: ['/favicon.ico'],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Subsy',
-  },
+  // appleWebApp: { // PWA disabled
+  //   capable: true,
+  //   statusBarStyle: 'default',
+  //   title: 'Subsy',
+  // },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
   },
@@ -121,14 +123,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest.json" />
+        {/* <link rel="manifest" href="/manifest.json" /> PWA disabled */}
         <meta name="theme-color" content="#0d9488" />
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className={`${poppins.variable} font-poppins bg-gray-50 dark:bg-gray-900`}>
-        <PWASetup />
+        {/* <PWASetup /> PWA disabled */}
         <PostHogProvider>
           <ThemeProvider>
             <ToastProvider>
