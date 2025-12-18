@@ -13,10 +13,10 @@ export const useSubscriptions = (options?: { enabled?: boolean }) => {
     },
     enabled: options?.enabled !== false, // Default to true, but allow disabling
     staleTime: 5 * 60 * 1000, // cache as fresh for 5 minutes
-    cacheTime: 30 * 60 * 1000, // keep in cache for 30 minutes
+    gcTime: 30 * 60 * 1000, // keep in cache for 30 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 };
 
@@ -28,10 +28,10 @@ export const useUpcomingSubscriptions = () => {
       return res.data;
     },
     staleTime: 5 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 };
 
@@ -44,10 +44,10 @@ export const useSubscription = (id: string) => {
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
-    cacheTime: 30 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 };
 

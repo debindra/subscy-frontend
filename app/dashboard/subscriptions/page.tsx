@@ -314,7 +314,8 @@ export default function SubscriptionsPage() {
   // Calculate totals for export - use converted totals if available, otherwise calculate locally
   const { monthlyTotal, yearlyTotal, totalsCurrency } = useMemo(() => {
     // Check if we have converted totals from API
-    if (spendingData && typeof spendingData === 'object' && 'converted' in spendingData) {
+    // Type guard: SpendingSummaryResponse has 'byCurrency' property, arrays don't
+    if (spendingData && typeof spendingData === 'object' && !Array.isArray(spendingData) && 'byCurrency' in spendingData) {
       const response = spendingData as SpendingSummaryResponse;
       if (response.converted) {
         return {

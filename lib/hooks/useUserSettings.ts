@@ -14,10 +14,10 @@ export const useUserSettings = () => {
     },
     // Treat settings as relatively stable user preferences
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 };
 
