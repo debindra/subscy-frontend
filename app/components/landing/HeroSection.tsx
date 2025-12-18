@@ -94,7 +94,7 @@ export function HeroSection({ user }: HeroSectionProps) {
             </div>
           )}
           {/* User count social proof - 0.36s delay */}
-          {!user && (
+          {/* {!user && (
             <div className="mt-4 sm:mt-5 flex items-center justify-center gap-2 text-sm sm:text-base text-slate-600 animate-fade-in-up animate-delay-360">
               <div className="flex items-center -space-x-2">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 border-2 border-white flex items-center justify-center text-white text-xs font-bold">A</div>
@@ -106,7 +106,7 @@ export function HeroSection({ user }: HeroSectionProps) {
                 Join <strong className="text-slate-900">10,000+</strong> users managing their subscriptions
               </span>
             </div>
-          )}
+          )} */}
           {/* Dashboard Preview - 0.38s delay */}
           {/* Disabled for now - uncomment when dashboard screenshot is ready
           <div className="mt-8 sm:mt-10 md:mt-12 lg:mt-16 max-w-5xl mx-auto px-4 sm:px-0 animate-fade-in-up animate-delay-380">
