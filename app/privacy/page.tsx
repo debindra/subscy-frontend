@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Footer } from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -210,22 +211,7 @@ export default function PrivacyPage() {
         </div>
       </main>
 
-      <footer className="border-t border-slate-200/80 bg-white/95 backdrop-blur-sm pt-10 pb-20 md:pb-24">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 text-sm text-slate-500 md:flex-row">
-          <p className="text-base">© {new Date().getFullYear()} Subsy. All rights reserved.</p>
-          <nav className="flex flex-wrap items-center justify-center gap-6" aria-label="Footer navigation">
-            <Link href="/privacy" className="text-base transition hover:text-primary-600 hover:underline font-medium">
-              Privacy
-            </Link>
-            <Link href="/terms" className="text-base transition hover:text-primary-600 hover:underline">
-              Terms
-            </Link>
-            <Link href="mailto:hello@subsy.tech" className="text-base transition hover:text-primary-600 hover:underline">
-              Contact
-            </Link>
-          </nav>
-        </div>
-      </footer>
+      <Footer showNewsletter={false} />
     </div>
   );
 }

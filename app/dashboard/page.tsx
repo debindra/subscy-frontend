@@ -724,7 +724,7 @@ export default function DashboardPage() {
       )}
 
       {/* Quick Actions - Added prominently after spending summary */}
-      {subscriptionStats && (
+      {/* {subscriptionStats && (
         <div data-tour="quick-actions">
           <QuickActions
             subscriptionCount={
@@ -734,7 +734,7 @@ export default function DashboardPage() {
             onQuickAdd={() => setIsQuickAddModalOpen(true)}
           />
         </div>
-      )}
+      )} */}
 
       {/* Upcoming Renewals - Moved up for better priority */}
       <div data-tour="upcoming-renewals">

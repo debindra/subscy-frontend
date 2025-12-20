@@ -9,20 +9,21 @@ interface HeroSectionProps {
 export function HeroSection({ user }: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-b from-slate-50 via-white to-white min-h-[60vh] sm:min-h-[75vh] md:min-h-screen flex items-center pt-24 sm:pt-24 md:pt-16 pb-8 sm:pb-12 md:pb-16" aria-labelledby="hero-heading">
-      {/* Simplified Background Elements */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        {/* Minimal gradient orbs */}
-        <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-primary-200/30 blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-brand-accent-200/30 blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+      {/* Enhanced Background Elements */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {/* Vibrant gradient orbs */}
+        <div className="absolute -top-32 -right-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-primary-400/40 via-primary-300/30 to-transparent blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute -bottom-32 -left-32 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-brand-accent-400/40 via-brand-accent-300/30 to-transparent blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-gradient-to-r from-primary-200/20 to-brand-accent-200/20 blur-3xl" />
 
         {/* Subtle grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px] opacity-30" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808006_1px,transparent_1px),linear-gradient(to_bottom,#80808006_1px,transparent_1px)] bg-[size:32px_32px] opacity-20" />
       </div>
       
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full py-4 sm:py-6 md:py-8 lg:py-12">
         <div className="mx-auto max-w-4xl text-center">
           {/* Badge - 0s delay */}
-          <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-primary-50 to-brand-accent-50 border border-primary-200/50 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-primary-700 mb-3 sm:mb-4 md:mb-6 shadow-sm animate-fade-in-up animate-delay-0">
+          <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-primary-50 via-brand-accent-50 to-primary-50 border border-primary-200/60 px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-primary-700 mb-4 sm:mb-5 md:mb-6 shadow-md shadow-primary-100/50 animate-fade-in-up animate-delay-0 hover:shadow-lg hover:shadow-primary-200/50 transition-shadow duration-300">
             <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
@@ -48,17 +49,18 @@ export function HeroSection({ user }: HeroSectionProps) {
           <div className="mt-5 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col items-center justify-center gap-2.5 sm:gap-3 md:gap-4 sm:flex-row px-4 sm:px-0 animate-fade-in-up animate-delay-300">
             <Link
               href={user ? '/dashboard' : '/auth/signup'}
-              className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-4 sm:px-5 md:px-6 lg:px-8 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base font-bold text-white shadow-xl shadow-brand-accent-500/30 transition-all hover:shadow-2xl hover:shadow-brand-accent-500/40 hover:scale-105 hover:from-brand-accent-600 hover:to-brand-accent-700 w-full sm:w-auto min-h-[44px] sm:min-h-[48px]"
+              className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-accent-500 via-brand-accent-600 to-brand-accent-500 px-5 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 md:py-4 text-sm sm:text-base font-bold text-white shadow-xl shadow-brand-accent-500/40 transition-all duration-300 hover:shadow-2xl hover:shadow-brand-accent-500/50 hover:scale-105 hover:from-brand-accent-600 hover:via-brand-accent-700 hover:to-brand-accent-600 w-full sm:w-auto min-h-[44px] sm:min-h-[48px] overflow-hidden"
               aria-label={user ? 'Go to dashboard' : 'Start free trial - No credit card required'}
             >
-              {user ? 'Dashboard' : 'Start Free Trial'}
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></span>
+              <span className="relative z-10">{user ? 'Dashboard' : 'Start Free Trial'}</span>
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </Link>
             <Link
               href={user ? '/dashboard/subscriptions' : '#tour'}
-              className="group inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white/80 backdrop-blur-sm px-4 sm:px-5 md:px-6 lg:px-8 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base font-semibold text-slate-700 transition-all hover:bg-white hover:border-primary-300 hover:text-primary-600 hover:shadow-lg w-full sm:w-auto min-h-[44px] sm:min-h-[48px]"
+              className="group relative inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white/90 backdrop-blur-md px-5 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 md:py-4 text-sm sm:text-base font-semibold text-slate-700 transition-all duration-300 hover:bg-white hover:border-primary-400 hover:text-primary-600 hover:shadow-xl hover:shadow-primary-100/50 hover:-translate-y-0.5 w-full sm:w-auto min-h-[44px] sm:min-h-[48px]"
               aria-label={user ? 'View subscription insights' : 'Watch product walkthrough'}
             >
               <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +72,7 @@ export function HeroSection({ user }: HeroSectionProps) {
           </div>
           {/* Trust signals - 0.35s delay */}
           {!user && (
-            <div className="mt-3 sm:mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-600 animate-fade-in-up animate-delay-350">
+            <div className="mt-3 sm:mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-700 animate-fade-in-up animate-delay-350">
               <span className="inline-flex items-center gap-1.5">
                 <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -130,18 +132,18 @@ export function HeroSection({ user }: HeroSectionProps) {
           */}
 
           {/* Trust indicators (stats) - 0.4s delay */}
-          <div className="mt-6 sm:mt-8 md:mt-10 lg:mt-12 xl:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8 max-w-3xl mx-auto px-4 sm:px-0 animate-fade-in-up animate-delay-400">
-            <div className="text-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
-              <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">99.9%</p>
-              <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs md:text-sm font-semibold text-slate-700 uppercase tracking-wider">Alert Delivery Rate</p>
+          <div className="mt-8 sm:mt-10 md:mt-12 lg:mt-14 xl:mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 md:gap-6 max-w-4xl mx-auto px-4 sm:px-0 animate-fade-in-up animate-delay-400">
+            <div className="text-center p-4 sm:p-5 md:p-6 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
+              <p className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-primary-500 to-brand-accent-500 bg-clip-text text-transparent mb-2">99.9%</p>
+              <p className="text-xs sm:text-sm font-bold text-slate-700 uppercase tracking-wider">Alert Delivery Rate</p>
             </div>
-            <div className="text-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
-              <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">24/7</p>
-              <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs md:text-sm font-semibold text-slate-700 uppercase tracking-wider">Real-time Monitoring</p>
+            <div className="text-center p-4 sm:p-5 md:p-6 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
+              <p className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-primary-500 to-brand-accent-500 bg-clip-text text-transparent mb-2">24/7</p>
+              <p className="text-xs sm:text-sm font-bold text-slate-700 uppercase tracking-wider">Real-time Monitoring</p>
             </div>
-            <div className="text-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow">
-              <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-brand-accent-500 bg-clip-text text-transparent">3+</p>
-              <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs md:text-sm font-semibold text-slate-700 uppercase tracking-wider">Notification Channels</p>
+            <div className="text-center p-4 sm:p-5 md:p-6 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
+              <p className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-primary-500 to-brand-accent-500 bg-clip-text text-transparent mb-2">3+</p>
+              <p className="text-xs sm:text-sm font-bold text-slate-700 uppercase tracking-wider">Notification Channels</p>
             </div>
           </div>
         </div>

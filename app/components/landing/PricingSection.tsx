@@ -34,8 +34,27 @@ export function PricingSection() {
       return;
     }
 
-    // If user is on a paid plan and wants to change plan, redirect to portal
-    if (user && isPaidPlan(subscription) && normalizedPlan !== currentPlan && (normalizedPlan === 'pro' || normalizedPlan === 'ultimate')) {
+    // DISABLED: Ultimate plan upgrade logic - can be re-enabled when Ultimate plan is restored
+    // If user is on a paid plan and wants to upgrade (Pro -> Ultimate), allow checkout
+    // Downgrades (Ultimate -> Pro) should still go through portal
+    // if (user && isPaidPlan(subscription) && normalizedPlan !== currentPlan) {
+    //   // Allow upgrade (Pro -> Ultimate) via checkout
+    //   if (currentPlan === 'pro' && normalizedPlan === 'ultimate') {
+    //     // Continue to checkout flow below
+    //   } else {
+    //     // For downgrades or other changes, use portal
+    //     try {
+    //       await openPortal();
+    //     } catch (error: any) {
+    //       console.error('Portal error:', error);
+    //       showToast('Failed to open billing portal. Please try again.', 'error');
+    //     }
+    //     return;
+    //   }
+    // }
+    
+    // For paid plan changes, use portal
+    if (user && isPaidPlan(subscription) && normalizedPlan !== currentPlan) {
       try {
         await openPortal();
       } catch (error: any) {
@@ -72,7 +91,8 @@ export function PricingSection() {
     }
 
     // User is logged in, initiate checkout
-    if (normalizedPlan !== 'pro' && normalizedPlan !== 'ultimate') {
+    // DISABLED: Ultimate plan - can be re-enabled when Ultimate plan is restored
+    if (normalizedPlan !== 'pro') {
       showToast('Invalid plan selected', 'error');
       return;
     }
@@ -80,7 +100,7 @@ export function PricingSection() {
     setLoadingPlan(planName);
     try {
       await initiateCheckout(
-        normalizedPlan as 'pro' | 'ultimate',
+        normalizedPlan as 'pro',
         isAnnual ? 'annual' : 'monthly'
       );
     } catch (error: any) {
@@ -124,13 +144,14 @@ export function PricingSection() {
         // User is on Pro/Ultimate, viewing Starter - they can't downgrade to free
         return 'Go to Dashboard';
       }
+      // DISABLED: Ultimate plan upgrade/downgrade logic - can be re-enabled when Ultimate plan is restored
       // User can upgrade/downgrade through portal
-      if (normalizedPlan === 'pro' && currentPlan === 'ultimate') {
-        return 'Downgrade to Pro';
-      }
-      if (normalizedPlan === 'ultimate' && currentPlan === 'pro') {
-        return 'Upgrade to Ultimate';
-      }
+      // if (normalizedPlan === 'pro' && currentPlan === 'ultimate') {
+      //   return 'Downgrade to Pro';
+      // }
+      // if (normalizedPlan === 'ultimate' && currentPlan === 'pro') {
+      //   return 'Upgrade to Ultimate';
+      // }
     }
 
     // Default button text
@@ -157,50 +178,29 @@ export function PricingSection() {
   };
 
   return (
-    <section id="pricing" className="py-12 sm:py-16 md:py-24" aria-labelledby="pricing-heading">
+    <section id="pricing" className="py-16 sm:py-20 md:py-28 bg-gradient-to-b from-white to-slate-50" aria-labelledby="pricing-heading">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10 sm:mb-12 md:mb-16">
-          <span className="inline-flex items-center justify-center rounded-full bg-primary-50 border border-primary-100 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-medium uppercase tracking-wider text-primary-700">
+        {/* Header Section */}
+        <div className="text-center mb-12 sm:mb-16 md:mb-20">
+          <span className="inline-flex items-center justify-center rounded-full bg-primary-50 border border-primary-200 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary-700 mb-6">
             Pricing
           </span>
-          <h2 id="pricing-heading" className="mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 px-4 sm:px-0">Simple, transparent pricing</h2>
-          <p className="mt-4 sm:mt-6 mx-auto max-w-2xl text-base sm:text-lg leading-8 text-slate-600 px-4 sm:px-0">
-            Start free with Starter plan for essential tracking, or upgrade to Pro for unlimited subscriptions and advanced budgeting, or Ultimate for team collaboration and data exports.
-          </p>
-          <p className="mt-4 sm:mt-5 mx-auto max-w-2xl text-sm sm:text-base text-slate-500 px-4 sm:px-0">
-            All plans include a 14-day free trial. No credit card required to start.
+          <h2 id="pricing-heading" className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 px-4 sm:px-0">
+            Simple, transparent pricing
+          </h2>
+          <p className="mt-5 sm:mt-6 mx-auto max-w-3xl text-lg sm:text-xl leading-8 text-slate-600 px-4 sm:px-0">
+            Start free with essential tracking, or unlock unlimited subscriptions and advanced features with Pro.
           </p>
 
-          {/* Savings Message */}
-          <div className="mt-6 sm:mt-8 mx-auto max-w-2xl px-4 sm:px-0">
-            <div className="p-4 sm:p-6 bg-gradient-to-r from-primary-50 to-brand-accent-50 rounded-2xl border border-primary-200/50">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0">
-                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">
-                    💡 Pro Tip: Most users save $240+ per year
-                  </h3>
-                  <p className="text-sm sm:text-base text-slate-600">
-                    The average user prevents 3 unwanted renewals in their first month, making Pro plan pay for itself in savings.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Billing Toggle - Enhanced */}
-          <div className="mt-8 sm:mt-10 flex flex-col items-center justify-center gap-3 sm:gap-4">
-            <div className="relative inline-flex items-center gap-2 sm:gap-4 bg-slate-100 p-1 sm:p-1.5 rounded-xl">
+          {/* Billing Toggle - Enhanced Design */}
+          <div className="mt-10 sm:mt-12 flex flex-col items-center justify-center gap-4">
+            <div className="relative inline-flex items-center gap-1 bg-slate-100 p-1.5 rounded-xl shadow-inner">
               <button
                 type="button"
                 onClick={() => setIsAnnual(false)}
-                className={`relative px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
+                className={`relative px-6 sm:px-8 py-3 rounded-lg font-semibold text-sm sm:text-base transition-all duration-200 whitespace-nowrap ${
                   !isAnnual
-                    ? 'bg-white text-slate-900 shadow-md'
+                    ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
                 aria-label="Monthly billing"
@@ -210,99 +210,145 @@ export function PricingSection() {
               <button
                 type="button"
                 onClick={() => setIsAnnual(true)}
-                className={`relative px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
+                className={`relative px-6 sm:px-8 py-3 rounded-lg font-semibold text-sm sm:text-base transition-all duration-200 whitespace-nowrap ${
                   isAnnual
-                    ? 'bg-white text-slate-900 shadow-md'
+                    ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
                 aria-label="Yearly billing"
               >
                 Yearly
+                {isAnnual && (
+                  <span className="absolute -top-2 -right-2 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-primary-500 to-primary-600 text-white text-xs font-bold px-2 py-0.5 shadow-md">
+                    Save 20%
+                  </span>
+                )}
               </button>
             </div>
             {isAnnual && (
-              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm font-bold text-white shadow-lg">
-                  <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Save 16%
-                </span>
-              </div>
+              <p className="text-sm text-slate-600 animate-in fade-in slide-in-from-top-2 duration-300">
+                <span className="font-semibold text-primary-600">Save $12.00 per year</span> with annual billing
+              </p>
             )}
           </div>
         </div>
-        <div className="grid gap-6 sm:gap-8 md:grid-cols-3 max-w-6xl mx-auto">
+
+        {/* Pricing Cards */}
+        <div className="grid gap-12 sm:gap-16 lg:grid-cols-2 max-w-5xl mx-auto">
           {PRICING.map((tier) => {
             const normalizedPlan = tier.name.toLowerCase();
             const currentPlan = subscription?.plan?.toLowerCase() || 'starter';
             const isCurrentPlan = normalizedPlan === currentPlan;
             const isActive = isActiveSubscription(subscription);
             const isCurrentActivePlan = isCurrentPlan && isActive && user;
+            const monthlyPriceNum = tier.monthlyPrice === '$0' ? 0 : parseFloat(tier.monthlyPrice?.replace('$', '') || '0');
+            const annualPriceNum = tier.annualPrice ? parseFloat(tier.annualPrice.replace('$', '')) : null;
+            const effectiveMonthlyPrice = isAnnual && annualPriceNum ? (annualPriceNum / 12).toFixed(2) : null;
 
             return (
             <article
               key={tier.name}
-              className={`relative rounded-2xl border bg-white p-6 sm:p-8 transition-all duration-300 ${
+              className={`relative rounded-2xl border-2 bg-white p-6 sm:p-7 transition-all duration-300 ${
                 tier.highlighted
-                  ? 'border-primary-300 shadow-lg md:scale-105'
+                  ? 'border-primary-400 shadow-2xl lg:scale-[1.02] lg:-mt-4 lg:mb-4'
                   : isCurrentActivePlan
-                  ? 'border-green-300 shadow-md ring-2 ring-green-200'
-                  : 'border-slate-200 hover:border-primary-200 hover:shadow-md'
+                  ? 'border-primary-300 shadow-xl ring-2 ring-primary-200'
+                  : 'border-slate-200 hover:border-primary-300 hover:shadow-xl'
               }`}
             >
+              {/* Badge */}
               {isCurrentActivePlan ? (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-green-500 px-4 py-1.5 text-xs font-bold text-white shadow-md z-10">
-                  Current Plan
-                </span>
-              ) : tier.highlighted ? (
-                <span className="absolute -top-5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-lg ring-2 ring-brand-accent-200 animate-pulse z-10">
-                  <span className="flex items-center gap-1.5">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-5 py-2 text-sm font-bold text-white shadow-lg">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Current Plan
+                  </span>
+                </div>
+              ) : tier.highlighted ? (
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-6 py-2.5 text-sm font-bold text-white shadow-xl ring-4 ring-brand-accent-200/50">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                     Most Popular
                   </span>
-                </span>
+                </div>
               ) : null}
-              <h3 className="text-xl font-bold text-slate-900 mb-2">{tier.name}</h3>
-              <p className="text-sm text-slate-600 mb-6">{tier.description}</p>
+
+              {/* Plan Header */}
+              <div className="mb-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">{tier.name}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{tier.description}</p>
+              </div>
+
+              {/* Value Proposition for Pro */}
               {tier.highlighted && (
-                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <p className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-200">
-                    💰 Save an average of <strong>$240/year</strong> by preventing unwanted renewals
-                  </p>
+                <div className="mb-5 p-3 bg-gradient-to-r from-primary-50 to-brand-accent-50 rounded-lg border border-primary-200/50">
+                  <div className="flex items-start gap-2.5">
+                    <svg className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-900">
+                        Save an average of <span className="text-primary-600">$240/year</span>
+                      </p>
+                      <p className="text-xs text-slate-600 mt-0.5">by preventing unwanted renewals</p>
+                    </div>
+                  </div>
                 </div>
               )}
-              <div className="mb-6 sm:mb-8">
-                <div className="flex items-baseline gap-2">
+
+              {/* Pricing Display */}
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2 mb-1.5">
                   <span className="text-4xl sm:text-5xl font-bold text-slate-900">
                     {isAnnual && tier.annualPrice ? tier.annualPrice : (tier.monthlyPrice || '$0')}
                   </span>
                   {tier.monthlyPrice === '$0' ? (
-                    <span className="text-sm sm:text-base text-slate-500">forever</span>
+                    <span className="text-base text-slate-500 font-medium">forever</span>
                   ) : (
-                    <span className="text-sm sm:text-base text-slate-500">
+                    <span className="text-base text-slate-500 font-medium">
                       {isAnnual && tier.annualPrice ? '/year' : '/month'}
                     </span>
                   )}
                 </div>
-                {tier.monthlyPrice !== '$0' && (
-                  <p className="mt-2 text-xs sm:text-sm text-slate-600">
-                    14-day free trial, then {isAnnual && tier.annualPrice ? tier.annualPrice + '/year' : tier.monthlyPrice + '/month'}
+                {effectiveMonthlyPrice && (
+                  <p className="text-xs text-slate-600 mb-1.5">
+                    <span className="font-semibold">${effectiveMonthlyPrice}/month</span> when billed annually
                   </p>
                 )}
+                {tier.monthlyPrice !== '$0' && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <p className="text-xs text-slate-600">
+                      14-day free trial • No credit card required
+                    </p>
+                  </div>
+                )}
                 {isAnnual && tier.annualSavings && (
-                  <span className="inline-block mt-2 text-xs font-semibold text-primary-600 bg-primary-50 px-2 py-1 rounded">
-                    {tier.annualSavings}
-                  </span>
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-primary-100 px-2.5 py-1">
+                    <svg className="w-3.5 h-3.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <span className="text-xs font-bold text-primary-700">{tier.annualSavings}</span>
+                  </div>
                 )}
               </div>
-              <ul className="mb-8 sm:mb-10 space-y-2 sm:space-y-3 text-sm text-slate-600">
+
+              {/* Features List */}
+              <ul className="mb-8 space-y-3">
                 {tier.features.map((feature, index) => (
-                  <li key={`${tier.name}-${feature}-${index}`} className="flex items-start gap-2">
-                    <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-primary-500 flex-shrink-0" />
-                    <span>
+                  <li key={`${tier.name}-${feature}-${index}`} className="flex items-start gap-2.5">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-sm text-slate-700 leading-relaxed">
                       {feature === 'Unlimited Subscription Tracking' || feature === 'Advanced Spending Analytics' ? (
                         <strong className="font-bold text-slate-900">{feature}</strong>
                       ) : feature === 'All Pro Features' || feature === 'Team Sharing (5 Users)' ? (
@@ -314,39 +360,68 @@ export function PricingSection() {
                   </li>
                 ))}
               </ul>
+
+              {/* CTA Button */}
               <button
                 onClick={() => handlePlanSelect(tier.name)}
                 disabled={isButtonLoading(tier.name) || authLoading || subscriptionLoading || isPlanDisabled(tier.name)}
-                className={`inline-flex w-full items-center justify-center rounded-lg px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
+                className={`inline-flex w-full items-center justify-center rounded-lg px-5 py-3 text-sm font-bold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
                   isCurrentActivePlan
-                    ? 'bg-green-500 text-white shadow-md hover:bg-green-600 hover:shadow-lg'
+                    ? 'bg-primary-600 text-white shadow-lg hover:bg-primary-700 hover:shadow-xl hover:scale-[1.02]'
                     : tier.highlighted
-                    ? 'bg-brand-accent-500 text-white shadow-md hover:bg-brand-accent-600 hover:shadow-lg'
-                    : 'border-2 border-primary-300 text-primary-600 hover:border-primary-400 hover:bg-primary-50'
+                    ? 'bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white shadow-lg hover:from-brand-accent-600 hover:to-brand-accent-700 hover:shadow-xl hover:scale-[1.02]'
+                    : 'border-2 border-primary-500 text-primary-600 bg-white hover:border-primary-600 hover:bg-primary-50 hover:scale-[1.02]'
                 }`}
                 aria-label={isCurrentActivePlan ? `Manage ${tier.name} subscription` : `Get started with ${tier.name} plan`}
               >
-                {getButtonText(tier.name)}
+                {isButtonLoading(tier.name) ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </span>
+                ) : (
+                  getButtonText(tier.name)
+                )}
               </button>
             </article>
           );
           })}
         </div>
 
-        {/* Trust badges */}
-        <div className="mt-10 sm:mt-12 text-center">
-          <p className="text-sm text-slate-500 flex items-center justify-center gap-2 flex-wrap">
-            <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-            <span>Secure payment via Stripe</span>
-            <span className="text-slate-300">•</span>
-            <span>Cancel anytime</span>
-            <span className="text-slate-300">•</span>
-            <span>No hidden fees</span>
-            <span className="text-slate-300">•</span>
-            <span>14-day free trial</span>
-          </p>
+        {/* Trust Badges */}
+        <div className="mt-16 sm:mt-20">
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-sm text-slate-600">
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span className="font-medium">Secure payment via Stripe</span>
+            </div>
+            <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-300"></div>
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-medium">Cancel anytime</span>
+            </div>
+            <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-300"></div>
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-medium">No hidden fees</span>
+            </div>
+            <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-300"></div>
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-medium">14-day free trial</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

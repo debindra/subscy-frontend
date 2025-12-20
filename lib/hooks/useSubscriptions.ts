@@ -12,11 +12,12 @@ export const useSubscriptions = (options?: { enabled?: boolean }) => {
       return res.data;
     },
     enabled: options?.enabled !== false, // Default to true, but allow disabling
-    staleTime: 5 * 60 * 1000, // cache as fresh for 5 minutes
-    gcTime: 30 * 60 * 1000, // keep in cache for 30 minutes
+    staleTime: 0, // Always consider data stale - ensures immediate refetch after invalidation
+    gcTime: 30 * 60 * 1000, // 30 minutes (renamed from cacheTime in v5)
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData,
+    refetchOnMount: true, // Override global setting - ensure refetch when component mounts or query becomes active
+    placeholderData: (previousData) => previousData, // Keep previous data while refetching (v5 syntax)
   });
 };
 
@@ -27,11 +28,12 @@ export const useUpcomingSubscriptions = () => {
       const res = await subscriptionsApi.getUpcoming();
       return res.data;
     },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 0, // Always consider data stale - ensures immediate refetch after invalidation
+    gcTime: 30 * 60 * 1000, // 30 minutes (renamed from cacheTime in v5)
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData,
+    refetchOnMount: true, // Override global setting - ensure refetch when component mounts or query becomes active
+    placeholderData: (previousData) => previousData, // Keep previous data while refetching (v5 syntax)
   });
 };
 
@@ -43,11 +45,12 @@ export const useSubscription = (id: string) => {
       return res.data;
     },
     enabled: !!id,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 0, // Always consider data stale - ensures immediate refetch after invalidation
+    gcTime: 30 * 60 * 1000, // 30 minutes (renamed from cacheTime in v5)
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData,
+    refetchOnMount: true, // Override global setting - ensure refetch when component mounts or query becomes active
+    placeholderData: (previousData) => previousData, // Keep previous data while refetching (v5 syntax)
   });
 };
 

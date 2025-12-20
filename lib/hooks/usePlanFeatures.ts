@@ -43,7 +43,7 @@ export function usePlanFeatures() {
   const hasSharedAccounts = plan?.limits?.shared_accounts === true || plan?.limits?.team_sharing === true || isUltimate;
   const hasCustomizableReminders = plan?.limits?.customizable_reminders === true || isPro || isUltimate;
   const hasPushNotifications = plan?.limits?.push_notifications === true || isPro || isUltimate;
-  const hasDataImport = plan?.limits?.data_import === true || isPro || isUltimate;
+  const hasDataImport = false;  // Feature disabled
   const hasMultiCurrency = plan?.limits?.multi_currency === true || isUltimate;
   const hasExports = (plan?.limits?.exports?.csv === true || plan?.limits?.exports?.pdf === true) || isUltimate;
   const maxSubscriptions = plan?.limits?.max_subscriptions ?? (isStarter ? 5 : null);

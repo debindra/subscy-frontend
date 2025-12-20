@@ -7,17 +7,14 @@ import { getFeatureIcon } from '@/lib/utils/icons';
 export function FeaturesSection() {
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
 
-  // Plan comparison data
-  const comparisonFeatures = [
-    { name: 'Unlimited Subscription Tracking', starter: false, pro: true, ultimate: true },
-    { name: 'Customizable Reminder Timing', starter: false, pro: true, ultimate: true },
-    { name: 'Email & Push Notifications', starter: false, pro: true, ultimate: true },
-    { name: 'Advanced Spending Analytics', starter: false, pro: true, ultimate: true },
-    { name: 'Category-Based Budgeting', starter: false, pro: true, ultimate: true },
-    { name: 'Data Export (CSV/PDF)', starter: false, pro: false, ultimate: true },
-    { name: 'Multi-Currency Support', starter: false, pro: false, ultimate: true },
-    { name: 'Team Sharing', starter: false, pro: false, ultimate: true },
-  ];
+  // DISABLED: Plan comparison data - can be re-enabled if comparison section is restored
+  // const comparisonFeatures = [
+  //   { name: 'Unlimited Subscription Tracking', starter: false, pro: true },
+  //   { name: 'Customizable Reminder Timing', starter: false, pro: true },
+  //   { name: 'Email & Push Notifications', starter: false, pro: true },
+  //   { name: 'Advanced Spending Analytics', starter: false, pro: true },
+  //   { name: 'Category-Based Budgeting', starter: false, pro: true },
+  // ];
 
   return (
     <section id="tour" className="py-12 sm:py-16 md:py-24" aria-labelledby="features-heading">
@@ -30,7 +27,7 @@ export function FeaturesSection() {
             Everything you need to master your subscriptions
           </h2>
           <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-8 text-slate-600 px-4 sm:px-0">
-            From unlimited tracking to advanced analytics and team collaboration, Subsy provides the tools you need to stay in control of your recurring expenses.
+            From unlimited tracking to advanced analytics, Subsy provides the tools you need to stay in control of your recurring expenses.
           </p>
         </div>
         
@@ -75,11 +72,11 @@ export function FeaturesSection() {
           ))}
         </div>
 
-        {/* Plan Comparison Table */}
-        <div className="mt-16 sm:mt-20 md:mt-24">
+        {/* DISABLED: Plan Comparison Table - can be re-enabled if needed */}
+        {/* <div className="mt-16 sm:mt-20 md:mt-24">
           <div className="text-center mb-8 sm:mb-12">
             <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-              Starter vs Pro vs Ultimate
+              Starter vs Pro
             </h3>
             <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
               Compare plans to find the perfect fit for your subscription management needs
@@ -87,7 +84,7 @@ export function FeaturesSection() {
           </div>
           
           {/* Desktop Table */}
-          <div className="hidden md:block overflow-x-auto">
+          {/* <div className="hidden md:block overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr>
@@ -125,17 +122,8 @@ export function FeaturesSection() {
                         <span className="text-slate-400">—</span>
                       )}
                     </td>
-                    <td className={`p-4 text-center ${PRICING[1].highlighted ? 'bg-brand-accent-50/50' : ''}`}>
+                    <td className={`p-4 text-center ${PRICING[1]?.highlighted ? 'bg-brand-accent-50/50' : ''}`}>
                       {feature.pro ? (
-                        <svg className="w-6 h-6 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
-                    </td>
-                    <td className="p-4 text-center">
-                      {feature.ultimate ? (
                         <svg className="w-6 h-6 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
@@ -150,7 +138,7 @@ export function FeaturesSection() {
           </div>
 
           {/* Mobile/Tablet Cards */}
-          <div className="md:hidden space-y-6">
+          {/* <div className="md:hidden space-y-6">
             {PRICING.map((tier) => (
               <div
                 key={tier.name}
@@ -172,8 +160,7 @@ export function FeaturesSection() {
                   {comparisonFeatures.map((feature) => {
                     const hasFeature =
                       (tier.name === 'Starter' && feature.starter) ||
-                      (tier.name === 'Pro' && feature.pro) ||
-                      (tier.name === 'Ultimate' && feature.ultimate);
+                      (tier.name === 'Pro' && feature.pro);
                     
                     return (
                       <div key={feature.name} className="flex items-center justify-between">
@@ -192,7 +179,7 @@ export function FeaturesSection() {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );
