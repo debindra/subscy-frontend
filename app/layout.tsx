@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     default: 'Subsy - Track & Manage Your Subscriptions',
     template: '%s | Subsy',
   },
-  description: 'Subsy brings together payments, renewals, and vendor analytics so finance and operations teams can orchestrate every recurring dollar in real time. Track subscriptions, automate renewals, and optimize spend.',
+  description: 'Track and manage all your subscriptions in one place. Get timely alerts via email and push notifications, never miss a renewal, and optimize your recurring spend. Free plan available. Start your 14-day free trial today - no credit card required.',
   keywords: [
     'subscription management',
     'recurring spend tracking',
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     url: '/',
     siteName: 'Subsy',
     title: 'Subsy - Track & Manage Your Subscriptions',
-    description: 'Subsy brings together payments, renewals, and vendor analytics so finance and operations teams can orchestrate every recurring dollar in real time.',
+    description: 'Track and manage all your subscriptions in one place. Get timely alerts via email and push notifications, never miss a renewal, and optimize your recurring spend. Free plan available. Start your 14-day free trial today - no credit card required.',
     images: [
       {
         url: '/og-image.png',
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Subsy - Track & Manage Your Subscriptions',
-    description: 'Track subscriptions, automate renewals, and optimize spend with Subsy.',
+    description: 'Track and manage all your subscriptions in one place. Get timely alerts, never miss a renewal, and optimize your recurring spend. Free plan available.',
     images: ['/og-image.png'],
     creator: '@subsy',
   },

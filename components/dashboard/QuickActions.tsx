@@ -18,7 +18,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   onQuickAdd,
 }) => {
   const { showToast } = useToast();
-  const [isImporting, setIsImporting] = useState(false);
 
   const handleQuickAdd = () => {
     if (onQuickAdd) {
@@ -26,19 +25,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     } else {
       // Fallback: redirect to subscriptions page
       window.location.href = '/dashboard/subscriptions?action=add';
-    }
-  };
-
-  const handleImportSubscriptions = async () => {
-    setIsImporting(true);
-    try {
-      // Simulate import process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      showToast('Subscription import feature coming soon!', 'info');
-    } catch (error) {
-      showToast('Failed to import subscriptions', 'error');
-    } finally {
-      setIsImporting(false);
     }
   };
 
@@ -58,19 +44,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       onClick: handleQuickAdd,
       color: 'bg-brand-accent-500',
       textColor: 'text-brand-accent-600 dark:text-brand-accent-400',
-    },
-    {
-      title: 'Import Subscriptions',
-      description: 'Import from bank or credit card',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-        </svg>
-      ),
-      onClick: handleImportSubscriptions,
-      loading: isImporting,
-      color: 'bg-blue-500',
-      textColor: 'text-blue-600 dark:text-blue-400',
     },
     {
       title: 'Mark All Paid',

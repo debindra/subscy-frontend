@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import Script from 'next/script';
 import { FAQ_ITEMS } from '@/lib/constants/landing';
@@ -14,6 +13,7 @@ import { FeaturesSection } from '@/app/components/landing/FeaturesSection';
 // import { TestimonialsSection } from '@/app/components/landing/TestimonialsSection';
 import { PricingSection } from '@/app/components/landing/PricingSection';
 import { FAQSection } from '@/app/components/landing/FAQSection';
+import { Footer } from '@/components/layout/Footer';
 // import { ContactSection } from '@/app/components/landing/ContactSection';
 
 export default function Home() {
@@ -69,7 +69,7 @@ export default function Home() {
     applicationCategory: 'FinanceApplication',
     operatingSystem: 'Web',
     url: 'https://subsy.com',
-    description: 'Subsy brings together payments, renewals, and vendor analytics so finance and operations teams can orchestrate every recurring dollar in real time.',
+    description: 'Track and manage all your subscriptions in one place. Get timely alerts via email and push notifications, never miss a renewal, and optimize your recurring spend. Free plan available with 14-day free trial.',
     offers: {
       '@type': 'Offer',
       price: '0',
@@ -99,12 +99,12 @@ export default function Home() {
       'App Push Notifications',
       'Advanced Spending Analytics',
       'Category-Wise Budgeting',
-      'Data Import & Batch Upload',
       'Smart Renewal Management',
-      'Multi-Currency Support',
-      'Team Sharing & Collaboration',
-      'Data Export (CSV/PDF)',
-      'Priority Support',
+      // DISABLED: Ultimate plan features - can be re-enabled when Ultimate plan is restored
+      // 'Multi-Currency Support',
+      // 'Team Sharing & Collaboration',
+      // 'Data Export (CSV/PDF)',
+      // 'Priority Support',
     ],
     screenshot: [
       {
@@ -134,11 +134,11 @@ export default function Home() {
     url: 'https://subsy.com',
     logo: 'https://subsy.com/logo.png',
     description: 'Subscription finance platform for modern finance operations. Track, manage, and optimize your recurring subscriptions with intelligent alerts and analytics.',
-    email: 'hello@subsy.com',
+    email: 'hello@subsy.tech',
     contactPoint: [
       {
         '@type': 'ContactPoint',
-        email: 'hello@subsy.com',
+        email: 'hello@subsy.tech',
         contactType: 'customer service',
         areaServed: 'Worldwide',
         availableLanguage: 'English',
@@ -184,6 +184,56 @@ export default function Home() {
     })),
   };
 
+  // Breadcrumb structured data for better navigation
+  const breadcrumbStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://subsy.com',
+      },
+    ],
+  };
+
+  // Enhanced pricing structured data
+  const pricingStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'OfferCatalog',
+    name: 'Subsy Subscription Plans',
+    itemListElement: [
+      {
+        '@type': 'Offer',
+        name: 'Starter Plan',
+        description: 'Basic organization, critical reminders. 5 Subscriptions, Email Alerts (7 days before renewal), Basic Spending Summary, Overall Budget Tracking.',
+        price: '0',
+        priceCurrency: 'USD',
+        availability: 'https://schema.org/InStock',
+        url: 'https://subsy.com/auth/signup',
+        category: 'Free',
+      },
+      {
+        '@type': 'Offer',
+        name: 'Pro Plan',
+        description: 'Unlimited tracking, Advanced budgeting, App Push Notifications. Unlimited Subscription Tracking, Customizable Reminder Timing (1-30 days), Email & Push Notifications, Advanced Spending Analytics, Category-Based Budgeting, Auto-Renewal Date Calculation, Cancellation Link Storage.',
+        price: '4.99',
+        priceCurrency: 'USD',
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: '4.99',
+          priceCurrency: 'USD',
+          billingIncrement: 'P1M',
+          unitCode: 'MON',
+        },
+        availability: 'https://schema.org/InStock',
+        url: 'https://subsy.com/auth/signup',
+        category: 'Paid',
+      },
+    ],
+  };
+
   return (
     <>
       <Script
@@ -200,6 +250,16 @@ export default function Home() {
         id="structured-data-faq"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
+      />
+      <Script
+        id="structured-data-breadcrumb"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbStructuredData) }}
+      />
+      <Script
+        id="structured-data-pricing"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingStructuredData) }}
       />
       <div className="relative bg-[#F9FAFB] text-slate-900" itemScope itemType="https://schema.org/WebPage">
         {/* Simplified background - removed multiple animated blobs */}
@@ -219,8 +279,8 @@ export default function Home() {
 
         <main className="relative z-10">
           <HeroSection user={user} />
-          <MetricsSection />
-          <NotificationChannelsSection />
+          {/* <MetricsSection /> */}
+          {/* <NotificationChannelsSection /> */}
           <FeaturesSection />
           {/* <StepsSection /> */}
           {/* <TestimonialsSection /> */}
@@ -229,23 +289,7 @@ export default function Home() {
           {/* <ContactSection /> */}
         </main>
 
-        {/* Cleaner Footer */}
-        <footer className="border-t border-slate-200 bg-white py-8 sm:py-12" role="contentinfo">
-          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:gap-6 px-4 sm:px-6 text-sm text-slate-500 md:flex-row lg:px-8">
-            <p className="text-sm sm:text-base text-center md:text-left">© {new Date().getFullYear()} Subsy. All rights reserved.</p>
-            <nav className="flex flex-wrap items-center justify-center gap-4 sm:gap-6" aria-label="Footer navigation">
-              <Link href="/privacy" className="text-sm sm:text-base transition hover:text-primary-600">
-                Privacy
-              </Link>
-              <Link href="/terms" className="text-sm sm:text-base transition hover:text-primary-600">
-                Terms
-              </Link>
-              <Link href="mailto:hello@subsy.tech" className="text-sm sm:text-base transition hover:text-primary-600">
-                Contact
-              </Link>
-            </nav>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   );

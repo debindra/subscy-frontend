@@ -842,20 +842,29 @@ export const getFeatureIcon = (iconName: string): React.ReactNode => {
   switch (iconName.toLowerCase()) {
     case 'tracking':
       return (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        <svg className={iconClass} viewBox="0 0 492.308 492.308" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M358.188,85.644V46.269h-56.74C296.779,20.01,273.784,0,246.197,0c-27.582,0-50.577,20.01-55.245,46.269h-56.745v39.375 H43.63v406.663h405.048V85.644H358.188z M153.899,85.644V65.962h55.88v-9.846c0-20.087,16.337-36.423,36.418-36.423 s36.423,16.337,36.423,36.423v9.846h55.875v19.683v40.74H153.899V85.644z M428.986,472.615H63.322V105.337h70.885v40.74h223.981 v-40.74h70.798V472.615z"></path>
+          <polygon points="167.394,190.183 126.274,231.308 109.192,214.221 95.269,228.144 126.274,259.154 181.317,204.106"></polygon>
+          <rect x="208.443" y="222.73" width="181.602" height="19.692"></rect>
+          <polygon points="167.394,277.663 126.274,318.788 109.192,301.712 95.269,315.635 126.274,346.635 181.317,291.587"></polygon>
+          <rect x="208.443" y="310.223" width="181.602" height="19.692"></rect>
+          <polygon points="167.394,365.144 126.274,406.269 109.192,389.192 95.269,403.115 126.274,434.115 181.317,379.067"></polygon>
+          <rect x="208.443" y="397.686" width="181.602" height="19.692"></rect>
         </svg>
       );
     case 'alerts':
       return (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        <svg className={iconClass} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          <path d="M9 8a3 3 0 0 1 6 0" />
         </svg>
       );
     case 'analytics':
       return (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3v18h18" />
+          <path d="M7 16l4-5 4 4 4-6" />
         </svg>
       );
     default:

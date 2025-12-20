@@ -10,8 +10,9 @@ export default function CheckoutSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
+  const isUpgrade = searchParams.get('upgrade') === 'success';
   const { data: subscription, refetch } = useSubscription();
-  const [isVerifying, setIsVerifying] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(!isUpgrade);
   const [pollCount, setPollCount] = useState(0);
 
   useEffect(() => {
@@ -75,10 +76,12 @@ export default function CheckoutSuccessPage() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Welcome to {subscription?.display_name || 'Pro'}!
+              {isUpgrade ? 'Upgrade Successful!' : `Welcome to ${subscription?.display_name || 'Pro'}!`}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              {subscription?.is_trial
+              {isUpgrade
+                ? `Your subscription has been upgraded to ${subscription?.display_name || 'Ultimate'}. Enjoy all premium features!`
+                : subscription?.is_trial
                 ? 'Your 14-day free trial has started. Enjoy all premium features!'
                 : 'Your subscription is now active. Enjoy all premium features!'}
             </p>

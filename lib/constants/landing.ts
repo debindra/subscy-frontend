@@ -63,14 +63,14 @@ export const FEATURES: Feature[] = [
   {
     title: 'Customizable Alerts & Notifications',
     description:
-      'Set custom reminder windows and receive alerts via email and push notifications. Pro and Ultimate plans offer flexible timing options for every subscription.',
+      'Set custom reminder windows and receive alerts via email and push notifications. Pro plan offers flexible timing options for every subscription.',
     iconName: 'alerts',
     benefit: 'Never miss a renewal',
   },
   {
     title: 'Advanced Budgeting & Analytics',
     description:
-      'Monitor spending with advanced analytics, category-wise budgeting, and smart renewal management. Export data and collaborate with your team on Ultimate plan.',
+      'Monitor spending with advanced analytics, category-wise budgeting, and smart renewal management.',
     iconName: 'analytics',
     benefit: 'Get 2 hours back every month',
   },
@@ -237,28 +237,28 @@ export const PRICING: PricingTier[] = [
       'Email & Push Notifications',
       'Advanced Spending Analytics',
       'Category-Based Budgeting',
-      'Data Import & Batch Upload',
       'Auto-Renewal Date Calculation',
       'Cancellation Link Storage',
     ],
     highlighted: true,
     annualSavings: 'Save 20%',
   },
-  {
-    name: 'Ultimate',
-    monthlyPrice: '$9.99',
-    annualPrice: '$95.88',
-    description: 'Sharing, Data Export, Multi-Currency, Priority Support.',
-    features: [
-      'All Pro Features',
-      'Data Export (CSV/PDF)',
-      'Multi-Currency Support',
-      'Team Sharing (5 Users)',
-      'Individual User Dashboards',
-      'Priority Support',
-    ],
-    annualSavings: 'Save 20%',
-  },
+  // DISABLED: Ultimate plan - can be re-enabled by uncommenting and running migration 015_disable_ultimate_plan.sql in reverse
+  // {
+  //   name: 'Ultimate',
+  //   monthlyPrice: '$9.99',
+  //   annualPrice: '$95.88',
+  //   description: 'Sharing, Data Export, Multi-Currency, Priority Support.',
+  //   features: [
+  //     'All Pro Features',
+  //     'Data Export (CSV/PDF)',
+  //     'Multi-Currency Support',
+  //     'Team Sharing (5 Users)',
+  //     'Individual User Dashboards',
+  //     'Priority Support',
+  //   ],
+  //   annualSavings: 'Save 20%',
+  // },
 ];
 
 export const FAQ_ITEMS: FAQItem[] = [
@@ -285,7 +285,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'Can I customize when I receive alerts?',
     answer:
-      'Yes! Pro and Ultimate plans allow you to set custom alert windows—get notified 30, 14, 7, or 1 day before renewals. You can also set different preferences for each subscription.',
+      'Yes! Pro plan allows you to set custom alert windows—get notified 30, 14, 7, or 1 day before renewals. You can also set different preferences for each subscription.',
   },
   {
     question: 'What happens if I miss an alert?',
@@ -295,6 +295,6 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'Do you support SMS notifications?',
     answer:
-      'Yes! Push notifications are available on Pro and Ultimate plans. You can choose to receive alerts via email, push notifications, or both channels for maximum reliability.',
+      'Yes! Push notifications are available on Pro plan. You can choose to receive alerts via email, push notifications, or both channels for maximum reliability.',
   },
 ];
