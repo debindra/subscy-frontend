@@ -234,7 +234,7 @@ export function PricingSection() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid gap-8 sm:gap-10 lg:grid-cols-2 max-w-6xl mx-auto">
+        <div className="grid gap-12 sm:gap-16 lg:grid-cols-2 max-w-5xl mx-auto">
           {PRICING.map((tier) => {
             const normalizedPlan = tier.name.toLowerCase();
             const currentPlan = subscription?.plan?.toLowerCase() || 'starter';
@@ -248,7 +248,7 @@ export function PricingSection() {
             return (
             <article
               key={tier.name}
-              className={`relative rounded-3xl border-2 bg-white p-8 sm:p-10 transition-all duration-300 ${
+              className={`relative rounded-2xl border-2 bg-white p-6 sm:p-7 transition-all duration-300 ${
                 tier.highlighted
                   ? 'border-primary-400 shadow-2xl lg:scale-[1.02] lg:-mt-4 lg:mb-4'
                   : isCurrentActivePlan
@@ -278,77 +278,77 @@ export function PricingSection() {
               ) : null}
 
               {/* Plan Header */}
-              <div className="mb-8">
-                <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">{tier.name}</h3>
-                <p className="text-base text-slate-600 leading-relaxed">{tier.description}</p>
+              <div className="mb-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">{tier.name}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{tier.description}</p>
               </div>
 
               {/* Value Proposition for Pro */}
               {tier.highlighted && (
-                <div className="mb-6 p-4 bg-gradient-to-r from-primary-50 to-brand-accent-50 rounded-xl border border-primary-200/50">
-                  <div className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mb-5 p-3 bg-gradient-to-r from-primary-50 to-brand-accent-50 rounded-lg border border-primary-200/50">
+                  <div className="flex items-start gap-2.5">
+                    <svg className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-xs font-semibold text-slate-900">
                         Save an average of <span className="text-primary-600">$240/year</span>
                       </p>
-                      <p className="text-xs text-slate-600 mt-1">by preventing unwanted renewals</p>
+                      <p className="text-xs text-slate-600 mt-0.5">by preventing unwanted renewals</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Pricing Display */}
-              <div className="mb-8">
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl sm:text-6xl font-bold text-slate-900">
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2 mb-1.5">
+                  <span className="text-4xl sm:text-5xl font-bold text-slate-900">
                     {isAnnual && tier.annualPrice ? tier.annualPrice : (tier.monthlyPrice || '$0')}
                   </span>
                   {tier.monthlyPrice === '$0' ? (
-                    <span className="text-lg text-slate-500 font-medium">forever</span>
+                    <span className="text-base text-slate-500 font-medium">forever</span>
                   ) : (
-                    <span className="text-lg text-slate-500 font-medium">
+                    <span className="text-base text-slate-500 font-medium">
                       {isAnnual && tier.annualPrice ? '/year' : '/month'}
                     </span>
                   )}
                 </div>
                 {effectiveMonthlyPrice && (
-                  <p className="text-sm text-slate-600 mb-2">
+                  <p className="text-xs text-slate-600 mb-1.5">
                     <span className="font-semibold">${effectiveMonthlyPrice}/month</span> when billed annually
                   </p>
                 )}
                 {tier.monthlyPrice !== '$0' && (
-                  <div className="flex items-center gap-2 mt-3">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-2 mt-2">
+                    <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-xs text-slate-600">
                       14-day free trial • No credit card required
                     </p>
                   </div>
                 )}
                 {isAnnual && tier.annualSavings && (
-                  <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary-100 px-3 py-1.5">
-                    <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-primary-100 px-2.5 py-1">
+                    <svg className="w-3.5 h-3.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
-                    <span className="text-sm font-bold text-primary-700">{tier.annualSavings}</span>
+                    <span className="text-xs font-bold text-primary-700">{tier.annualSavings}</span>
                   </div>
                 )}
               </div>
 
               {/* Features List */}
-              <ul className="mb-10 space-y-4">
+              <ul className="mb-8 space-y-3">
                 {tier.features.map((feature, index) => (
-                  <li key={`${tier.name}-${feature}-${index}`} className="flex items-start gap-3">
+                  <li key={`${tier.name}-${feature}-${index}`} className="flex items-start gap-2.5">
                     <div className="flex-shrink-0 mt-0.5">
-                      <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <span className="text-base text-slate-700 leading-relaxed">
+                    <span className="text-sm text-slate-700 leading-relaxed">
                       {feature === 'Unlimited Subscription Tracking' || feature === 'Advanced Spending Analytics' ? (
                         <strong className="font-bold text-slate-900">{feature}</strong>
                       ) : feature === 'All Pro Features' || feature === 'Team Sharing (5 Users)' ? (
@@ -365,7 +365,7 @@ export function PricingSection() {
               <button
                 onClick={() => handlePlanSelect(tier.name)}
                 disabled={isButtonLoading(tier.name) || authLoading || subscriptionLoading || isPlanDisabled(tier.name)}
-                className={`inline-flex w-full items-center justify-center rounded-xl px-6 py-4 text-base font-bold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
+                className={`inline-flex w-full items-center justify-center rounded-lg px-5 py-3 text-sm font-bold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
                   isCurrentActivePlan
                     ? 'bg-primary-600 text-white shadow-lg hover:bg-primary-700 hover:shadow-xl hover:scale-[1.02]'
                     : tier.highlighted

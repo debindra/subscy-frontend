@@ -91,7 +91,7 @@ export const STEPS: Step[] = [
   {
     number: '02',
     title: 'Configure your alerts',
-    description: 'Customize when and how you want to be notified. Set alert preferences for each subscription—email, SMS, or push notifications.',
+    description: 'Customize when and how you want to be notified. Set alert preferences for each subscription—email, or push notifications.',
   },
   {
     number: '03',
@@ -280,7 +280,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'How reliable are the subscription alerts?',
     answer:
-      'Our alert system has a 99.9% delivery rate. We use multiple notification channels (email, SMS, push) to ensure you never miss a renewal. If one channel fails, we automatically try the others.',
+      'Our alert system has a 99.9% delivery rate. We use multiple notification channels (email, push notifications) to ensure you never miss a renewal. If one channel fails, we automatically try the others.',
   },
   {
     question: 'Can I customize when I receive alerts?',
@@ -292,9 +292,5 @@ export const FAQ_ITEMS: FAQItem[] = [
     answer:
       'We send multiple reminders as the renewal date approaches. You\'ll receive alerts at your chosen intervals, plus a final notification 24 hours before the renewal. All alerts are logged in your dashboard.',
   },
-  {
-    question: 'Do you support SMS notifications?',
-    answer:
-      'Yes! Push notifications are available on Pro plan. You can choose to receive alerts via email, push notifications, or both channels for maximum reliability.',
-  },
+ 
 ];
