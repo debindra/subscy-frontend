@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSubscription } from '@/lib/hooks/useSubscriptions';
+import { Subscription } from '@/lib/api/subscriptions';
 import { useUpdateSubscription, useDeleteSubscription } from '@/lib/hooks/useSubscriptionMutations';
 import { SubscriptionForm } from '@/components/dashboard/SubscriptionForm';
 import { Card } from '@/components/ui/Card';

@@ -26,18 +26,6 @@ import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { logger } from '@/lib/utils/logger';
 import { useUserSettings } from '@/lib/hooks/useUserSettings';
 
-// Type guard to check if data is SpendingSummaryResponse
-function isSpendingSummaryResponse(
-  data: SpendingSummaryResponse | CurrencySpendingSummary[] | undefined
-): data is SpendingSummaryResponse {
-  return (
-    data !== undefined &&
-    typeof data === 'object' &&
-    !Array.isArray(data) &&
-    'byCurrency' in data
-  );
-}
-
 export default function SubscriptionsPage() {
   const PAGE_SIZE = 6;
 
@@ -326,12 +314,16 @@ export default function SubscriptionsPage() {
   // Calculate totals for export - use converted totals if available, otherwise calculate locally
   const { monthlyTotal, yearlyTotal, totalsCurrency } = useMemo(() => {
     // Check if we have converted totals from API
-    if (isSpendingSummaryResponse(spendingData) && spendingData.converted) {
-      return {
-        monthlyTotal: spendingData.converted.monthlyTotal,
-        yearlyTotal: spendingData.converted.yearlyTotal,
-        totalsCurrency: spendingData.converted.currency,
-      };
+    // Type guard: SpendingSummaryResponse has 'byCurrency' property, arrays don't
+    if (spendingData && typeof spendingData === 'object' && !Array.isArray(spendingData) && 'byCurrency' in spendingData) {
+      const response = spendingData as SpendingSummaryResponse;
+      if (response.converted) {
+        return {
+          monthlyTotal: response.converted.monthlyTotal,
+          yearlyTotal: response.converted.yearlyTotal,
+          totalsCurrency: response.converted.currency,
+        };
+      }
     }
     
     // Fallback to local calculation (sums all currencies without conversion)

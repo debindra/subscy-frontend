@@ -19,10 +19,10 @@ export const useDashboardSpending = (baseCurrency?: string) =>
       return res.data;
     },
     staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000, // Renamed from cacheTime in v5
+    gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData, // Use placeholderData instead of keepPreviousData in v5
+    placeholderData: (previousData) => previousData,
   });
 
 export const useDashboardMonthlyTrend = (months: number) =>
@@ -33,10 +33,10 @@ export const useDashboardMonthlyTrend = (months: number) =>
       return res.data;
     },
     staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000, // Renamed from cacheTime in v5
+    gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData, // Use placeholderData instead of keepPreviousData in v5
+    placeholderData: (previousData) => previousData,
   });
 
 export const useDashboardCategorySpending = (enabled: boolean) =>
@@ -48,10 +48,10 @@ export const useDashboardCategorySpending = (enabled: boolean) =>
     },
     enabled,
     staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000, // Renamed from cacheTime in v5
+    gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData, // Use placeholderData instead of keepPreviousData in v5
+    placeholderData: (previousData) => previousData,
   });
 
 

@@ -16,10 +16,10 @@ export function usePlanFeatures() {
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 
   const loading = isLoading;
