@@ -19,12 +19,24 @@ import {
 } from '@/lib/hooks/useSubscriptionMutations';
 import { useDashboardSpending } from '@/lib/hooks/useDashboardAnalytics';
 import { settingsApi, UserSettings } from '@/lib/api/settings';
-import { SpendingSummaryResponse } from '@/lib/api/analytics';
+import { SpendingSummaryResponse, CurrencySpendingSummary } from '@/lib/api/analytics';
 import { useViewMode } from '@/lib/context/ViewModeContext';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { logger } from '@/lib/utils/logger';
 import { useUserSettings } from '@/lib/hooks/useUserSettings';
+
+// Type guard to check if data is SpendingSummaryResponse
+function isSpendingSummaryResponse(
+  data: SpendingSummaryResponse | CurrencySpendingSummary[] | undefined
+): data is SpendingSummaryResponse {
+  return (
+    data !== undefined &&
+    typeof data === 'object' &&
+    !Array.isArray(data) &&
+    'byCurrency' in data
+  );
+}
 
 export default function SubscriptionsPage() {
   const PAGE_SIZE = 6;
@@ -314,15 +326,12 @@ export default function SubscriptionsPage() {
   // Calculate totals for export - use converted totals if available, otherwise calculate locally
   const { monthlyTotal, yearlyTotal, totalsCurrency } = useMemo(() => {
     // Check if we have converted totals from API
-    if (spendingData && typeof spendingData === 'object' && 'converted' in spendingData) {
-      const response = spendingData as SpendingSummaryResponse;
-      if (response.converted) {
-        return {
-          monthlyTotal: response.converted.monthlyTotal,
-          yearlyTotal: response.converted.yearlyTotal,
-          totalsCurrency: response.converted.currency,
-        };
-      }
+    if (isSpendingSummaryResponse(spendingData) && spendingData.converted) {
+      return {
+        monthlyTotal: spendingData.converted.monthlyTotal,
+        yearlyTotal: spendingData.converted.yearlyTotal,
+        totalsCurrency: spendingData.converted.currency,
+      };
     }
     
     // Fallback to local calculation (sums all currencies without conversion)
