@@ -180,22 +180,70 @@ export default function SubscriptionDetailPage() {
             </div>
             
             <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">
                   {subscription.name}
                 </h1>
+              </div>
+              {/* Unified Status Indicator System */}
+              <div className="flex flex-wrap gap-1.5" role="status" aria-label="Subscription status indicators">
+                {/* Primary Status - Active/Inactive */}
+                <span
+                  className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full font-semibold border shadow-sm transition-all duration-200 ${
+                    !subscription.isActive
+                      ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+                      : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700'
+                  }`}
+                  aria-label={`${subscription.isActive ? 'Active' : 'Inactive'} subscription`}
+                >
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    {!subscription.isActive ? (
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    ) : (
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    )}
+                  </svg>
+                  {subscription.isActive ? 'Active' : 'Inactive'}
+                </span>
+
+                {/* Trial Status */}
                 {subscription.isTrial && (
-                  <span className="px-2 py-1 text-xs font-bold uppercase tracking-wide bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md">
+                  <span
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200 dark:border-blue-700 shadow-sm transition-all duration-200"
+                    aria-label="Trial subscription"
+                  >
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
                     Trial
                   </span>
                 )}
-                <span className={`px-2 py-1 text-xs font-semibold rounded-md ${
-                  subscription.isActive 
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}>
-                  {subscription.isActive ? 'Active' : 'Inactive'}
-                </span>
+
+                {/* Renewal Status - Upcoming */}
+                {isUpcoming && (
+                  <span
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold border border-amber-200 dark:border-amber-700 shadow-sm transition-all duration-200"
+                    aria-label="Subscription renewing soon"
+                  >
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                    Soon
+                  </span>
+                )}
+
+                {/* Notification Needed Badge */}
+                {subscription.needToNotify && (
+                  <span
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 font-semibold border border-red-200 dark:border-red-700 shadow-sm animate-pulse"
+                    aria-label="Notification reminder scheduled"
+                  >
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                    </svg>
+                    Reminder
+                  </span>
+                )}
               </div>
             </div>
           </div>

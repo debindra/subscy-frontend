@@ -9,6 +9,7 @@ import { useTheme } from '@/lib/context/ThemeContext';
 import { useExchangeRates, calculateConversion } from '@/lib/hooks/useExchangeRates';
 import { formatCurrency } from '@/lib/utils/format';
 import Link from 'next/link';
+import { useSubscriptions } from '@/lib/hooks/useSubscriptions';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title);
 
@@ -25,6 +26,10 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
 }) => {
   const { theme } = useTheme();
   const [chartKey, setChartKey] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  // Fetch subscriptions to calculate category-specific monthly trends
+  const { data: subscriptions = [] } = useSubscriptions();
   
   // Normalize preferred currency
   const targetCurrency = preferredCurrency?.toUpperCase() || 'USD';
@@ -87,22 +92,113 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
     }
   }, [categoryData, needsConversion, ratesData?.rates, ratesLoading, targetCurrency, fromCurrency]);
 
+  // Calculate category-specific monthly trends from subscription data
+  const categoryMonthlyTrend = useMemo(() => {
+    if (!selectedCategory || subscriptions.length === 0) {
+      return null; // Return null to use the default monthlyData
+    }
+
+    // Get month labels from the original monthlyData
+    const monthLabels = monthlyData.map((item) => item.month);
+    
+    // Calculate monthly totals for the selected category
+    const categoryTrend = monthLabels.map((monthLabel) => {
+      // Parse month label (e.g., "Jan 2024")
+      const [monthName, yearStr] = monthLabel.split(' ');
+      const year = parseInt(yearStr, 10);
+      
+      // Map month abbreviations to indices (0-11)
+      const monthAbbrMap: Record<string, number> = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+      };
+      const monthIndex = monthAbbrMap[monthName] ?? 0;
+      
+      // Calculate month start and end
+      const monthStart = new Date(year, monthIndex, 1);
+      const monthEnd = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
+      
+      let monthTotal = 0.0;
+      
+      for (const sub of subscriptions) {
+        // Only include subscriptions in the selected category that are active
+        if (sub.category !== selectedCategory || !sub.isActive) {
+          continue;
+        }
+        
+        // Check if subscription existed by the end of this month
+        const createdAt = new Date(sub.createdAt);
+        if (createdAt > monthEnd) {
+          continue;
+        }
+        
+        // Calculate monthly amount based on billing cycle
+        let monthlyAmount = sub.amount;
+        if (sub.billingCycle === 'yearly') {
+          monthlyAmount = sub.amount / 12;
+        } else if (sub.billingCycle === 'quarterly') {
+          monthlyAmount = sub.amount / 3;
+        } else if (sub.billingCycle === 'weekly') {
+          monthlyAmount = sub.amount * 4.33;
+        }
+        
+        monthTotal += monthlyAmount;
+      }
+      
+      return {
+        month: monthLabel,
+        total: Math.round(monthTotal * 100) / 100,
+      };
+    });
+    
+    return categoryTrend;
+  }, [selectedCategory, subscriptions, monthlyData]);
+
   // Convert monthly data amounts to preferred currency
-  const convertedMonthlyData = useMemo(() => {
+  // Use category-specific trend if a category is selected, otherwise use default monthlyData
+  const displayMonthlyData = useMemo(() => {
+    const dataToUse = categoryMonthlyTrend || monthlyData;
+    
     if (!needsConversion || !ratesData?.rates || ratesLoading) {
-      return monthlyData;
+      return dataToUse;
     }
 
     try {
-      return monthlyData.map((item) => ({
+      return dataToUse.map((item) => ({
         ...item,
         total: calculateConversion(item.total, fromCurrency, targetCurrency, ratesData.rates, 'USD'),
       }));
     } catch (error) {
       console.error('Error converting monthly data:', error);
-      return monthlyData;
+      return dataToUse;
     }
-  }, [monthlyData, needsConversion, ratesData?.rates, ratesLoading, targetCurrency, fromCurrency]);
+  }, [categoryMonthlyTrend, monthlyData, needsConversion, ratesData?.rates, ratesLoading, targetCurrency, fromCurrency]);
+
+  // Get the color of the selected category from the pie chart
+  const selectedCategoryColor = useMemo(() => {
+    if (!selectedCategory) {
+      return '#0d9488'; // Default primary-600 color (hex format)
+    }
+    
+    const categoryIndex = convertedCategoryData.findIndex(
+      (item) => item.category === selectedCategory
+    );
+    
+    if (categoryIndex >= 0 && categoryIndex < pieColors.length) {
+      return pieColors[categoryIndex];
+    }
+    
+    return '#0d9488'; // Fallback to default primary-600 color (hex format)
+  }, [selectedCategory, convertedCategoryData, pieColors]);
+
+  // Convert hex color to rgba with opacity for background
+  const getRgbaColor = (hexColor: string, opacity: number = 1) => {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
 
   const pieData = {
     labels: convertedCategoryData.map((item) => item.category),
@@ -119,21 +215,23 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
   };
 
   const lineData = {
-    labels: convertedMonthlyData.map((item) => item.month),
+    labels: displayMonthlyData.map((item) => item.month),
     datasets: [
       {
-        label: 'Monthly Spending',
-        data: convertedMonthlyData.map((item) => item.total),
-        // Use brand primary color for line
-        borderColor: 'rgba(13, 148, 136, 1)', // primary-600
-        backgroundColor: 'rgba(20, 184, 166, 0.1)', // primary-500 with low opacity for fill
+        label: selectedCategory 
+          ? `Monthly Spending - ${selectedCategory}` 
+          : 'Monthly Spending',
+        data: displayMonthlyData.map((item) => item.total),
+        // Use selected category color, or default primary color
+        borderColor: selectedCategoryColor,
+        backgroundColor: getRgbaColor(selectedCategoryColor, 0.1), // Low opacity for fill
         borderWidth: 3,
-        pointBackgroundColor: 'rgba(13, 148, 136, 1)', // primary-600
+        pointBackgroundColor: selectedCategoryColor,
         pointBorderColor: '#ffffff',
         pointBorderWidth: 2,
         pointRadius: 5,
         pointHoverRadius: 7,
-        pointHoverBackgroundColor: 'rgba(13, 148, 136, 1)',
+        pointHoverBackgroundColor: selectedCategoryColor,
         pointHoverBorderColor: '#ffffff',
         pointHoverBorderWidth: 2,
         fill: true,
@@ -142,9 +240,25 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
     ],
   };
 
+  // Handle pie chart click to filter by category
+  const handlePieClick = (event: any, elements: any[]) => {
+    if (elements.length > 0) {
+      const clickedIndex = elements[0].index;
+      const clickedCategory = convertedCategoryData[clickedIndex]?.category;
+      
+      // Toggle: if same category is clicked, reset to show all
+      if (selectedCategory === clickedCategory) {
+        setSelectedCategory(null);
+      } else {
+        setSelectedCategory(clickedCategory || null);
+      }
+    }
+  };
+
   const pieOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    onClick: handlePieClick,
     plugins: {
       legend: {
         position: 'bottom' as const,
@@ -157,6 +271,17 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
           },
           usePointStyle: true,
           pointStyle: 'circle',
+        },
+        onClick: (e: any, legendItem: any, legend: any) => {
+          // Prevent default legend click behavior (hiding data)
+          const clickedCategory = convertedCategoryData[legendItem.index]?.category;
+          
+          // Toggle category selection
+          if (selectedCategory === clickedCategory) {
+            setSelectedCategory(null);
+          } else {
+            setSelectedCategory(clickedCategory || null);
+          }
         },
       },
       tooltip: {
@@ -180,6 +305,7 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
               `${label}`,
               `Amount: ${formatCurrency(value, targetCurrency)}`,
               `Percentage: ${percentage}%`,
+              selectedCategory === label ? '(Selected - Click to deselect)' : '(Click to filter trend)',
             ];
           },
         },
@@ -273,6 +399,19 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
             </svg>
           </div>
         </div>
+        {selectedCategory && (
+          <div className="mb-3 px-4 py-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-between">
+            <span className="text-sm text-primary-800 dark:text-primary-200 font-medium">
+              Filtering by: <strong>{selectedCategory}</strong>
+            </span>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium underline"
+            >
+              Clear filter
+            </button>
+          </div>
+        )}
         <div className="h-72 flex items-center justify-center">
           {convertedCategoryData.length > 0 && !ratesLoading ? (
             <Pie key={`pie-${chartKey}`} data={pieData} options={pieOptions} />
@@ -302,11 +441,18 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
             </div>
           )}
         </div>
+        {convertedCategoryData.length > 0 && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+            Click a category slice or legend item to filter the monthly trend
+          </p>
+        )}
       </Card>
 
       <Card variant="glass" className="transition-all duration-300 transform hover:-translate-y-1 touch-manipulation">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Monthly Trend</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            Monthly Trend{selectedCategory ? ` - ${selectedCategory}` : ''}
+          </h3>
           <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
             <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
@@ -314,8 +460,8 @@ export const SpendingChart: React.FC<SpendingChartProps> = ({
           </div>
         </div>
         <div className="h-72">
-          {convertedMonthlyData.length > 0 && !ratesLoading ? (
-            <Line key={`line-${chartKey}`} data={lineData} options={lineOptions} />
+          {displayMonthlyData.length > 0 && !ratesLoading ? (
+            <Line key={`line-${chartKey}-${selectedCategory || 'all'}`} data={lineData} options={lineOptions} />
           ) : (
             <div className="flex items-center justify-center h-full text-center px-4">
               <div>

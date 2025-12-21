@@ -34,7 +34,7 @@ export default function CheckoutCancelPage() {
         </p>
         <div className="pt-4 flex flex-col sm:flex-row gap-4">
           <Button
-            onClick={() => router.push('/#pricing')}
+            onClick={() => router.push('/dashboard/plans')}
             variant="outline"
             className="flex-1"
           >

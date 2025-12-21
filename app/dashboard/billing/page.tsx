@@ -160,7 +160,7 @@ export default function BillingPage() {
           <div className="flex gap-4 pt-4">
             {isFreePlan ? (
               <Button
-                onClick={() => router.push('/#pricing')}
+                onClick={() => router.push('/dashboard/plans')}
                 variant="accent"
                 fullWidth
               >

@@ -5,58 +5,32 @@ import Link from 'next/link';
 import { Subscription } from '@/lib/api/subscriptions';
 import { SubscriptionCard } from './SubscriptionCard';
 import { Card } from '../ui/Card';
-import { formatCurrency, getDaysUntil } from '@/lib/utils/format';
+import { formatCurrency } from '@/lib/utils/format';
 import { useOptimizedBulkCurrencyConversion } from '@/lib/hooks/useOptimizedCurrencyConversion';
+import { useUpcomingSubscriptions } from '@/lib/hooks/useSubscriptions';
 
 interface EnhancedUpcomingRenewalsProps {
-  subscriptions: Subscription[];
   onEdit: (subscription: Subscription) => void;
   onDelete: (id: string) => void;
   preferredCurrency?: string;
 }
 
 export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> = ({
-  subscriptions,
   onEdit,
   onDelete,
   preferredCurrency = 'USD',
 }) => {
   const [timeRange, setTimeRange] = useState<'7' | '30' | '90'>('7');
+  const days = parseInt(timeRange);
 
-  const filteredSubscriptions = useMemo(() => {
-    const daysFromNow = parseInt(timeRange);
+  // Fetch subscriptions based on the selected time range
+  const {
+    data: subscriptions = [],
+    isLoading,
+  } = useUpcomingSubscriptions(days);
 
-    // Filter subscriptions that are either renewing or have trials expiring
-    return subscriptions.filter(sub => {
-      // Check for trial expiration if it's a trial with an end date
-      if (sub.isTrial && sub.trialEndDate) {
-        const daysUntilTrialEnd = getDaysUntil(sub.trialEndDate);
-        if (daysUntilTrialEnd >= 0 && daysUntilTrialEnd <= daysFromNow) {
-          return true;
-        }
-      }
-      
-      // Check for renewal date
-      const daysUntilRenewal = getDaysUntil(sub.nextRenewalDate);
-      return daysUntilRenewal >= 0 && daysUntilRenewal <= daysFromNow;
-    }).sort((a, b) => {
-      // Sort by trial end date if trial is expiring soon, otherwise by renewal date
-      const getRelevantDate = (sub: Subscription) => {
-        if (sub.isTrial && sub.trialEndDate) {
-          const daysUntilTrialEnd = getDaysUntil(sub.trialEndDate);
-          const daysFromNow = parseInt(timeRange);
-          if (daysUntilTrialEnd >= 0 && daysUntilTrialEnd <= daysFromNow) {
-            return new Date(sub.trialEndDate).getTime();
-          }
-        }
-        return new Date(sub.nextRenewalDate).getTime();
-      };
-      
-      const dateA = getRelevantDate(a);
-      const dateB = getRelevantDate(b);
-      return dateA - dateB;
-    });
-  }, [subscriptions, timeRange]);
+  // Display subscriptions in the order they come from the endpoint (no sorting)
+  const filteredSubscriptions = subscriptions;
 
   // Group subscription amounts by currency for bulk conversion
   const amountsByCurrency = useMemo(() => {
@@ -87,11 +61,6 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
     };
   }, [filteredSubscriptions, totalConvertedAmount]);
 
-  const timeRangeOptions = [
-    { value: '7', label: '7 Days' },
-    { value: '30', label: '30 Days' },
-    { value: '90', label: '90 Days' },
-  ];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -115,11 +84,9 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
               onChange={(e) => setTimeRange(e.target.value as '7' | '30' | '90')}
               className="px-3 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
             >
-              {timeRangeOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <option value="7">7 Days</option>
+              <option value="30">30 Days</option>
+              <option value="90">90 Days</option>
             </select>
           </div>
         </div>
@@ -177,7 +144,17 @@ export const EnhancedUpcomingRenewals: React.FC<EnhancedUpcomingRenewalsProps> =
       )} */}
 
       {/* Subscriptions Grid */}
-      {filteredSubscriptions.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="p-6 animate-pulse">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+            </Card>
+          ))}
+        </div>
+      ) : filteredSubscriptions.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSubscriptions.map((subscription, index) => (
             <div key={subscription.id} style={{ animationDelay: `${index * 0.1}s` }}>

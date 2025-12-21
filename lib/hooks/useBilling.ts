@@ -8,6 +8,7 @@ import {
   SubscriptionStatus,
   BillingConfig,
 } from '../api/billing';
+import { useAuth } from './useAuth';
 
 // Query keys
 const BILLING_CONFIG_KEY = ['billing', 'config'];
@@ -29,14 +30,18 @@ export function useBillingConfig() {
 
 /**
  * Hook to get current subscription status
+ * Only fetches when user is authenticated
  */
 export function useSubscription() {
+  const { user } = useAuth();
+  
   return useQuery<SubscriptionStatus>({
     queryKey: SUBSCRIPTION_KEY,
     queryFn: async () => {
       const response = await billingApi.getSubscription();
       return response.data;
     },
+    enabled: !!user, // Only fetch when user is authenticated
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
