@@ -21,11 +21,11 @@ export const useSubscriptions = (options?: { enabled?: boolean }) => {
   });
 };
 
-export const useUpcomingSubscriptions = () => {
+export const useUpcomingSubscriptions = (days: number = 7) => {
   return useQuery<Subscription[]>({
-    queryKey: UPCOMING_SUBSCRIPTIONS_KEY,
+    queryKey: [...UPCOMING_SUBSCRIPTIONS_KEY, days],
     queryFn: async () => {
-      const res = await subscriptionsApi.getUpcoming();
+      const res = await subscriptionsApi.getUpcoming(days);
       return res.data;
     },
     staleTime: 0, // Always consider data stale - ensures immediate refetch after invalidation

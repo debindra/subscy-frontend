@@ -46,12 +46,57 @@ function setCsrfToken(token: string | null): void {
   csrfTokenCache = token;
 }
 
+// Track if we're waiting for initial session after login
+let waitingForInitialSession = false;
+let sessionWaitPromise: Promise<void> | null = null;
+
+// Helper to wait for session to be ready
+async function waitForSession(maxWait = 2000): Promise<boolean> {
+  const startTime = Date.now();
+  while (Date.now() - startTime < maxWait) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+  return false;
+}
+
 // Add auth token, CSRF token, and account context to requests
 apiClient.interceptors.request.use(async (config) => {
-  const { data: { session } } = await supabase.auth.getSession();
+  // Get session once at the start
+  let { data: { session } } = await supabase.auth.getSession();
+  
+  // Only wait for session if we don't have one and waitForSession isn't already running
+  if (!session?.access_token && !sessionWaitPromise) {
+    waitingForInitialSession = true;
+    
+    sessionWaitPromise = waitForSession().then((success) => {
+      waitingForInitialSession = false;
+      sessionWaitPromise = null;
+    });
+    await sessionWaitPromise;
+    
+    // Get session again after waiting (waitForSession returns success, not session)
+    const { data: { session: waitedSession } } = await supabase.auth.getSession();
+    session = waitedSession;
+  } else if (sessionWaitPromise) {
+    // If wait is already in progress, just wait for it
+    await sessionWaitPromise;
+    const { data: { session: waitedSession } } = await supabase.auth.getSession();
+    session = waitedSession;
+  }
 
   if (session?.access_token) {
+    // Just use the current session token - let Supabase handle automatic refresh
+    // Only refresh on 401 errors in the response interceptor
     config.headers.Authorization = `Bearer ${session.access_token}`;
+  } else {
+    logger.warn('No session found in request interceptor', { 
+      url: config.url,
+      method: config.method 
+    });
   }
 
   // Add CSRF token for state-changing requests
@@ -59,14 +104,6 @@ apiClient.interceptors.request.use(async (config) => {
     const csrfToken = getCsrfToken();
     if (csrfToken) {
       config.headers['X-CSRF-Token'] = csrfToken;
-    }
-  }
-
-  // Add account context header if available
-  if (typeof window !== 'undefined') {
-    const accountContext = localStorage.getItem('activeAccountContext');
-    if (accountContext && (accountContext === 'personal' || accountContext === 'business')) {
-      config.headers['X-Account-Context'] = accountContext;
     }
   }
 
@@ -155,22 +192,29 @@ apiClient.interceptors.response.use(
 
     // Handle authentication errors (401)
     if (response?.status === 401) {
-      // Check if we already have a valid session (might be a stale token issue)
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      
-      // If we have a current session, try using it first before refreshing
-      if (currentSession?.access_token && !error.config._retry) {
-        error.config._retry = true;
-        error.config.headers.Authorization = `Bearer ${currentSession.access_token}`;
-        return apiClient.request(error.config);
-      }
+      // Get session once
+      const { data: { session: checkSession } } = await supabase.auth.getSession();
 
+      if (checkSession?.user && !error.config._retry && !checkSession?.access_token) {
+        // Session exists but no token - wait once and retry
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        if (currentSession?.access_token) {
+          error.config._retry = true;
+          error.config.headers.Authorization = `Bearer ${currentSession.access_token}`;
+          return apiClient.request(error.config);
+        }
+      }
+      
       // Use shared refresh promise to avoid multiple simultaneous refresh attempts
       if (!isRefreshing || !refreshPromise) {
         isRefreshing = true;
         refreshPromise = supabase.auth.refreshSession().finally(() => {
           // Reset flag after promise completes (success or failure)
           isRefreshing = false;
+          // Clear the promise only after refresh is complete
+          refreshPromise = null;
         });
       }
       
@@ -181,7 +225,7 @@ apiClient.interceptors.response.use(
       }
       
       const refreshResult = await refreshPromise;
-      refreshPromise = null; // Clear after all waiters get the result
+      // DON'T clear refreshPromise here - let the finally block handle it
 
       const { data: { session }, error: refreshError } = refreshResult;
 

@@ -72,11 +72,11 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
 
 
       {/* Background Pattern */}
-      <div className="absolute top-0 right-0 w-32 h-32 opacity-5 dark:opacity-10 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity">
+      {/* <div className="absolute top-0 right-0 w-32 h-32 opacity-5 dark:opacity-10 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity">
         <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
           <path fill="currentColor" d="M45.7,-58.7C58.9,-49.1,69.2,-35.1,73.7,-19.3C78.1,-3.6,76.7,13.8,69.5,28.3C62.3,42.8,49.3,54.4,34.6,61.5C19.9,68.5,3.5,71,-13.2,71.1C-29.9,71.2,-47,68.9,-59.7,59.9C-72.4,50.9,-80.7,35.2,-83.5,18.3C-86.3,1.4,-83.6,-16.7,-75.8,-31.6C-68,-46.5,-55.1,-58.2,-40.3,-67.3C-25.5,-76.4,-9,-83,4.6,-88.6C18.2,-94.2,32.5,-68.3,45.7,-58.7Z" transform="translate(100 100)" />
         </svg>
-      </div>
+      </div> */}
 
       <div className="relative">
         {/* Header with Subscription Icon */}
@@ -91,7 +91,7 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
               {/* Unified Status Indicator System */}
               <div className="flex flex-wrap gap-1.5" role="status" aria-label="Subscription status indicators">
                 {/* Primary Status - Active/Inactive */}
-                <span
+                {/* <span
                   className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full font-semibold border shadow-sm transition-all duration-200 ${
                     !subscription.isActive
                       ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
@@ -107,7 +107,7 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
                     )}
                   </svg>
                   {subscription.isActive ? 'Active' : 'Inactive'}
-                </span>
+                </span> */}
 
                 {/* Trial Status */}
                 {subscription.isTrial && (
@@ -123,7 +123,7 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
                 )}
 
                 {/* Renewal Status - Upcoming */}
-                {isUpcoming && (
+                {/* {isUpcoming && (
                   <span
                     className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold border border-amber-200 dark:border-amber-700 shadow-sm transition-all duration-200"
                     aria-label="Subscription renewing soon"
@@ -133,10 +133,10 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
                     </svg>
                     Soon
                   </span>
-                )}
+                )} */}
 
                 {/* Notification Needed Badge */}
-                {subscription.needToNotify && (
+                {/* {subscription.needToNotify && (
                   <span
                     className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 font-semibold border border-red-200 dark:border-red-700 shadow-sm animate-pulse"
                     aria-label="Notification reminder scheduled"
@@ -146,7 +146,7 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
                     </svg>
                     Reminder
                   </span>
-                )}
+                )} */}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -163,7 +163,7 @@ export const DesktopSubscriptionCard: React.FC<DesktopSubscriptionCardProps> = (
 
         {/* Enhanced Pricing Section with Flip Animation */}
         <div
-          className="mb-4 p-4 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/25 dark:to-primary-800/25 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-primary-200/50 dark:border-primary-700/30 relative overflow-hidden"
+          className="mb-4 p-4 bg-gradient-to-br  dark:from-primary-900/25 dark:to-primary-800/25 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-primary-200/50 dark:border-primary-700/30 relative overflow-hidden"
           onClick={() => setIsFlipped(!isFlipped)}
           title="Click to convert to your preferred currency"
         >

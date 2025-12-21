@@ -31,7 +31,12 @@ export const formatDateShort = (date: string | Date): string => {
 
 export const getDaysUntil = (date: string | Date): number => {
   const dateObj = typeof date === 'string' ? parseISO(date) : date;
-  return differenceInDays(dateObj, new Date());
+  // Normalize to midnight for consistent day calculations
+  const normalizedDate = new Date(dateObj);
+  normalizedDate.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return differenceInDays(normalizedDate, today);
 };
 
 export const capitalize = (str: string): string => {

@@ -35,6 +35,7 @@ const MOCK_USER = {
 export function useAuth() {
   const [user, setUser] = useState<User | null>(E2E_BYPASS ? MOCK_USER : null);
   const [loading, setLoading] = useState(!E2E_BYPASS);
+  const [sessionReady, setSessionReady] = useState(false); // Track if session token is actually ready
   const [error, setError] = useState<Error | null>(null);
   const queryClient = useQueryClient();
   // Use ref to track current user state in closures
@@ -44,6 +45,19 @@ export function useAuth() {
   const updateUser = (newUser: User | null) => {
     userRef.current = newUser;
     setUser(newUser);
+  };
+  
+  // Helper function to check if session is ready (has access token)
+  const checkSessionReady = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const ready = !!(session?.access_token);
+      setSessionReady(ready);
+      return ready;
+    } catch {
+      setSessionReady(false);
+      return false;
+    }
   };
 
   useEffect(() => {
@@ -72,6 +86,7 @@ export function useAuth() {
 
         if (isMounted) {
           updateUser(session?.user ?? null);
+          setSessionReady(!!session?.access_token);
           setLoading(false);
           setError(null); // Clear any previous errors
         }
@@ -109,6 +124,7 @@ export function useAuth() {
           refreshTimeoutId = null;
         }
         updateUser(session?.user ?? null);
+        setSessionReady(!!session?.access_token);
         setLoading(false);
         setError(null);
         return;
@@ -122,6 +138,7 @@ export function useAuth() {
           refreshTimeoutId = null;
         }
         updateUser(null);
+        setSessionReady(false);
         setLoading(false);
         queryClient.clear();
         return;
@@ -135,8 +152,18 @@ export function useAuth() {
           refreshTimeoutId = null;
         }
         updateUser(session.user);
+        // Check if session token is ready (important for post-login timing)
+        const hasToken = !!session.access_token;
+        setSessionReady(hasToken);
         setLoading(false);
         setError(null);
+        
+        // If no token yet, check again after a brief delay (handles race conditions)
+        if (!hasToken) {
+          setTimeout(() => {
+            checkSessionReady();
+          }, 200);
+        }
         return;
       }
 
@@ -160,6 +187,7 @@ export function useAuth() {
                 logger.info('Session recovered successfully');
                 isRefreshing = false;
                 updateUser(recoveredSession.user);
+                setSessionReady(!!recoveredSession.access_token);
                 setLoading(false);
                 setError(null);
               } else if (sessionError) {
@@ -171,6 +199,7 @@ export function useAuth() {
                   logger.info('Session refreshed successfully');
                   isRefreshing = false;
                   updateUser(refreshedSession.user);
+                  setSessionReady(!!refreshedSession.access_token);
                   setLoading(false);
                   setError(null);
                 } else {
@@ -178,6 +207,7 @@ export function useAuth() {
                   logger.error('Session refresh failed, user logged out', refreshError ? { error: refreshError } : undefined);
                   isRefreshing = false;
                   updateUser(null);
+                  setSessionReady(false);
                   setLoading(false);
                   queryClient.clear();
                 }
@@ -186,6 +216,7 @@ export function useAuth() {
                 logger.info('No session found, user logged out');
                 isRefreshing = false;
                 updateUser(null);
+                setSessionReady(false);
                 setLoading(false);
                 queryClient.clear();
               }
@@ -204,6 +235,7 @@ export function useAuth() {
 
       // No user and no previous user - initial state
       updateUser(null);
+      setSessionReady(false);
       setLoading(false);
       setError(null);
     });
@@ -219,6 +251,37 @@ export function useAuth() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Periodically check session readiness if user exists but session isn't ready
+  useEffect(() => {
+    if (E2E_BYPASS) return;
+    
+    if (user && !sessionReady) {
+      // Check session readiness every 200ms until it's ready (max 2 seconds)
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const checkInterval = setInterval(async () => {
+        attempts++;
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const ready = !!(session?.access_token);
+          setSessionReady(ready);
+          
+          if (ready || attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+          }
+        } catch {
+          setSessionReady(false);
+          if (attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+          }
+        }
+      }, 200);
+      
+      return () => clearInterval(checkInterval);
+    }
+  }, [user, sessionReady]);
 
   const signUp = async ({
     email,
@@ -418,9 +481,11 @@ export function useAuth() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       updateUser(session?.user ?? null);
+      setSessionReady(!!session?.access_token);
       setLoading(false);
       setError(null);
     } catch (err) {
+      setSessionReady(false);
       setLoading(false);
       setError(err instanceof Error ? err : new Error('Failed to retry authentication'));
     }
@@ -429,6 +494,7 @@ export function useAuth() {
   return {
     user,
     loading,
+    sessionReady, // Expose sessionReady state
     error,
     retryAuth,
     signUp,

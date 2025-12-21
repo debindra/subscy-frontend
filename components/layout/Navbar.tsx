@@ -6,8 +6,6 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTheme } from '@/lib/context/ThemeContext';
 import { useRouter } from 'next/navigation';
-import { AccountSwitcher } from './AccountSwitcher';
-import { useAccountContext } from '@/lib/hooks/useAccountContext';
 import { getUserAvatarUrl, getUserDisplayName } from '@/lib/utils/userUtils';
 
 interface NavbarProps {
@@ -20,10 +18,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartTour }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { availableContexts } = useAccountContext();
   const accountType =
     (user?.user_metadata as { account_type?: string } | undefined)?.account_type ?? 'personal';
-  const hasBusinessContext = availableContexts.some(c => c.context === 'business');
+  const hasBusinessContext = accountType === 'business';
   const displayName = getUserDisplayName(user);
   const avatarUrl = getUserAvatarUrl(user);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -168,8 +165,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartTour }) => {
                   </Link>
                 )} */}
 
-                {/* Account Switcher */}
-                {/* <AccountSwitcher /> */}
 
                 {/* Dark Mode Toggle */}
                 <button

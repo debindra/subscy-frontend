@@ -44,7 +44,7 @@ export const analyticsApi = {
   getByCategory: () => apiClient.get<CategorySpending[]>('/analytics/by-category'),
   
   getMonthlyTrend: (months: number = 12) =>
-    apiClient.get<MonthlyTrend[]>(`/analytics/monthly-trend?months=${months}`),
+    apiClient.get<MonthlyTrend[]>('/analytics/monthly-trend', { params: { months } }),
   
   getStats: () => apiClient.get<SubscriptionStats>('/analytics/stats'),
 };

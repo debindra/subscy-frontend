@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { settingsApi, BudgetStatus } from '@/lib/api/settings';
 import { formatCurrency } from '@/lib/utils/format';
 import { Card } from '../ui/Card';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 interface BudgetWidgetProps {
   monthlySpending: number;
@@ -18,9 +19,16 @@ export const BudgetWidget: React.FC<BudgetWidgetProps> = ({ monthlySpending, pre
   // Normalize currency code to uppercase (e.g., 'jpy' -> 'JPY')
   const normalizedCurrency = preferredCurrency?.toUpperCase() || 'USD';
 
+  const { user, loading: authLoading, sessionReady } = useAuth();
+
   useEffect(() => {
-    loadBudgetStatus();
-  }, [monthlySpending]);
+    // Only load budget status if user is authenticated AND session token is ready
+    if (!authLoading && user && sessionReady) {
+      loadBudgetStatus();
+    } else if (!authLoading && !user) {
+      setLoading(false);
+    }
+  }, [monthlySpending, user, authLoading, sessionReady]);
 
   const loadBudgetStatus = async () => {
     try {

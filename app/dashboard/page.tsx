@@ -82,7 +82,6 @@ import { useRouter } from 'next/navigation';
 import { businessApi, PlanResponse } from '@/lib/api/business';
 import { usePlanFeatures } from '@/lib/hooks/usePlanFeatures';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
-import { useUpcomingSubscriptions } from '@/lib/hooks/useSubscriptions';
 import { Modal } from '@/components/ui/Modal';
 import { SubscriptionForm } from '@/components/dashboard/SubscriptionForm';
 import {
@@ -140,11 +139,7 @@ export default function DashboardPage() {
   const isTablet = useIsTablet();
   const displayName = getUserDisplayName(user);
 
-  const {
-    data: upcomingSubscriptionsRaw,
-    isLoading: upcomingLoading,
-  } = useUpcomingSubscriptions();
-  const upcomingSubscriptions = (upcomingSubscriptionsRaw || []) as Subscription[];
+  // Upcoming subscriptions are now fetched by the EnhancedUpcomingRenewals component
 
   // Define handleCloseEditModal early so it can be used in useEffect
   const handleCloseEditModal = React.useCallback(() => {
@@ -489,13 +484,13 @@ export default function DashboardPage() {
 
   // Treat as "initial loading" only when we have no data yet; once we have data,
   // React Query will keep showing it while it refetches in the background.
-  const hasUpcoming = upcomingSubscriptions && (upcomingSubscriptions as Subscription[]).length > 0;
+  // Upcoming subscriptions check removed - component handles its own loading state
+  const hasUpcoming = true; // Assume there might be upcoming subscriptions
   const hasSpending = convertedSummary !== null || currencySummaries.length > 0;
   const hasTrend = monthlyData && (monthlyData as MonthlyTrend[]).length > 0;
   const hasStats = !!(subscriptionStats as SubscriptionStats | undefined);
 
   const isInitialLoading =
-    (!hasUpcoming && upcomingLoading) ||
     (!hasSpending && spendingLoading) ||
     (!hasTrend && trendLoading) ||
     (!hasStats && statsLoading) ||
@@ -739,7 +734,6 @@ export default function DashboardPage() {
       {/* Upcoming Renewals - Moved up for better priority */}
       <div data-tour="upcoming-renewals">
         <EnhancedUpcomingRenewals
-          subscriptions={upcomingSubscriptions}
           onEdit={handleUpcomingEdit}
           onDelete={handleUpcomingDelete}
           preferredCurrency={userSettings?.defaultCurrency || primarySpending?.currency || 'USD'}

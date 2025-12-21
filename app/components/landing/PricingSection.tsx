@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PRICING } from '@/lib/constants/landing';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useCheckout, useSubscription, useCustomerPortal, isPaidPlan, isActiveSubscription } from '@/lib/hooks/useBilling';
+import { useCheckout } from '@/lib/hooks/useBilling';
 import { useToast } from '@/lib/context/ToastContext';
 
 export function PricingSection() {
@@ -13,70 +13,20 @@ export function PricingSection() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { initiateCheckout, isLoading: checkoutLoading } = useCheckout();
-  const { data: subscription, isLoading: subscriptionLoading } = useSubscription();
-  const { openPortal, isLoading: isPortalLoading } = useCustomerPortal();
   const { showToast } = useToast();
 
   const handlePlanSelect = async (planName: string) => {
     const normalizedPlan = planName.toLowerCase();
-    const currentPlan = subscription?.plan?.toLowerCase() || 'starter';
-    const isCurrentPlan = normalizedPlan === currentPlan;
-    const isActive = isActiveSubscription(subscription);
-
-    // If user is already on this plan and it's active, open customer portal
-    if (isCurrentPlan && isActive && user) {
-      try {
-        await openPortal();
-      } catch (error: any) {
-        console.error('Portal error:', error);
-        showToast('Failed to open billing portal. Please try again.', 'error');
-      }
-      return;
-    }
-
-    // DISABLED: Ultimate plan upgrade logic - can be re-enabled when Ultimate plan is restored
-    // If user is on a paid plan and wants to upgrade (Pro -> Ultimate), allow checkout
-    // Downgrades (Ultimate -> Pro) should still go through portal
-    // if (user && isPaidPlan(subscription) && normalizedPlan !== currentPlan) {
-    //   // Allow upgrade (Pro -> Ultimate) via checkout
-    //   if (currentPlan === 'pro' && normalizedPlan === 'ultimate') {
-    //     // Continue to checkout flow below
-    //   } else {
-    //     // For downgrades or other changes, use portal
-    //     try {
-    //       await openPortal();
-    //     } catch (error: any) {
-    //       console.error('Portal error:', error);
-    //       showToast('Failed to open billing portal. Please try again.', 'error');
-    //     }
-    //     return;
-    //   }
-    // }
     
-    // For paid plan changes, use portal
-    if (user && isPaidPlan(subscription) && normalizedPlan !== currentPlan) {
-      try {
-        await openPortal();
-      } catch (error: any) {
-        console.error('Portal error:', error);
-        showToast('Failed to open billing portal. Please try again.', 'error');
-      }
-      return;
-    }
-
-    // For Starter plan, just redirect to signup or dashboard
-    if (normalizedPlan === 'starter') {
-      if (user) {
-        router.push('/dashboard');
-      } else {
-        router.push('/auth/signup');
-      }
-      return;
-    }
-
-    // For paid plans, check if user is logged in
+    // For unauthenticated users, redirect to signup
     if (!user) {
-      // Store intended plan in session storage for post-signup redirect
+      // For Starter plan, just redirect to signup
+      if (normalizedPlan === 'starter') {
+        router.push('/auth/signup');
+        return;
+      }
+
+      // For paid plans, store intended plan and redirect to signup
       if (typeof window !== 'undefined') {
         sessionStorage.setItem(
           'intendedPlan',
@@ -90,90 +40,40 @@ export function PricingSection() {
       return;
     }
 
-    // User is logged in, initiate checkout
-    // DISABLED: Ultimate plan - can be re-enabled when Ultimate plan is restored
-    if (normalizedPlan !== 'pro') {
-      showToast('Invalid plan selected', 'error');
+    // For authenticated users, redirect to plans page for upgrades
+    if (normalizedPlan !== 'starter') {
+      router.push('/dashboard/plans');
       return;
     }
 
-    setLoadingPlan(planName);
-    try {
-      await initiateCheckout(
-        normalizedPlan as 'pro',
-        isAnnual ? 'annual' : 'monthly'
-      );
-    } catch (error: any) {
-      console.error('Checkout error:', error);
-      showToast(
-        error?.response?.data?.detail || 'Failed to start checkout. Please try again.',
-        'error'
-      );
-    } finally {
-      setLoadingPlan(null);
-    }
+    // Starter plan for authenticated users
+    router.push('/dashboard');
   };
 
   const isButtonLoading = (planName: string) => {
-    return loadingPlan === planName || (checkoutLoading && loadingPlan === planName) || isPortalLoading;
+    return loadingPlan === planName || (checkoutLoading && loadingPlan === planName);
   };
 
   const getButtonText = (planName: string) => {
     const normalizedPlan = planName.toLowerCase();
-    const currentPlan = subscription?.plan?.toLowerCase() || 'starter';
-    const isCurrentPlan = normalizedPlan === currentPlan;
-    const isActive = isActiveSubscription(subscription);
-
-    if (isButtonLoading(planName)) {
-      return 'Processing...';
-    }
-
-    // If user is on this plan and it's active
-    if (isCurrentPlan && isActive && user) {
-      return 'Manage Subscription';
-    }
-
-    // If user is on Starter and viewing Starter
-    if (normalizedPlan === 'starter' && currentPlan === 'starter' && user) {
-      return 'Current Plan';
-    }
-
-    // If user is on a paid plan and viewing a lower tier
-    if (user && isPaidPlan(subscription)) {
+    
+    if (!user) {
       if (normalizedPlan === 'starter') {
-        // User is on Pro/Ultimate, viewing Starter - they can't downgrade to free
-        return 'Go to Dashboard';
+        return 'Get Started Free';
       }
-      // DISABLED: Ultimate plan upgrade/downgrade logic - can be re-enabled when Ultimate plan is restored
-      // User can upgrade/downgrade through portal
-      // if (normalizedPlan === 'pro' && currentPlan === 'ultimate') {
-      //   return 'Downgrade to Pro';
-      // }
-      // if (normalizedPlan === 'ultimate' && currentPlan === 'pro') {
-      //   return 'Upgrade to Ultimate';
-      // }
+      return 'Start 14-Day Trial';
     }
 
-    // Default button text
+    // For authenticated users, show simple text
     if (normalizedPlan === 'starter') {
-      return user ? 'Go to Dashboard' : 'Get Started Free';
+      return 'Go to Dashboard';
     }
-    return 'Start 14-Day Trial';
+    return 'View Plans';
   };
 
-  const isPlanDisabled = (planName: string) => {
-    if (!user) return false;
-    const normalizedPlan = planName.toLowerCase();
-    const currentPlan = subscription?.plan?.toLowerCase() || 'starter';
-    const isCurrentPlan = normalizedPlan === currentPlan;
-    const isActive = isActiveSubscription(subscription);
-
-    // Disable if it's the current active plan (user should use "Manage Subscription" instead)
-    // But allow if they want to upgrade/downgrade
-    if (isCurrentPlan && isActive) {
-      return false; // Allow clicking to open portal
-    }
-
+  const isPlanDisabled = () => {
+    // No plans are disabled on the landing page
+    // Authenticated users will be redirected to /dashboard/plans
     return false;
   };
 
@@ -237,10 +137,6 @@ export function PricingSection() {
         <div className="grid gap-12 sm:gap-16 lg:grid-cols-2 max-w-5xl mx-auto">
           {PRICING.map((tier) => {
             const normalizedPlan = tier.name.toLowerCase();
-            const currentPlan = subscription?.plan?.toLowerCase() || 'starter';
-            const isCurrentPlan = normalizedPlan === currentPlan;
-            const isActive = isActiveSubscription(subscription);
-            const isCurrentActivePlan = isCurrentPlan && isActive && user;
             const monthlyPriceNum = tier.monthlyPrice === '$0' ? 0 : parseFloat(tier.monthlyPrice?.replace('$', '') || '0');
             const annualPriceNum = tier.annualPrice ? parseFloat(tier.annualPrice.replace('$', '')) : null;
             const effectiveMonthlyPrice = isAnnual && annualPriceNum ? (annualPriceNum / 12).toFixed(2) : null;
@@ -251,22 +147,11 @@ export function PricingSection() {
               className={`relative rounded-2xl border-2 bg-white p-6 sm:p-7 transition-all duration-300 ${
                 tier.highlighted
                   ? 'border-primary-400 shadow-2xl lg:scale-[1.02] lg:-mt-4 lg:mb-4'
-                  : isCurrentActivePlan
-                  ? 'border-primary-300 shadow-xl ring-2 ring-primary-200'
                   : 'border-slate-200 hover:border-primary-300 hover:shadow-xl'
               }`}
             >
               {/* Badge */}
-              {isCurrentActivePlan ? (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-5 py-2 text-sm font-bold text-white shadow-lg">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Current Plan
-                  </span>
-                </div>
-              ) : tier.highlighted ? (
+              {tier.highlighted ? (
                 <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10">
                   <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-6 py-2.5 text-sm font-bold text-white shadow-xl ring-4 ring-brand-accent-200/50">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -364,15 +249,13 @@ export function PricingSection() {
               {/* CTA Button */}
               <button
                 onClick={() => handlePlanSelect(tier.name)}
-                disabled={isButtonLoading(tier.name) || authLoading || subscriptionLoading || isPlanDisabled(tier.name)}
+                disabled={isButtonLoading(tier.name) || authLoading || isPlanDisabled()}
                 className={`inline-flex w-full items-center justify-center rounded-lg px-5 py-3 text-sm font-bold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
-                  isCurrentActivePlan
-                    ? 'bg-primary-600 text-white shadow-lg hover:bg-primary-700 hover:shadow-xl hover:scale-[1.02]'
-                    : tier.highlighted
+                  tier.highlighted
                     ? 'bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white shadow-lg hover:from-brand-accent-600 hover:to-brand-accent-700 hover:shadow-xl hover:scale-[1.02]'
                     : 'border-2 border-primary-500 text-primary-600 bg-white hover:border-primary-600 hover:bg-primary-50 hover:scale-[1.02]'
                 }`}
-                aria-label={isCurrentActivePlan ? `Manage ${tier.name} subscription` : `Get started with ${tier.name} plan`}
+                aria-label={`Get started with ${tier.name} plan`}
               >
                 {isButtonLoading(tier.name) ? (
                   <span className="flex items-center gap-2">
