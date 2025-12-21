@@ -8,7 +8,7 @@ const USER_SETTINGS_KEY = ['user-settings'] as const;
 export const useUserSettings = () => {
   return useQuery<UserSettings>({
     queryKey: USER_SETTINGS_KEY,
-    queryFn: async () => {
+    queryFn: async (): Promise<UserSettings> => {
       const response = await settingsApi.getSettings();
       return response.data;
     },

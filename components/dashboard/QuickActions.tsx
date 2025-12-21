@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from '../ui/Card';
-import { Button } from '../ui/Button';
 import { useToast } from '@/lib/context/ToastContext';
 import Link from 'next/link';
 
@@ -11,6 +10,18 @@ interface QuickActionsProps {
   upcomingCount: number;
   onQuickAdd?: () => void;
 }
+
+type QuickAction = {
+  title: string;
+  description: string;
+  icon: React.ReactElement;
+  color: string;
+  textColor: string;
+  loading?: boolean;
+} & (
+  | { href: string; onClick?: never; disabled?: never }
+  | { href?: never; onClick: () => void; disabled?: boolean }
+);
 
 export const QuickActions: React.FC<QuickActionsProps> = ({
   subscriptionCount,
@@ -32,7 +43,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     showToast('Mark all as paid feature coming soon!', 'info');
   };
 
-  const actions = [
+  const actions: QuickAction[] = [
     {
       title: 'Add Subscription',
       description: 'Quickly add a new subscription',

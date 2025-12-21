@@ -19,7 +19,7 @@ import {
 } from '@/lib/hooks/useSubscriptionMutations';
 import { useDashboardSpending } from '@/lib/hooks/useDashboardAnalytics';
 import { settingsApi, UserSettings } from '@/lib/api/settings';
-import { SpendingSummaryResponse } from '@/lib/api/analytics';
+import { SpendingSummaryResponse, CurrencySpendingSummary } from '@/lib/api/analytics';
 import { useViewMode } from '@/lib/context/ViewModeContext';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
