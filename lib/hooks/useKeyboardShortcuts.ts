@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/lib/context/ToastContext';
 
@@ -16,6 +16,14 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
   const pathname = usePathname();
   const { showToast } = useToast();
   const { onNewSubscription, onSearch, onShowShortcuts, disabled } = options;
+
+  // Use refs to store the latest callbacks to avoid stale closures
+  const callbacksRef = useRef({ onNewSubscription, onSearch, onShowShortcuts });
+  
+  // Update refs when callbacks change
+  useEffect(() => {
+    callbacksRef.current = { onNewSubscription, onSearch, onShowShortcuts };
+  }, [onNewSubscription, onSearch, onShowShortcuts]);
 
   useEffect(() => {
     // Don't register shortcuts if disabled
@@ -52,8 +60,8 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       if (modifierKey && key === 'k' && !e.shiftKey && !e.altKey) {
         e.preventDefault();
         e.stopPropagation();
-        if (onSearch) {
-          onSearch();
+        if (callbacksRef.current.onSearch) {
+          callbacksRef.current.onSearch();
         } else {
           // Default: show search toast or navigate to search
           showToast('Search feature coming soon!', 'info');
@@ -66,8 +74,8 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         e.preventDefault();
         e.stopPropagation();
         
-        if (onNewSubscription) {
-          onNewSubscription();
+        if (callbacksRef.current.onNewSubscription) {
+          callbacksRef.current.onNewSubscription();
         } else {
           // Default behavior: navigate to subscriptions page
           if (pathname?.includes('/dashboard/subscriptions')) {
@@ -85,8 +93,8 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       if ((e.key === '?' || (e.key === '/' && e.shiftKey)) && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         e.stopPropagation();
-        if (onShowShortcuts) {
-          onShowShortcuts();
+        if (callbacksRef.current.onShowShortcuts) {
+          callbacksRef.current.onShowShortcuts();
         }
         return;
       }
@@ -95,6 +103,6 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     // Use capture phase to catch events early, before browser defaults
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [router, pathname, showToast, onNewSubscription, onSearch, onShowShortcuts, disabled]);
+  }, [router, pathname, showToast, disabled]); // Removed callbacks from deps - using refs instead
 }
 

@@ -175,10 +175,10 @@ export default function DashboardPage() {
     }
   }, [settingsData]);
 
-  // Keyboard shortcuts with page-specific handlers - disabled on mobile
+  // Keyboard shortcuts with page-specific handlers - disabled on mobile and tablet
   useKeyboardShortcuts(
-    isMobile
-      ? { disabled: true } // Disable all shortcuts on mobile
+    isMobile || isTablet
+      ? { disabled: true } // Disable all shortcuts on mobile and tablet (desktop only)
       : {
           onNewSubscription: () => setIsQuickAddModalOpen(true),
           onShowShortcuts: () => setIsKeyboardShortcutsOpen(true),
