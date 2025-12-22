@@ -6,6 +6,7 @@ import { businessApi } from '../api/business';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '../utils/passwordRules';
 import { fetchCsrfToken } from '../utils/csrf';
 import { logger } from '../utils/logger';
+import { setAuthToken, markSessionReady, clearSession, startFreshLogin, isFreshLoginPending } from '../api/client';
 
 type AccountType = 'free' | 'pro' | 'family' | 'personal' | 'business';
 
@@ -123,6 +124,15 @@ export function useAuth() {
           clearTimeout(refreshTimeoutId);
           refreshTimeoutId = null;
         }
+        // Update cached auth token
+        if (session?.access_token) {
+          try {
+            const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+            setAuthToken(session.access_token, payload.exp * 1000);
+          } catch {
+            setAuthToken(session.access_token, Date.now() + 3600000);
+          }
+        }
         updateUser(session?.user ?? null);
         setSessionReady(!!session?.access_token);
         setLoading(false);
@@ -137,6 +147,8 @@ export function useAuth() {
           clearTimeout(refreshTimeoutId);
           refreshTimeoutId = null;
         }
+        // Clear cached auth token and session ready state
+        clearSession();
         updateUser(null);
         setSessionReady(false);
         setLoading(false);
@@ -157,6 +169,24 @@ export function useAuth() {
         setSessionReady(hasToken);
         setLoading(false);
         setError(null);
+        
+        // Update cached token (but DON'T call markSessionReady here during fresh login!)
+        // For fresh logins, signIn() will call markSessionReady after the propagation delay
+        // For page refreshes with existing sessions, we mark ready immediately
+        if (hasToken) {
+          try {
+            const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+            setAuthToken(session.access_token, payload.exp * 1000);
+          } catch {
+            setAuthToken(session.access_token, Date.now() + 3600000);
+          }
+          // Only mark session ready if NOT in a fresh login flow
+          // Fresh logins set pendingFreshLogin=true before signIn, which blocks this
+          // For page refreshes, pendingFreshLogin is false so we should mark ready
+          if (!isFreshLoginPending()) {
+            markSessionReady();
+          }
+        }
         
         // If no token yet, check again after a brief delay (handles race conditions)
         if (!hasToken) {
@@ -369,12 +399,18 @@ export function useAuth() {
   };
 
   const signIn = async (email: string, password: string) => {
+    // Signal that a fresh login is starting - blocks API requests until ready
+    startFreshLogin();
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
+      // Clear fresh login state on error
+      markSessionReady();
+      
       // Provide user-friendly error messages
       if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid credentials')) {
         throw new Error('Invalid email or password. Please check your credentials and try again.');
@@ -385,14 +421,39 @@ export function useAuth() {
       throw error;
     }
 
-    // Fetch CSRF token after successful login
+    // Wait for session to be fully established in Supabase storage
+    // This prevents race conditions when navigating to protected routes
     if (data.session) {
+      // CRITICAL: Set the auth token in the API client IMMEDIATELY
+      // This ensures API calls made right after login will have the token
+      // without waiting for getSession() which can have race conditions
+      if (data.session.access_token) {
+        try {
+          const payload = JSON.parse(atob(data.session.access_token.split('.')[1]));
+          setAuthToken(data.session.access_token, payload.exp * 1000);
+        } catch {
+          // If we can't parse expiry, set a 1 hour expiry as fallback
+          setAuthToken(data.session.access_token, Date.now() + 3600000);
+        }
+      }
+      
+      // Update local state immediately
+      updateUser(data.session.user);
+      setSessionReady(true);
+      setLoading(false);
+      
+      // Fetch CSRF token after successful login
       try {
         await fetchCsrfToken();
       } catch (csrfError) {
         logger.warn('Failed to fetch CSRF token after login', { error: csrfError });
         // Continue even if CSRF token fetch fails
       }
+      
+      // No delay needed - backend validates JWT locally without calling Supabase's edge servers
+      
+      // NOW mark session as ready - this unblocks all waiting API requests
+      markSessionReady();
     }
 
     return data;
@@ -469,6 +530,9 @@ export function useAuth() {
   };
 
   const signOut = async () => {
+    // Clear cached auth token and session ready state
+    clearSession();
+    
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     // Clear all React Query cache to prevent showing previous user's data

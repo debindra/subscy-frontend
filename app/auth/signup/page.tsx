@@ -8,8 +8,8 @@ import { useTheme } from '@/lib/context/ThemeContext';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Select } from '@/components/ui/Select';
 import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
+import { PasswordStrength } from '@/components/auth/PasswordStrength';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '@/lib/utils/passwordRules';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
@@ -18,11 +18,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [accountType, setAccountType] = useState<'personal' | 'business'>('personal');
-  const [companyName, setCompanyName] = useState('');
-  const [companyAddress, setCompanyAddress] = useState('');
-  const [companyTaxId, setCompanyTaxId] = useState('');
-  const [companyPhone, setCompanyPhone] = useState('');
+  const accountType: 'personal' | 'business' = 'personal'; // Always starter/personal - disabled
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -48,10 +44,6 @@ export default function SignUpPage() {
         password,
         fullName,
         accountType,
-        companyName: accountType === 'business' ? companyName : undefined,
-        companyAddress: accountType === 'business' ? companyAddress : undefined,
-        companyTaxId: accountType === 'business' ? companyTaxId : undefined,
-        companyPhone: accountType === 'business' ? companyPhone : undefined,
       });
       setSuccess(true);
       setTimeout(() => {
@@ -207,62 +199,6 @@ export default function SignUpPage() {
                 placeholder="John Doe"
               />
 
-              <Select
-                label="Account Type"
-                value={accountType}
-                onChange={(event) => setAccountType(event.target.value as 'personal' | 'business')}
-                options={[
-                  { value: 'personal', label: 'Personal' },
-                  { value: 'business', label: 'Business' },
-                ]}
-              />
-
-              {accountType === 'business' && (
-                <div className="space-y-4 animate-fade-in">
-                  <div className="p-4 border border-primary-100 dark:border-primary-900/40 rounded-xl bg-primary-50/60 dark:bg-primary-900/10 text-sm text-primary-700 dark:text-primary-200">
-                    <p className="font-semibold mb-1">Business account benefits</p>
-                    <ul className="list-disc list-inside space-y-1 text-primary-600 dark:text-primary-300">
-                      <li>Advanced analytics with extended history</li>
-                      <li>Team seats and export capabilities</li>
-                      <li>Dedicated business profile management</li>
-                    </ul>
-                  </div>
-
-                  <Input
-                    label="Company Name"
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    required
-                    placeholder="Acme Corporation"
-                  />
-
-                  <Input
-                    label="Company Address"
-                    type="text"
-                    value={companyAddress}
-                    onChange={(e) => setCompanyAddress(e.target.value)}
-                    placeholder="123 Business Lane, Suite 100"
-                  />
-
-                  <Input
-                    label="Tax ID"
-                    type="text"
-                    value={companyTaxId}
-                    onChange={(e) => setCompanyTaxId(e.target.value)}
-                    placeholder="12-3456789"
-                  />
-
-                  <Input
-                    label="Company Phone"
-                    type="tel"
-                    value={companyPhone}
-                    onChange={(e) => setCompanyPhone(e.target.value)}
-                    placeholder="+1 (555) 123-4567"
-                  />
-                </div>
-              )}
-
               <Input
                 label="Email"
                 type="email"
@@ -302,6 +238,7 @@ export default function SignUpPage() {
                     </button>
                   }
                 />
+                {password && <PasswordStrength password={password} />}
                 <PasswordRequirements />
               </div>
 

@@ -18,12 +18,15 @@ const SUBSCRIPTION_KEY = ['billing', 'subscription'];
  * Hook to get Stripe configuration (publishable key and enabled status)
  */
 export function useBillingConfig() {
+  const { user, loading: authLoading, sessionReady } = useAuth();
+  
   return useQuery<BillingConfig>({
     queryKey: BILLING_CONFIG_KEY,
     queryFn: async () => {
       const response = await billingApi.getConfig();
       return response.data;
     },
+    enabled: !authLoading && !!user && sessionReady, // Only run when user is authenticated AND session token is ready
     staleTime: 1000 * 60 * 60, // 1 hour - config rarely changes
   });
 }
@@ -33,7 +36,7 @@ export function useBillingConfig() {
  * Only fetches when user is authenticated
  */
 export function useSubscription() {
-  const { user } = useAuth();
+  const { user, loading: authLoading, sessionReady } = useAuth();
   
   return useQuery<SubscriptionStatus>({
     queryKey: SUBSCRIPTION_KEY,
@@ -41,7 +44,7 @@ export function useSubscription() {
       const response = await billingApi.getSubscription();
       return response.data;
     },
-    enabled: !!user, // Only fetch when user is authenticated
+    enabled: !authLoading && !!user && sessionReady, // Only run when user is authenticated AND session token is ready
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
