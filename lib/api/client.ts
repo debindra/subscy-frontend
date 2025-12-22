@@ -1,6 +1,13 @@
-import axios from 'axios';
+import axios, { InternalAxiosRequestConfig } from 'axios';
 import { supabase } from '../supabase';
 import { logger } from '../utils/logger';
+
+// Extend axios config to include retry flag
+declare module 'axios' {
+  export interface InternalAxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -15,9 +22,95 @@ export const apiClient = axios.create({
 // In-memory storage for CSRF token (since HTTP-only cookies can't be read by JS)
 let csrfTokenCache: string | null = null;
 
-// Track if we're currently refreshing to avoid multiple simultaneous refresh attempts
+// Token refresh state - singleton to handle all requests
 let isRefreshing = false;
-let refreshPromise: ReturnType<typeof supabase.auth.refreshSession> | null = null;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+// Cached access token - updated immediately after login/refresh
+// This prevents race conditions where getSession() returns stale data
+let cachedAccessToken: string | null = null;
+let cachedTokenExpiry: number = 0;
+
+// Fresh login state - blocks requests until new token is propagated
+// This is only set to true during fresh login, not on page refresh
+let pendingFreshLogin = false;
+let freshLoginResolve: (() => void) | null = null;
+let freshLoginPromise: Promise<void> | null = null;
+
+// Export function to set token from useAuth after login
+export function setAuthToken(token: string | null, expiresAt?: number): void {
+  cachedAccessToken = token;
+  cachedTokenExpiry = expiresAt || 0;
+}
+
+// Signal that a fresh login is starting - blocks API requests until ready
+export function startFreshLogin(): void {
+  pendingFreshLogin = true;
+  freshLoginPromise = new Promise<void>((resolve) => {
+    freshLoginResolve = resolve;
+  });
+}
+
+// Signal that fresh login is complete and token is ready
+export function markSessionReady(): void {
+  pendingFreshLogin = false;
+  if (freshLoginResolve) {
+    freshLoginResolve();
+    freshLoginResolve = null;
+    freshLoginPromise = null;
+  }
+}
+
+// Check if a fresh login is pending (for external use)
+export function isFreshLoginPending(): boolean {
+  return pendingFreshLogin;
+}
+
+// Clear session state (on logout)
+export function clearSession(): void {
+  cachedAccessToken = null;
+  cachedTokenExpiry = 0;
+  pendingFreshLogin = false;
+}
+
+// Wait for fresh login to complete (if pending)
+async function waitForFreshLogin(): Promise<void> {
+  if (!pendingFreshLogin) return;
+  
+  if (!freshLoginPromise) {
+    // No promise means we're not actually waiting
+    return;
+  }
+  
+  // Wait max 5 seconds for fresh login to complete
+  const timeout = new Promise<void>((resolve) => {
+    setTimeout(() => {
+      logger.warn('Fresh login wait timeout, proceeding with request');
+      resolve();
+    }, 5000);
+  });
+  
+  await Promise.race([freshLoginPromise, timeout]);
+}
+
+// Get cached token if still valid
+function getCachedToken(): string | null {
+  if (cachedAccessToken && cachedTokenExpiry > Date.now()) {
+    return cachedAccessToken;
+  }
+  return null;
+}
+
+// Helper to subscribe to token refresh
+function subscribeTokenRefresh(callback: (token: string) => void): void {
+  refreshSubscribers.push(callback);
+}
+
+// Helper to notify all subscribers when token is refreshed
+function onTokenRefreshed(token: string): void {
+  refreshSubscribers.forEach(callback => callback(token));
+  refreshSubscribers = [];
+}
 
 // Helper function to get CSRF token from cache or cookies
 function getCsrfToken(): string | null {
@@ -46,52 +139,132 @@ function setCsrfToken(token: string | null): void {
   csrfTokenCache = token;
 }
 
-// Track if we're waiting for initial session after login
-let waitingForInitialSession = false;
-let sessionWaitPromise: Promise<void> | null = null;
-
-// Helper to wait for session to be ready
-async function waitForSession(maxWait = 2000): Promise<boolean> {
-  const startTime = Date.now();
-  while (Date.now() - startTime < maxWait) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      return true;
-    }
-    await new Promise(resolve => setTimeout(resolve, 200));
+// Check if JWT token is expired or about to expire (within 30 seconds)
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const exp = payload.exp * 1000; // Convert to milliseconds
+    const now = Date.now();
+    const buffer = 30 * 1000; // 30 second buffer
+    return now >= exp - buffer;
+  } catch {
+    return true; // If we can't parse, assume expired
   }
-  return false;
+}
+
+// Refresh the token and return the new access token
+async function refreshToken(): Promise<string | null> {
+  const { data: { session }, error } = await supabase.auth.refreshSession();
+  if (error || !session?.access_token) {
+    logger.error('Token refresh failed', error);
+    return null;
+  }
+  return session.access_token;
 }
 
 // Add auth token, CSRF token, and account context to requests
 apiClient.interceptors.request.use(async (config) => {
-  // Get session once at the start
+  // Skip auth for CSRF token endpoint and public endpoints
+  const isPublicEndpoint = config.url?.includes('/auth/csrf-token');
+  
+  // Skip session lookup if this is a retry request with an already-set Authorization header
+  // This prevents overwriting the fresh token we set during 401 retry
+  if (config._retry && config.headers.Authorization) {
+    // Add CSRF token for state-changing requests on retry
+    if (config.method && ['post', 'put', 'patch', 'delete'].includes(config.method.toLowerCase())) {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        config.headers['X-CSRF-Token'] = csrfToken;
+      }
+    }
+    return config;
+  }
+
+  // Wait for fresh login to complete before making authenticated requests
+  // This prevents 401 errors when navigating to dashboard immediately after login
+  if (!isPublicEndpoint && pendingFreshLogin) {
+    await waitForFreshLogin();
+  }
+
+  // First, try to use cached token (set immediately after login)
+  // This avoids race conditions with getSession()
+  const cached = getCachedToken();
+  if (cached && !isTokenExpired(cached)) {
+    config.headers.Authorization = `Bearer ${cached}`;
+    // Add CSRF token for state-changing requests
+    if (config.method && ['post', 'put', 'patch', 'delete'].includes(config.method.toLowerCase())) {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        config.headers['X-CSRF-Token'] = csrfToken;
+      }
+    }
+    return config;
+  }
+
+  // Get current session from Supabase
   let { data: { session } } = await supabase.auth.getSession();
   
-  // Only wait for session if we don't have one and waitForSession isn't already running
-  if (!session?.access_token && !sessionWaitPromise) {
-    waitingForInitialSession = true;
-    
-    sessionWaitPromise = waitForSession().then((success) => {
-      waitingForInitialSession = false;
-      sessionWaitPromise = null;
-    });
-    await sessionWaitPromise;
-    
-    // Get session again after waiting (waitForSession returns success, not session)
-    const { data: { session: waitedSession } } = await supabase.auth.getSession();
-    session = waitedSession;
-  } else if (sessionWaitPromise) {
-    // If wait is already in progress, just wait for it
-    await sessionWaitPromise;
-    const { data: { session: waitedSession } } = await supabase.auth.getSession();
-    session = waitedSession;
+  // If no session, wait briefly for it to be established (handles post-login race condition)
+  if (!session?.access_token) {
+    // Wait up to 2 seconds for session
+    const maxWait = 2000;
+    const startTime = Date.now();
+    while (Date.now() - startTime < maxWait) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      const { data: { session: newSession } } = await supabase.auth.getSession();
+      if (newSession?.access_token) {
+        session = newSession;
+        break;
+      }
+    }
   }
 
   if (session?.access_token) {
-    // Just use the current session token - let Supabase handle automatic refresh
-    // Only refresh on 401 errors in the response interceptor
-    config.headers.Authorization = `Bearer ${session.access_token}`;
+    // Update cached token
+    try {
+      const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+      setAuthToken(session.access_token, payload.exp * 1000);
+    } catch {
+      // If we can't parse the token, still use it but don't cache
+    }
+
+    // Check if token is expired or about to expire
+    if (isTokenExpired(session.access_token)) {
+      // If already refreshing, wait for the refresh to complete
+      if (isRefreshing) {
+        const newToken = await new Promise<string>((resolve) => {
+          subscribeTokenRefresh((token: string) => {
+            resolve(token);
+          });
+        });
+        config.headers.Authorization = `Bearer ${newToken}`;
+      } else {
+        // Start refresh process
+        isRefreshing = true;
+        try {
+          const newToken = await refreshToken();
+          if (newToken) {
+            config.headers.Authorization = `Bearer ${newToken}`;
+            // Update cached token
+            try {
+              const payload = JSON.parse(atob(newToken.split('.')[1]));
+              setAuthToken(newToken, payload.exp * 1000);
+            } catch {
+              // Ignore parsing errors
+            }
+            onTokenRefreshed(newToken);
+          } else {
+            // Refresh failed, use old token and let 401 handler deal with it
+            config.headers.Authorization = `Bearer ${session.access_token}`;
+          }
+        } finally {
+          isRefreshing = false;
+        }
+      }
+    } else {
+      // Token is still valid, use it
+      config.headers.Authorization = `Bearer ${session.access_token}`;
+    }
   } else {
     logger.warn('No session found in request interceptor', { 
       url: config.url,
@@ -140,7 +313,12 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error) => {
-    const { response } = error;
+    const { response, config } = error;
+    
+    // Skip retry if already retried
+    if (config?._retry) {
+      return Promise.reject(error);
+    }
 
     // Handle CSRF token errors (403)
     if (response?.status === 403 && (
@@ -164,9 +342,10 @@ apiClient.interceptors.response.use(
           
           // Create a new config for retry with updated CSRF token
           const retryConfig = {
-            ...error.config,
+            ...config,
+            _retry: true,
             headers: {
-              ...error.config.headers,
+              ...config.headers,
               'X-CSRF-Token': newToken,
             },
           };
@@ -176,101 +355,71 @@ apiClient.interceptors.response.use(
         }
       } catch (csrfError: any) {
         logger.error('Failed to refresh CSRF token', csrfError);
-        // If we can't refresh, show error to user
-        if (typeof window !== 'undefined') {
-          alert('Security session expired. Please refresh the page.');
-        }
         return Promise.reject(error);
       }
 
-      // If we can't refresh, show error to user
-      if (typeof window !== 'undefined') {
-        alert('Security session expired. Please refresh the page.');
-      }
       return Promise.reject(error);
     }
 
     // Handle authentication errors (401)
     if (response?.status === 401) {
-      // Get session once
-      const { data: { session: checkSession } } = await supabase.auth.getSession();
-
-      if (checkSession?.user && !error.config._retry && !checkSession?.access_token) {
-        // Session exists but no token - wait once and retry
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        
-        if (currentSession?.access_token) {
-          error.config._retry = true;
-          error.config.headers.Authorization = `Bearer ${currentSession.access_token}`;
-          return apiClient.request(error.config);
-        }
-      }
-      
-      // Use shared refresh promise to avoid multiple simultaneous refresh attempts
-      if (!isRefreshing || !refreshPromise) {
-        isRefreshing = true;
-        refreshPromise = supabase.auth.refreshSession().finally(() => {
-          // Reset flag after promise completes (success or failure)
-          isRefreshing = false;
-          // Clear the promise only after refresh is complete
-          refreshPromise = null;
+      // If already refreshing, queue this request
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          subscribeTokenRefresh((token: string) => {
+            config._retry = true;
+            config.headers.Authorization = `Bearer ${token}`;
+            resolve(apiClient.request(config));
+          });
         });
       }
-      
-      // Wait for refresh (either new or existing)
-      if (!refreshPromise) {
-        // Fallback - shouldn't happen but TypeScript needs it
-        return Promise.reject(error);
-      }
-      
-      const refreshResult = await refreshPromise;
-      // DON'T clear refreshPromise here - let the finally block handle it
 
-      const { data: { session }, error: refreshError } = refreshResult;
-
-      if (refreshError || !session) {
-        // Give it one more chance - check if session exists after a brief delay
-        // This handles race conditions where Supabase is still refreshing
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const { data: { session: finalSession } } = await supabase.auth.getSession();
+      // Start refresh process
+      isRefreshing = true;
+      
+      try {
+        const newToken = await refreshToken();
         
-        if (finalSession?.access_token) {
-          // Session recovered - retry with new token
-          error.config.headers.Authorization = `Bearer ${finalSession.access_token}`;
-          return apiClient.request(error.config);
-        }
-
-        // Only redirect to login if we're on a protected route
-        // Public routes should not redirect (e.g., landing page, auth pages)
-        if (typeof window !== 'undefined') {
-          const currentPath = window.location.pathname;
-          const publicRoutes = [
-            '/',
-            '/auth/login',
-            '/auth/signup',
-            '/auth/callback',
-            '/auth/update-password',
-            '/privacy',
-            '/terms',
-          ];
+        if (newToken) {
+          // Notify all queued requests
+          onTokenRefreshed(newToken);
           
-          const isPublicRoute = publicRoutes.some(route => 
-            currentPath === route || currentPath.startsWith(route + '/')
-          );
-          
-          // Only redirect if we're NOT on a public route
-          if (!isPublicRoute) {
-            logger.warn('Session refresh failed, redirecting to login', refreshError ? { error: refreshError } : undefined);
-            window.location.href = '/auth/login';
+          // Retry the original request
+          config._retry = true;
+          config.headers.Authorization = `Bearer ${newToken}`;
+          return apiClient.request(config);
+        } else {
+          // Refresh failed - check if we should redirect to login
+          if (typeof window !== 'undefined') {
+            const currentPath = window.location.pathname;
+            const publicRoutes = [
+              '/',
+              '/auth/login',
+              '/auth/signup',
+              '/auth/callback',
+              '/auth/update-password',
+              '/privacy',
+              '/terms',
+            ];
+            
+            const isPublicRoute = publicRoutes.some(route => 
+              currentPath === route || currentPath.startsWith(route + '/')
+            );
+            
+            // Only redirect if we're NOT on a public route
+            if (!isPublicRoute) {
+              logger.warn('Session refresh failed, redirecting to login');
+              window.location.href = '/auth/login';
+            }
           }
+          return Promise.reject(error);
         }
+      } catch (refreshError) {
+        logger.error('Token refresh error', refreshError);
         return Promise.reject(error);
+      } finally {
+        isRefreshing = false;
       }
-
-      // Retry the request with new token
-      error.config.headers.Authorization = `Bearer ${session.access_token}`;
-      return apiClient.request(error.config);
     }
 
     return Promise.reject(error);

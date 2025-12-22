@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
+import { PasswordStrength } from '@/components/auth/PasswordStrength';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '@/lib/utils/passwordRules';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
 
@@ -183,6 +184,7 @@ function UpdatePasswordContent() {
               </button>
             }
           />
+          {password && <PasswordStrength password={password} />}
 
           <Input
             label="Confirm new password"

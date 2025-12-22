@@ -2,10 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { businessApi, PlanResponse } from '../api/business';
+import { useAuth } from './useAuth';
 
 const PLAN_KEY = ['plan'] as const;
 
 export function usePlanFeatures() {
+  const { user, loading: authLoading, sessionReady } = useAuth();
+  
   const {
     data: plan,
     isLoading,
@@ -15,6 +18,7 @@ export function usePlanFeatures() {
       const response = await businessApi.getCurrentPlan();
       return response.data;
     },
+    enabled: !authLoading && !!user && sessionReady, // Only run when user is authenticated AND session token is ready
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: false,
@@ -22,7 +26,7 @@ export function usePlanFeatures() {
     placeholderData: (previousData) => previousData,
   });
 
-  const loading = isLoading;
+  const loading = authLoading || isLoading;
 
   // New plan structure: starter, pro, ultimate
   // Legacy support: base, command, sentinel, free, family, personal, business
