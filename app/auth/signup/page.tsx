@@ -8,6 +8,7 @@ import { useTheme } from '@/lib/context/ThemeContext';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { GoogleIcon } from '@/components/ui/GoogleIcon';
 import { PasswordRequirements } from '@/components/auth/PasswordRequirements';
 import { PasswordStrength } from '@/components/auth/PasswordStrength';
 import { isPasswordStrong, PASSWORD_ERROR_MESSAGE } from '@/lib/utils/passwordRules';
@@ -143,30 +144,7 @@ export default function SignUpPage() {
                 </div>
               ) : (
                 <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 48 48"
-                    className="w-5 h-5"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill="#EA4335"
-                      d="M24 9.5c3.36 0 6.14 1.45 8.01 2.66l5.84-5.84C33.6 3.6 29.24 2 24 2 14.82 2 7.02 7.98 3.69 16.09l6.84 5.31C12.23 14.46 17.66 9.5 24 9.5z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M46.5 24c0-1.64-.15-3.22-.44-4.74H24v9.49h12.7c-.55 2.97-2.2 5.49-4.69 7.19l7.37 5.71C43.62 37.66 46.5 31.35 46.5 24z"
-                    />
-                    <path
-                      fill="#4285F4"
-                      d="M10.53 26.4A13.96 13.96 0 0 1 9.5 21c0-1.87.34-3.67.88-5.31L3.69 10.4A21.89 21.89 0 0 0 2 21c0 3.48.84 6.76 2.31 9.6l6.22-4.2z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M24 46c5.84 0 10.75-1.92 14.33-5.23l-7.37-5.71c-2.04 1.38-4.66 2.18-6.96 2.18-5.34 0-9.88-3.6-11.47-8.54l-6.22 4.2C9.36 40.55 15.96 46 24 46z"
-                    />
-                    <path fill="none" d="M2 2h44v44H2z" />
-                  </svg>
+                  <GoogleIcon className="w-5 h-5" />
                   Continue with Google
                 </>
               )}
