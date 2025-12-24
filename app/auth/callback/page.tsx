@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/Card';
 import { businessApi } from '@/lib/api/business';
+import { authApi } from '@/lib/api/auth';
 
 type Status = 'loading' | 'success' | 'error';
 
@@ -14,6 +15,7 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<Status>('loading');
   const [message, setMessage] = useState('Processing authentication...');
+  const [showLoginLink, setShowLoginLink] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -76,18 +78,28 @@ function AuthCallbackContent() {
             }
           }
 
+          // Send welcome email after email confirmation
+          try {
+            await authApi.sendWelcomeEmail();
+          } catch (emailError: any) {
+            // Don't block the flow if welcome email fails
+            console.warn('Failed to send welcome email:', emailError);
+          }
+
+          // Sign out the user so they need to log in
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError: any) {
+            console.warn('Failed to sign out:', signOutError);
+          }
+
           setStatus('success');
-          setMessage('Email confirmed! Redirecting to your dashboard...');
+          setMessage('Email confirmed successfully! A welcome email has been sent to your inbox. Please sign in to continue.');
+          setShowLoginLink(true);
 
           if (typeof window !== 'undefined') {
             window.history.replaceState(null, '', window.location.pathname);
           }
-
-          setTimeout(() => {
-            if (isActive) {
-              router.replace('/dashboard');
-            }
-          }, 1500);
           return;
         }
 
@@ -144,19 +156,29 @@ function AuthCallbackContent() {
           }
         }
 
+        // Send welcome email after email confirmation
+        try {
+          await authApi.sendWelcomeEmail();
+        } catch (emailError: any) {
+          // Don't block the flow if welcome email fails
+          console.warn('Failed to send welcome email:', emailError);
+        }
+
+        // Sign out the user so they need to log in
+        try {
+          await supabase.auth.signOut();
+        } catch (signOutError: any) {
+          console.warn('Failed to sign out:', signOutError);
+        }
+
         setStatus('success');
-        setMessage('Email confirmed! Redirecting to your dashboard...');
+        setMessage('Email confirmed successfully! A welcome email has been sent to your inbox. Please sign in to continue.');
+        setShowLoginLink(true);
 
         // Clear URL parameters for security
         if (typeof window !== 'undefined') {
           window.history.replaceState(null, '', window.location.pathname);
         }
-
-        setTimeout(() => {
-          if (isActive) {
-            router.replace('/dashboard');
-          }
-        }, 1500);
       } catch (err: any) {
         if (!isActive) return;
         setStatus('error');
@@ -411,7 +433,11 @@ function AuthCallbackContent() {
 
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-            {status === 'error' ? 'Authentication Failed' : 'Finishing up...'}
+            {status === 'error' 
+              ? 'Authentication Failed' 
+              : status === 'success' && showLoginLink
+              ? 'Email Confirmed!'
+              : 'Finishing up...'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">{message}</p>
         </div>
@@ -426,6 +452,17 @@ function AuthCallbackContent() {
               className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
             >
               Back to login
+            </Link>
+          </div>
+        )}
+
+        {status === 'success' && showLoginLink && (
+          <div className="space-y-3">
+            <Link
+              href="/auth/login"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+            >
+              Go to Login
             </Link>
           </div>
         )}

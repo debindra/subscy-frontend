@@ -10,5 +10,9 @@ export const authApi = {
     const response = await apiClient.post<{ message: string }>('/auth/change-password', data);
     return response;
   },
+  sendWelcomeEmail: async () => {
+    const response = await apiClient.post<{ message: string }>('/auth/send-welcome-email');
+    return response;
+  },
 };
 

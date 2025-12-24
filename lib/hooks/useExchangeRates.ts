@@ -17,14 +17,15 @@ export const useExchangeRates = (params: UseExchangeRatesParams = {}) => {
     queryKey: ['exchange-rates', baseCurrency, targetCurrencies?.sort()],
     queryFn: async () => {
       try {
-        // const response = await currencyApi.getExchangeRates(baseCurrency, targetCurrencies);
-        // return response.data;
-        // Temporarily commented out - return empty rates
-        return {
-          base: baseCurrency,
-          rates: {},
-          timestamp: Date.now(),
-        };
+        const response = await currencyApi.getExchangeRates(baseCurrency, targetCurrencies);
+        const data = response.data;
+        
+        // Ensure base currency is always in rates with value 1.0
+        if (data.rates && !(baseCurrency.toUpperCase() in data.rates)) {
+          data.rates[baseCurrency.toUpperCase()] = 1.0;
+        }
+        
+        return data;
       } catch (error) {
         logger.error('Exchange rates fetch error', error);
         throw error;

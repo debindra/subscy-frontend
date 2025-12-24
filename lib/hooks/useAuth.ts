@@ -513,7 +513,10 @@ export function useAuth() {
       redirectTo,
     });
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
+
     return data;
   };
 
@@ -521,6 +524,7 @@ export function useAuth() {
     if (!isPasswordStrong(newPassword)) {
       throw new Error(PASSWORD_ERROR_MESSAGE);
     }
+
     const { data, error } = await supabase.auth.updateUser({
       password: newPassword,
     });
