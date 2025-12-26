@@ -31,14 +31,6 @@ const tourSteps: TourStep[] = [
     position: 'bottom',
   },
   {
-    id: 'quick-actions',
-    target: '[data-tour="quick-actions"]',
-    title: 'Quick Actions',
-    content: 'Quickly add subscriptions, import data, or mark items as paid. These shortcuts help you manage everything faster.',
-    icon: '⚡',
-    position: 'bottom',
-  },
-  {
     id: 'renewals',
     target: '[data-tour="upcoming-renewals"]',
     title: 'Upcoming Renewals',
@@ -334,17 +326,22 @@ export function ProductTour({ forceShow = false, onClose }: ProductTourProps = {
     if (!isVisible) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
+        e.stopPropagation();
         handleSkip();
       } else if (e.key === 'ArrowRight' && currentStep < tourSteps.length - 1) {
+        e.preventDefault();
         handleNext();
       } else if (e.key === 'ArrowLeft' && currentStep > 0) {
+        e.preventDefault();
         handlePrevious();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    // Use capture phase to ensure we catch the event before other handlers
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [isVisible, currentStep, handleSkip, handleNext, handlePrevious]);
 
   // Focus management

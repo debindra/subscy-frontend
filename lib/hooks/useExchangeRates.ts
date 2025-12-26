@@ -3,6 +3,7 @@ import { currencyApi } from '@/lib/api/currency';
 import type { ExchangeRatesResponse } from '@/lib/api/currency';
 import { logger } from '@/lib/utils/logger';
 import { useAuth } from './useAuth';
+import { supabase } from '@/lib/supabase';
 
 export interface UseExchangeRatesParams {
   baseCurrency?: string;
@@ -16,6 +17,17 @@ export const useExchangeRates = (params: UseExchangeRatesParams = {}) => {
   return useQuery({
     queryKey: ['exchange-rates', baseCurrency, targetCurrencies?.sort()],
     queryFn: async () => {
+      // Double-check we have a session before making the request
+      // This prevents race conditions where sessionReady is true but token isn't available yet
+      if (typeof window !== 'undefined') {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session?.access_token) {
+          logger.warn('Exchange rates fetch attempted without valid session');
+          throw new Error('Authentication required');
+        }
+      }
+
       try {
         const response = await currencyApi.getExchangeRates(baseCurrency, targetCurrencies);
         const data = response.data;
@@ -26,8 +38,13 @@ export const useExchangeRates = (params: UseExchangeRatesParams = {}) => {
         }
         
         return data;
-      } catch (error) {
-        logger.error('Exchange rates fetch error', error);
+      } catch (error: any) {
+        // Log more details about the error for debugging
+        logger.error('Exchange rates fetch error', {
+          error: error?.message,
+          status: error?.response?.status,
+          url: error?.config?.url,
+        });
         throw error;
       }
     },
@@ -35,6 +52,7 @@ export const useExchangeRates = (params: UseExchangeRatesParams = {}) => {
     staleTime: 1000 * 60 * 30, // 30 minutes
     gcTime: 1000 * 60 * 60, // 1 hour
     retry: 1,
+    retryOnMount: true, // Retry when component mounts if data is stale
   });
 };
 

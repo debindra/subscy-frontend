@@ -266,10 +266,16 @@ apiClient.interceptors.request.use(async (config) => {
       config.headers.Authorization = `Bearer ${session.access_token}`;
     }
   } else {
-    logger.warn('No session found in request interceptor', { 
-      url: config.url,
-      method: config.method 
-    });
+    // If this is not a public endpoint and we don't have a session, log and continue
+    // The backend will return 401 if auth is required
+    if (!isPublicEndpoint) {
+      logger.warn('No session found in request interceptor', { 
+        url: config.url,
+        method: config.method 
+      });
+      // Don't block the request - let the backend return 401
+      // The response interceptor will handle 401 errors
+    }
   }
 
   // Add CSRF token for state-changing requests
