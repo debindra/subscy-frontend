@@ -85,18 +85,18 @@ export const METRICS: Metric[] = [
 export const STEPS: Step[] = [
   {
     number: '01',
-    title: 'Add your subscriptions',
-    description: 'Quickly add all your subscriptions manually or import from your accounts. Subsy automatically tracks renewal dates and payment schedules.',
+    title: 'Add Form',
+    description: 'Quickly add subscriptions with a simple form. Enter name, amount, billing cycle, and renewal date.',
   },
   {
     number: '02',
-    title: 'Configure your alerts',
-    description: 'Customize when and how you want to be notified. Set alert preferences for each subscription—email, or push notifications.',
+    title: 'Configure Timezone & Time',
+    description: 'Set your timezone and preferred notification time. Get reminders exactly when you need them.',
   },
   {
     number: '03',
-    title: 'Stay ahead of renewals',
-    description: 'Receive timely notifications before every renewal. Never miss a payment or get surprised by unexpected charges again.',
+    title: 'Get Notifications',
+    description: 'Receive timely email and push notifications before your subscriptions renew. Never miss a payment again.',
   },
 ];
 

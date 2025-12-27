@@ -9,6 +9,7 @@ interface NavigationProps {
   setMobileMenuOpen: (open: boolean) => void;
   scrollToPricing: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   scrollToFaq: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  scrollToDemo: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   isSticky: boolean;
 }
 
@@ -18,6 +19,7 @@ export function Navigation({
   setMobileMenuOpen,
   scrollToPricing,
   scrollToFaq,
+  scrollToDemo,
   isSticky,
 }: NavigationProps) {
   const { theme } = useTheme();
@@ -49,6 +51,13 @@ export function Navigation({
             </Link>
             {!user && (
               <>
+                <a
+                  href="#demo"
+                  onClick={scrollToDemo}
+                  className="hidden sm:inline-block rounded-lg px-3 sm:px-4 py-2 text-slate-700 transition hover:text-primary-600 text-sm font-medium"
+                >
+                  Demo
+                </a>
                 <a
                   href="#pricing"
                   onClick={scrollToPricing}
@@ -136,6 +145,16 @@ export function Navigation({
               {!user && (
                 <>
                   <a
+                    href="#demo"
+                    onClick={(e) => {
+                      scrollToDemo(e);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block rounded-lg px-4 py-2 text-slate-700 transition hover:text-primary-600 hover:bg-slate-50 text-sm font-medium"
+                  >
+                    Demo
+                  </a>
+                  <a
                     href="#pricing"
                     onClick={(e) => {
                       scrollToPricing(e);
@@ -201,6 +220,7 @@ export function Navigation({
                   />
                 </Link>
                 <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-700">
+                  <a href="#demo" className="hover:text-primary-600 transition-colors">Demo</a>
                   <a href="#tour" className="hover:text-primary-600 transition-colors">Features</a>
                   <a href="#pricing" className="hover:text-primary-600 transition-colors">Pricing</a>
                   <a href="#faq" className="hover:text-primary-600 transition-colors">FAQ</a>

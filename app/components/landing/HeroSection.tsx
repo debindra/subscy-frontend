@@ -59,9 +59,9 @@ export function HeroSection({ user }: HeroSectionProps) {
               </svg>
             </Link>
             <Link
-              href={user ? '/dashboard/subscriptions' : '#tour'}
+              href={user ? '/dashboard/subscriptions' : '#demo'}
               className="group relative inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-300 bg-white/90 backdrop-blur-md px-5 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 md:py-4 text-sm sm:text-base font-semibold text-slate-700 transition-all duration-300 hover:bg-white hover:border-primary-400 hover:text-primary-600 hover:shadow-xl hover:shadow-primary-100/50 hover:-translate-y-0.5 w-full sm:w-auto min-h-[44px] sm:min-h-[48px]"
-              aria-label={user ? 'View subscription insights' : 'Watch product walkthrough'}
+              aria-label={user ? 'View subscription insights' : 'Watch product demo'}
             >
               <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />

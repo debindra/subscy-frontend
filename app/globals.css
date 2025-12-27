@@ -369,8 +369,9 @@ body {
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out forwards;
+  animation: fade-in-up 0.8s ease-out forwards;
   opacity: 0; /* Start hidden */
+  transform: translateY(20px); /* Start position */
 }
 
 /* Animation delay utilities for staggered animations */
@@ -394,12 +395,38 @@ body {
   animation-delay: 0.4s;
 }
 
+/* Slide line animation for steps section */
+@keyframes slide-line {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+.animate-slide-line {
+  animation: slide-line 1.5s ease-out 0.6s forwards;
+  transform-origin: left;
+}
+
 /* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up {
     animation: none;
     opacity: 1;
     transform: none;
+  }
+  
+  .animate-slide-line {
+    animation: none;
+    transform: scaleX(1);
+    opacity: 1;
   }
 }
 

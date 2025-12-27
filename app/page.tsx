@@ -9,7 +9,8 @@ import { HeroSection } from '@/app/components/landing/HeroSection';
 import { MetricsSection } from '@/app/components/landing/MetricsSection';
 import { NotificationChannelsSection } from '@/app/components/landing/NotificationChannelsSection';
 import { FeaturesSection } from '@/app/components/landing/FeaturesSection';
-// import { StepsSection } from '@/app/components/landing/StepsSection';
+import { StepsSection } from '@/app/components/landing/StepsSection';
+import { DemoSection } from '@/app/components/landing/DemoSection';
 // import { TestimonialsSection } from '@/app/components/landing/TestimonialsSection';
 import { PricingSection } from '@/app/components/landing/PricingSection';
 import { FAQSection } from '@/app/components/landing/FAQSection';
@@ -34,6 +35,14 @@ export default function Home() {
     const faqSection = document.getElementById('faq');
     if (faqSection) {
       faqSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const scrollToDemo = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const demoSection = document.getElementById('demo');
+    if (demoSection) {
+      demoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -68,7 +77,7 @@ export default function Home() {
     name: 'Subsy',
     applicationCategory: 'FinanceApplication',
     operatingSystem: 'Web',
-    url: 'https://subsy.com',
+    url: 'https://subsy.tech',
     description: 'Track and manage all your subscriptions in one place. Get timely alerts via email and push notifications, never miss a renewal, and optimize your recurring spend. Free plan available with 14-day free trial.',
     offers: {
       '@type': 'Offer',
@@ -109,7 +118,7 @@ export default function Home() {
     screenshot: [
       {
         '@type': 'ImageObject',
-        url: 'https://subsy.com/screenshot-dashboard.png',
+        url: 'https://subsy.tech/screenshot-dashboard.png',
         caption: 'Subsy Dashboard - Track all your subscriptions in one place'
       }
     ],
@@ -117,13 +126,13 @@ export default function Home() {
     permissions: 'Free',
     releaseNotes: 'Latest version with enhanced notification system',
     softwareVersion: '1.0.0',
-    downloadUrl: 'https://subsy.com/auth/signup',
-    installUrl: 'https://subsy.com/auth/signup',
+    downloadUrl: 'https://subsy.tech/auth/signup',
+    installUrl: 'https://subsy.tech/auth/signup',
     countriesSupported: 'Worldwide',
     publisher: {
       '@type': 'Organization',
       name: 'Subsy',
-      url: 'https://subsy.com'
+      url: 'https://subsy.tech'
     }
   };
 
@@ -131,8 +140,8 @@ export default function Home() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Subsy',
-    url: 'https://subsy.com',
-    logo: 'https://subsy.com/logo.png',
+    url: 'https://subsy.tech',
+    logo: 'https://subsy.tech/logo.png',
     description: 'Subscription finance platform for modern finance operations. Track, manage, and optimize your recurring subscriptions with intelligent alerts and analytics.',
     email: 'hello@subsy.tech',
     contactPoint: [
@@ -193,7 +202,7 @@ export default function Home() {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://subsy.com',
+        item: 'https://subsy.tech',
       },
     ],
   };
@@ -211,7 +220,7 @@ export default function Home() {
         price: '0',
         priceCurrency: 'USD',
         availability: 'https://schema.org/InStock',
-        url: 'https://subsy.com/auth/signup',
+        url: 'https://subsy.tech/auth/signup',
         category: 'Free',
       },
       {
@@ -228,7 +237,7 @@ export default function Home() {
           unitCode: 'MON',
         },
         availability: 'https://schema.org/InStock',
-        url: 'https://subsy.com/auth/signup',
+        url: 'https://subsy.tech/auth/signup',
         category: 'Paid',
       },
     ],
@@ -274,6 +283,7 @@ export default function Home() {
           setMobileMenuOpen={setMobileMenuOpen}
           scrollToPricing={scrollToPricing}
           scrollToFaq={scrollToFaq}
+          scrollToDemo={scrollToDemo}
           isSticky={isSticky}
         />
 
@@ -281,8 +291,9 @@ export default function Home() {
           <HeroSection user={user} />
           {/* <MetricsSection /> */}
           {/* <NotificationChannelsSection /> */}
+          <DemoSection />
+          <StepsSection />
           <FeaturesSection />
-          {/* <StepsSection /> */}
           {/* <TestimonialsSection /> */}
           <PricingSection />
           <FAQSection />

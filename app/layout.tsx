@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   creator: 'Subsy',
   publisher: 'Subsy',
   // manifest: '/manifest.json', // PWA disabled
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://subsy.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://subsy.tech'),
   alternates: {
     canonical: '/',
   },

@@ -59,22 +59,22 @@ export function Footer({ showNewsletter = true }: FooterProps) {
     '@type': 'SiteNavigationElement',
     name: 'Footer Navigation',
     description: 'Main navigation links and resources for Subsy subscription management platform',
-    url: typeof window !== 'undefined' ? window.location.origin : 'https://subsy.com',
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://subsy.tech',
   };
 
   const organizationStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': 'https://subsy.com/#organization',
+    '@id': 'https://subsy.tech/#organization',
     name: 'Subsy',
-    url: 'https://subsy.com',
+    url: 'https://subsy.tech',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://subsy.com/logo.png',
+      url: 'https://subsy.tech/logo.png',
       width: 200,
       height: 60,
     },
-    image: 'https://subsy.com/logo.png',
+    image: 'https://subsy.tech/logo.png',
     description: 'Subscription finance platform for modern finance operations. Track, manage, and optimize your recurring subscriptions with intelligent alerts and analytics.',
     email: 'hello@subsy.tech',
     foundingDate: '2024',
@@ -103,7 +103,7 @@ export function Footer({ showNewsletter = true }: FooterProps) {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://subsy.com/search?q={search_term_string}',
+        urlTemplate: 'https://subsy.tech/search?q={search_term_string}',
       },
       'query-input': 'required name=search_term_string',
     },
@@ -118,7 +118,7 @@ export function Footer({ showNewsletter = true }: FooterProps) {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: typeof window !== 'undefined' ? window.location.origin : 'https://subsy.com',
+        item: typeof window !== 'undefined' ? window.location.origin : 'https://subsy.tech',
       },
     ],
   };
