@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { getSubscriptionIcon } from '@/lib/utils/icons';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { addDays, format } from 'date-fns';
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -12,10 +13,18 @@ function getGreeting(): string {
   return 'Good evening';
 }
 
+// Helper function to get renewal date based on days
+function getRenewalDate(days: number): string {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const renewalDate = addDays(today, days);
+  return format(renewalDate, 'MMM dd, yyyy');
+}
+
 // Mobile Dashboard Component
-function MobileDashboard({ isDarkMode, dark }: { isDarkMode: boolean; dark: (light: string, dark: string) => string }) {
+function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile' }) {
   return (
-    <div className={`w-full ${dark('bg-white', 'bg-slate-900')} min-h-screen pb-20`}>
+    <div className={`w-full ${dark('bg-white', 'bg-slate-900')} pb-4`}>
       {/* Header */}
       <div className={`px-4 pt-4 pb-2 ${dark('bg-white', 'bg-slate-900')}`}>
         <div className="flex items-center justify-between mb-4">
@@ -36,7 +45,7 @@ function MobileDashboard({ isDarkMode, dark }: { isDarkMode: boolean; dark: (lig
             }}
           />
           <div className="flex items-center gap-3">
-            <button className={`p-2 rounded-lg ${dark('hover:bg-slate-100', 'hover:bg-slate-800')}`}>
+            <button className={`p-2 rounded-lg ${viewport === 'mobile' ? dark('active:bg-slate-100', 'active:bg-slate-800') : dark('hover:bg-slate-100', 'hover:bg-slate-800')} active:opacity-70 transition-colors`} style={{ touchAction: 'manipulation' }}>
               {isDarkMode ? (
                 <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -63,7 +72,7 @@ function MobileDashboard({ isDarkMode, dark }: { isDarkMode: boolean; dark: (lig
             Here's your subscription overview
           </p>
         </div>
-        <button className="mt-4 w-full bg-orange-500 text-white rounded-lg py-3 font-semibold flex items-center justify-center gap-2">
+        <button className="mt-4 w-full bg-orange-500 text-white rounded-lg py-3 font-semibold flex items-center justify-center gap-2 active:opacity-80 active:scale-98 transition-all" style={{ touchAction: 'manipulation' }}>
           Manage Subscriptions
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -220,9 +229,9 @@ function MobileDashboard({ isDarkMode, dark }: { isDarkMode: boolean; dark: (lig
 }
 
 // Mobile Subscriptions Component
-function MobileSubscriptions({ isDarkMode, dark }: { isDarkMode: boolean; dark: (light: string, dark: string) => string }) {
+function MobileSubscriptions({ isDarkMode, dark, viewport }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile' }) {
   return (
-    <div className={`w-full ${dark('bg-white', 'bg-slate-900')} min-h-screen pb-20`}>
+    <div className={`w-full ${dark('bg-white', 'bg-slate-900')} pb-4`}>
       {/* Header */}
       <div className={`px-4 pt-4 pb-2 ${dark('bg-white', 'bg-slate-900')}`}>
         <div className="flex items-center justify-between mb-2">
@@ -243,7 +252,7 @@ function MobileSubscriptions({ isDarkMode, dark }: { isDarkMode: boolean; dark: 
             }}
           />
           <div className="flex items-center gap-3">
-            <button className={`p-2 rounded-lg ${dark('hover:bg-slate-100', 'hover:bg-slate-800')}`}>
+            <button className={`p-2 rounded-lg ${viewport === 'mobile' ? dark('active:bg-slate-100', 'active:bg-slate-800') : dark('hover:bg-slate-100', 'hover:bg-slate-800')} active:opacity-70 transition-colors`} style={{ touchAction: 'manipulation' }}>
               {isDarkMode ? (
                 <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -265,13 +274,13 @@ function MobileSubscriptions({ isDarkMode, dark }: { isDarkMode: boolean; dark: 
 
       {/* Action Buttons */}
       <div className="px-4 mt-4 flex gap-2">
-        <button className={`flex-1 px-4 py-2 border rounded-lg text-sm font-medium ${dark('border-teal-500 text-teal-600', 'border-teal-400 text-teal-400')}`}>
+        <button className={`flex-1 px-4 py-2 border rounded-lg text-sm font-medium active:opacity-70 active:scale-98 transition-all ${dark('border-teal-500 text-teal-600', 'border-teal-400 text-teal-400')}`} style={{ touchAction: 'manipulation' }}>
           <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           Export
         </button>
-        <button className={`flex-1 px-4 py-2 border rounded-lg text-sm font-medium ${dark('border-slate-300 text-slate-700', 'border-slate-600 text-slate-300')}`}>
+        <button className={`flex-1 px-4 py-2 border rounded-lg text-sm font-medium active:opacity-70 active:scale-98 transition-all ${dark('border-slate-300 text-slate-700', 'border-slate-600 text-slate-300')}`} style={{ touchAction: 'manipulation' }}>
           <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
@@ -281,22 +290,22 @@ function MobileSubscriptions({ isDarkMode, dark }: { isDarkMode: boolean; dark: 
 
       {/* Add Subscription Button */}
       <div className="px-4 mt-3">
-        <button className="w-full bg-orange-500 text-white rounded-lg py-3 font-semibold flex items-center justify-center gap-2">
+        <button className="w-full bg-orange-500 text-white rounded-lg py-3 font-semibold flex items-center justify-center gap-2 active:opacity-80 active:scale-98 transition-all" style={{ touchAction: 'manipulation' }}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          + Add Subscription
+          Add Subscription
         </button>
       </div>
 
       {/* View Toggle */}
       <div className="px-4 mt-3 flex justify-end gap-2">
-        <button className={`p-2 rounded ${dark('bg-teal-100 text-teal-600', 'bg-teal-900/50 text-teal-400')}`}>
+        <button className={`p-2 rounded active:opacity-70 active:scale-95 transition-all ${dark('bg-teal-100 text-teal-600', 'bg-teal-900/50 text-teal-400')}`} style={{ touchAction: 'manipulation' }}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <button className={`p-2 rounded ${dark('text-slate-400', 'text-slate-500')}`}>
+        <button className={`p-2 rounded active:opacity-70 active:scale-95 transition-all ${dark('text-slate-400', 'text-slate-500')}`} style={{ touchAction: 'manipulation' }}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
           </svg>
@@ -306,40 +315,64 @@ function MobileSubscriptions({ isDarkMode, dark }: { isDarkMode: boolean; dark: 
       {/* Subscription List */}
       <div className="px-4 mt-4 space-y-2">
         {[
-          { name: 'ExpressVPN 255', price: '£4.24 / Week', days: '1d', icon: getSubscriptionIcon('ExpressVPN', 'Security') },
-          { name: 'DigitalOcean 67', price: '$5.50 / Week', days: '1d', icon: getSubscriptionIcon('DigitalOcean', 'Development') },
+          { name: 'Netlify 131', price: '$4.75 / Week', days: '0d', icon: getSubscriptionIcon('Netlify', 'Design') },
+          { name: 'DigitalOcean 67', price: '$5.50 / Week', days: '0d', icon: getSubscriptionIcon('DigitalOcean', 'Development') },
           { name: 'Stripe 125', price: '£14.39 / Month', days: '1d', icon: getSubscriptionIcon('Stripe', 'Cloud Services') },
-          { name: 'AWS 184', price: '$49.09 / Week', days: '1d', icon: getSubscriptionIcon('AWS', 'Cloud Services') },
-          { name: 'Netlify 131', price: '$4.75 / Week', days: '1d', icon: getSubscriptionIcon('Netlify', 'Design') },
-          { name: 'Canva 240', price: '$3.80 / Week', days: '1d', icon: getSubscriptionIcon('Canva', 'Design') },
-        ].map((sub, i) => (
-          <div key={i} className={`rounded-lg p-3 ${dark('bg-white border border-slate-200', 'bg-slate-800 border border-slate-700')}`}>
-            <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${dark('bg-slate-100', 'bg-slate-700')}`}>
-                {sub.icon}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className={`text-sm font-bold ${dark('text-slate-900', 'text-white')}`}>{sub.name}</p>
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+          { name: 'AWS 184', price: '$49.09 / Week', days: '2d', icon: getSubscriptionIcon('AWS', 'Cloud Services') },
+          { name: 'ExpressVPN 255', price: '£4.24 / Week', days: '3d', icon: getSubscriptionIcon('ExpressVPN', 'Security') },
+          { name: 'Canva 240', price: '$3.80 / Week', days: '5d', icon: getSubscriptionIcon('Canva', 'Design') },
+          { name: 'Disney+ 153', price: '€4.84 / Week', days: '7d', icon: getSubscriptionIcon('Disney+', 'Entertainment') },
+          { name: 'Spotify Premium', price: '$9.99 / Month', days: '10d', icon: getSubscriptionIcon('Spotify', 'Entertainment') },
+          { name: 'Adobe Creative Cloud', price: '$52.99 / Month', days: '14d', icon: getSubscriptionIcon('Adobe', 'Design') },
+          { name: 'Microsoft 365', price: '$6.99 / Month', days: '21d', icon: getSubscriptionIcon('Microsoft', 'Productivity') },
+        ].map((sub, i) => {
+          const isRenewingToday = sub.days === '0d';
+          return (
+            <div key={i} className={`relative overflow-visible ${isRenewingToday ? 'animate-pulse-glow' : ''}`}>
+              <div className={`rounded-lg p-3 ${dark('bg-white border border-slate-200', 'bg-slate-800 border border-slate-700')}`}>
+                {/* "Today" Badge - Top Right Corner */}
+                {isRenewingToday && (
+                  <div className="absolute -top-1.5 -right-1.5 z-20">
+                    <div className="relative bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 text-white px-3 py-1 rounded-lg shadow-lg flex items-center gap-1.5 animate-shimmer-glow overflow-hidden">
+                      {/* Shimmer overlay effect */}
+                      <div className="absolute inset-0 animate-shimmer-sweep opacity-30"></div>
+                      <svg className="w-3 h-3 relative z-10 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ animationDuration: '2s' }}>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-[10px] font-bold uppercase tracking-wide relative z-10">Today</span>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${dark('bg-slate-100', 'bg-slate-700')}`}>
+                    {sub.icon}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-bold ${dark('text-slate-900', 'text-white')}`}>{sub.name}</p>
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    </div>
+                    <p className={`text-xs ${dark('text-slate-600', 'text-slate-400')}`}>{sub.price}</p>
+                  </div>
+                  {!isRenewingToday && (
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${dark('bg-slate-100 text-slate-700', 'bg-slate-700 text-slate-300')}`}>
+                      {sub.days}
+                    </div>
+                  )}
                 </div>
-                <p className={`text-xs ${dark('text-slate-600', 'text-slate-400')}`}>{sub.price}</p>
-              </div>
-              <div className={`px-2 py-1 rounded-full text-xs font-medium ${dark('bg-slate-100 text-slate-700', 'bg-slate-700 text-slate-300')}`}>
-                {sub.days}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
 // Mobile Calendar Component
-function MobileCalendar({ isDarkMode, dark }: { isDarkMode: boolean; dark: (light: string, dark: string) => string }) {
+function MobileCalendar({ isDarkMode, dark, viewport }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile' }) {
   return (
-    <div className={`w-full ${dark('bg-white', 'bg-slate-900')} min-h-screen pb-20`}>
+    <div className={`w-full ${dark('bg-white', 'bg-slate-900')} pb-4`}>
       {/* Header */}
       <div className={`px-4 pt-4 pb-2 ${dark('bg-white', 'bg-slate-900')}`}>
         <div className="flex items-center justify-between mb-2">
@@ -360,7 +393,7 @@ function MobileCalendar({ isDarkMode, dark }: { isDarkMode: boolean; dark: (ligh
             }}
           />
           <div className="flex items-center gap-3">
-            <button className={`p-2 rounded-lg ${dark('hover:bg-slate-100', 'hover:bg-slate-800')}`}>
+            <button className={`p-2 rounded-lg ${viewport === 'mobile' ? dark('active:bg-slate-100', 'active:bg-slate-800') : dark('hover:bg-slate-100', 'hover:bg-slate-800')} active:opacity-70 transition-colors`} style={{ touchAction: 'manipulation' }}>
               {isDarkMode ? (
                 <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -382,11 +415,11 @@ function MobileCalendar({ isDarkMode, dark }: { isDarkMode: boolean; dark: (ligh
 
       {/* Calendar Navigation */}
       <div className="px-4 mt-4 flex items-center justify-between">
-        <button className={`px-3 py-2 border rounded-lg text-sm ${dark('border-slate-300 text-slate-700', 'border-slate-600 text-slate-300')}`}>
+        <button className={`px-3 py-2 border rounded-lg text-sm active:opacity-70 active:scale-95 transition-all ${dark('border-slate-300 text-slate-700', 'border-slate-600 text-slate-300')}`} style={{ touchAction: 'manipulation' }}>
           Prev
         </button>
         <h2 className={`text-lg font-bold ${dark('text-slate-900', 'text-white')}`}>January 2026</h2>
-        <button className={`px-3 py-2 border rounded-lg text-sm ${dark('border-slate-300 text-slate-700', 'border-slate-600 text-slate-300')}`}>
+        <button className={`px-3 py-2 border rounded-lg text-sm active:opacity-70 active:scale-95 transition-all ${dark('border-slate-300 text-slate-700', 'border-slate-600 text-slate-300')}`} style={{ touchAction: 'manipulation' }}>
           Next
         </button>
       </div>
@@ -440,12 +473,13 @@ export function DemoSection() {
   // Detect if user is on mobile device
   const isMobileDevice = useMediaQuery('(max-width: 768px)');
   
-  // Auto-set to mobile view on mobile devices
+  // Auto-set to mobile view on mobile devices (only on initial mount to allow manual toggle)
   useEffect(() => {
-    if (isMobileDevice) {
+    if (isMobileDevice && viewport === 'desktop') {
       setViewport('mobile');
     }
-  }, [isMobileDevice]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Helper function for dark mode classes
   const dark = (light: string, dark: string) => isDarkMode ? dark : light;
@@ -688,13 +722,14 @@ export function DemoSection() {
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     {[
-                      { name: 'Netlify 131', category: 'Design', price: '$4.75 / Week', renewal: 'Dec 28, 2025', days: 0 },
-                      { name: 'DigitalOcean 67', category: 'Development', price: '$5.50 / Week', renewal: 'Dec 28, 2025', days: 0 },
-                      { name: 'Stripe 125', category: 'Cloud Services', price: '£14.39 / Month', renewal: 'Dec 28, 2025', days: 1 },
-                      { name: 'AWS 184', category: 'Education', price: '$49.09 / Week', renewal: 'Dec 28, 2025', days: 2 },
-                      { name: 'Canva 240', category: 'Finance', price: '$3.80 / Week', renewal: 'Dec 28, 2025', days: 3 },
-                      { name: 'Disney+ 153', category: 'Design', price: '€4.84 / Week', renewal: 'Dec 28, 2025', days: 5, trial: true },
+                      { name: 'Netlify 131', category: 'Design', price: '$4.75 / Week', days: 0 },
+                      { name: 'DigitalOcean 67', category: 'Development', price: '$5.50 / Week', days: 0 },
+                      { name: 'Stripe 125', category: 'Cloud Services', price: '£14.39 / Month', days: 1 },
+                      { name: 'AWS 184', category: 'Education', price: '$49.09 / Week', days: 2 },
+                      { name: 'Canva 240', category: 'Finance', price: '$3.80 / Week', days: 3 },
+                      { name: 'Disney+ 153', category: 'Design', price: '€4.84 / Week', days: 5, trial: true },
                     ].map((sub, i) => {
+                      const renewal = getRenewalDate(sub.days);
                       const isRenewingToday = sub.days === 0;
                       return (
                         <div key={i} className={`relative rounded-lg p-4 ${dark('bg-white border border-slate-200', 'bg-slate-800 border border-slate-700')} ${isRenewingToday ? 'animate-pulse-glow' : ''}`}>
@@ -727,7 +762,7 @@ export function DemoSection() {
                             </div>
                             <div className="flex justify-between">
                               <span className={dark('text-slate-600', 'text-slate-400')}>Renewal:</span>
-                              <span className={dark('text-slate-900', 'text-white')}>{sub.renewal}</span>
+                              <span className={dark('text-slate-900', 'text-white')}>{renewal}</span>
                             </div>
                             {!isRenewingToday && (
                               <div className="flex justify-between">
@@ -973,13 +1008,14 @@ export function DemoSection() {
                   {/* Subscription Cards Grid */}
                   <div className="grid grid-cols-3 gap-4">
                     {[
-                      { name: 'ExpressVPN 255', category: 'Security', price: '£4.24 /Week', renewal: 'Dec 28, 2025', days: 0 },
-                      { name: 'DigitalOcean 67', category: 'Development', price: '$5.50 /Week', renewal: 'Dec 28, 2025', days: 0 },
-                      { name: 'Stripe 125', category: 'Cloud Services', price: '£14.39 /Month', renewal: 'Dec 28, 2025', days: 1 },
-                      { name: 'AWS 184', category: 'Education', price: '$49.09 /Week', renewal: 'Dec 28, 2025', days: 2 },
-                      { name: 'Canva 240', category: 'Finance', price: '$3.80 /Week', renewal: 'Dec 28, 2025', days: 3 },
-                      { name: 'Disney+ 153', category: 'Design', price: '€4.84 /Week', renewal: 'Dec 28, 2025', days: 5, trial: true },
+                      { name: 'ExpressVPN 255', category: 'Security', price: '£4.24 /Week', days: 0 },
+                      { name: 'DigitalOcean 67', category: 'Development', price: '$5.50 /Week', days: 0 },
+                      { name: 'Stripe 125', category: 'Cloud Services', price: '£14.39 /Month', days: 1 },
+                      { name: 'AWS 184', category: 'Education', price: '$49.09 /Week', days: 2 },
+                      { name: 'Canva 240', category: 'Finance', price: '$3.80 /Week', days: 3 },
+                      { name: 'Disney+ 153', category: 'Design', price: '€4.84 /Week', days: 5, trial: true },
                     ].map((sub, i) => {
+                      const renewal = getRenewalDate(sub.days);
                       const isRenewingToday = sub.days === 0;
                       return (
                         <div key={i} className={`relative rounded-lg p-4 hover:shadow-md transition-shadow ${dark('bg-white border border-slate-200', 'bg-slate-800 border border-slate-700')} ${isRenewingToday ? 'animate-pulse-glow' : ''}`}>
@@ -1023,7 +1059,7 @@ export function DemoSection() {
                               </button>
                             </div>
                             <div className={dark('text-xs text-slate-600', 'text-xs text-slate-400')}>
-                              <p>Next renewal {sub.renewal}</p>
+                              <p>Next renewal {renewal}</p>
                               {!isRenewingToday && (
                                 <p className="text-orange-600 font-semibold mt-1">{sub.days} days remaining</p>
                               )}
@@ -1301,24 +1337,32 @@ export function DemoSection() {
               </div>
 
               {/* Mobile Content - iPhone 17 */}
-              <div className={`relative overflow-hidden ${isDarkMode ? 'bg-slate-900' : 'bg-white'} rounded-b-[2.5rem]`}>
+              <div 
+                className={`relative overflow-y-auto ${dark('bg-white', 'bg-slate-900')}`} 
+                style={{ 
+                  height: '800px',
+                  WebkitOverflowScrolling: 'touch',
+                  touchAction: 'pan-y'
+                }}
+              >
                 {activeTab === 'dashboard' && (
-                  <MobileDashboard isDarkMode={isDarkMode} dark={dark} />
+                  <MobileDashboard isDarkMode={isDarkMode} dark={dark} viewport={viewport} />
                 )}
                 {activeTab === 'subscriptions' && (
-                  <MobileSubscriptions isDarkMode={isDarkMode} dark={dark} />
+                  <MobileSubscriptions isDarkMode={isDarkMode} dark={dark} viewport={viewport} />
                 )}
                 {activeTab === 'calendar' && (
-                  <MobileCalendar isDarkMode={isDarkMode} dark={dark} />
+                  <MobileCalendar isDarkMode={isDarkMode} dark={dark} viewport={viewport} />
                 )}
               </div>
 
               {/* Bottom Navigation Bar - iPhone 17 style */}
-              <div className={`border-t ${dark('bg-white border-slate-200', 'bg-slate-800 border-slate-700')} px-4 py-2.5 rounded-b-[3rem] safe-area-bottom`}>
+              <div className={`border-t ${dark('bg-white border-slate-200', 'bg-slate-900 border-slate-700')} px-4 py-2.5 rounded-b-[3rem]`} style={{ touchAction: 'manipulation' }}>
                 <div className="flex items-center justify-around">
                   <button 
                     onClick={() => setActiveTab('dashboard')}
-                    className={`flex flex-col items-center gap-1 ${activeTab === 'dashboard' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
+                    className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${activeTab === 'dashboard' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
+                    style={{ touchAction: 'manipulation' }}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -1327,7 +1371,8 @@ export function DemoSection() {
                   </button>
                   <button 
                     onClick={() => setActiveTab('subscriptions')}
-                    className={`flex flex-col items-center gap-1 ${activeTab === 'subscriptions' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
+                    className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${activeTab === 'subscriptions' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
+                    style={{ touchAction: 'manipulation' }}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -1336,14 +1381,15 @@ export function DemoSection() {
                   </button>
                   <button 
                     onClick={() => setActiveTab('calendar')}
-                    className={`flex flex-col items-center gap-1 ${activeTab === 'calendar' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
+                    className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${activeTab === 'calendar' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
+                    style={{ touchAction: 'manipulation' }}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span className="text-xs">Calendar</span>
                   </button>
-                  <button className={`flex flex-col items-center gap-1 ${dark('text-slate-600', 'text-slate-400')}`}>
+                  <button className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${dark('text-slate-600', 'text-slate-400')}`} style={{ touchAction: 'manipulation' }}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

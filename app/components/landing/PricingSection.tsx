@@ -168,8 +168,9 @@ export function PricingSection() {
                 <p className="text-sm text-slate-600 leading-relaxed">{tier.description}</p>
               </div>
 
-              {/* Value Proposition for Pro */}
-              {tier.highlighted && (
+              {/* Value Proposition for Pro */} 
+              {/* //TODO: Add this back in */}
+              {/* {tier.highlighted && (
                 <div className="mb-5 p-3 bg-gradient-to-r from-primary-50 to-brand-accent-50 rounded-lg border border-primary-200/50">
                   <div className="flex items-start gap-2.5">
                     <svg className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,7 +184,7 @@ export function PricingSection() {
                     </div>
                   </div>
                 </div>
-              )}
+              )} */}
 
               {/* Pricing Display */}
               <div className="mb-6">
