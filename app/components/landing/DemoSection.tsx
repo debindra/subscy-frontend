@@ -466,20 +466,25 @@ function MobileCalendar({ isDarkMode, dark, viewport }: { isDarkMode: boolean; d
 export function DemoSection() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'subscriptions' | 'calendar'>('dashboard');
   const [loopCount, setLoopCount] = useState(0);
-  const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop');
-  const { theme, toggleTheme } = useTheme();
-  const isDarkMode = theme === 'dark';
   
   // Detect if user is on mobile device
   const isMobileDevice = useMediaQuery('(max-width: 768px)');
   
-  // Auto-set to mobile view on mobile devices (only on initial mount to allow manual toggle)
-  useEffect(() => {
-    if (isMobileDevice && viewport === 'desktop') {
-      setViewport('mobile');
+  // On mobile devices, always use mobile viewport with no option to change
+  // On desktop, default to desktop but allow switching
+  const [viewport, setViewport] = useState<'desktop' | 'mobile'>(() => {
+    // Check if we're on mobile on initial render
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      return 'mobile';
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return 'desktop';
+  });
+  
+  // Lock viewport to mobile on mobile devices
+  const effectiveViewport = isMobileDevice ? 'mobile' : viewport;
+  
+  const { theme, toggleTheme } = useTheme();
+  const isDarkMode = theme === 'dark';
 
   // Helper function for dark mode classes
   const dark = (light: string, dark: string) => isDarkMode ? dark : light;
@@ -569,7 +574,7 @@ export function DemoSection() {
             <button
               onClick={() => setViewport('desktop')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewport === 'desktop'
+                effectiveViewport === 'desktop'
                   ? 'bg-teal-600 text-white shadow-md'
                   : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
               }`}
@@ -582,7 +587,7 @@ export function DemoSection() {
             <button
               onClick={() => setViewport('mobile')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewport === 'mobile'
+                effectiveViewport === 'mobile'
                   ? 'bg-teal-600 text-white shadow-md'
                   : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
               }`}
@@ -597,7 +602,7 @@ export function DemoSection() {
 
         {/* Demo Preview Container */}
         <div className="mb-8 sm:mb-12">
-          {viewport === 'desktop' ? (
+          {effectiveViewport === 'desktop' ? (
             // Desktop View
             <div className="relative rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 overflow-hidden shadow-2xl max-w-7xl mx-auto">
             {/* Browser Chrome */}
@@ -1277,13 +1282,13 @@ export function DemoSection() {
                 }}
               >
                 {activeTab === 'dashboard' && (
-                  <MobileDashboard isDarkMode={isDarkMode} dark={dark} viewport={viewport} />
+                  <MobileDashboard isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} />
                 )}
                 {activeTab === 'subscriptions' && (
-                  <MobileSubscriptions isDarkMode={isDarkMode} dark={dark} viewport={viewport} />
+                  <MobileSubscriptions isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} />
                 )}
                 {activeTab === 'calendar' && (
-                  <MobileCalendar isDarkMode={isDarkMode} dark={dark} viewport={viewport} />
+                  <MobileCalendar isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} />
                 )}
               </div>
 
