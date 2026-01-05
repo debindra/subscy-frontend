@@ -21,8 +21,76 @@ function getRenewalDate(days: number): string {
   return format(renewalDate, 'MMM dd, yyyy');
 }
 
+// Helper function to format days as string (e.g., "0d", "5d")
+function formatDays(days: number): string {
+  return `${days}d`;
+}
+
+// Shared subscription data - consistent across all views
+const DEMO_SUBSCRIPTIONS = [
+  // Active subscriptions
+  { name: 'Netflix', category: 'Entertainment', price: '$17.99 / Month', priceValue: 17.99, currency: 'USD', days: 0, active: true },
+  { name: 'Spotify', category: 'Entertainment', price: '$9.99 / Month', priceValue: 9.99, currency: 'USD', days: 1, active: true },
+  { name: 'Apple Music', category: 'Entertainment', price: '$9.99 / Month', priceValue: 9.99, currency: 'USD', days: 2, active: true },
+  { name: 'DigitalOcean', category: 'Development', price: '$5.00 / Month', priceValue: 5.00, currency: 'USD', days: 5, active: true, trial: true },
+  { name: 'AWS', category: 'Cloud Services', price: '$39.99 / Month', priceValue: 39.99, currency: 'USD', days: 3, active: true },
+  { name: 'Canva', category: 'Design', price: '$12.99 / Month', priceValue: 12.99, currency: 'USD', days: 14, active: true },
+  { name: 'Adobe Creative Cloud', category: 'Design', price: '$52.99 / Month', priceValue: 52.99, currency: 'USD', days: 21, active: true },
+  { name: 'Microsoft 365', category: 'Productivity', price: '$6.99 / Month', priceValue: 6.99, currency: 'USD', days: 28, active: true },
+  { name: 'Google Cloud', category: 'Cloud Services', price: '$49.99 / Month', priceValue: 49.99, currency: 'USD', days: 35, active: true },
+  { name: 'Figma Pro', category: 'Design', price: '$19.99 / Month', priceValue: 19.99, currency: 'USD', days: 42, active: true },
+  { name: 'Notion Plus', category: 'Productivity', price: '$14.99 / Month', priceValue: 14.99, currency: 'USD', days: 0, active: true },
+  { name: 'Disney+', category: 'Entertainment', price: '$10.99 / Month', priceValue: 10.99, currency: 'USD', days: 3, active: true },
+  { name: 'Hulu', category: 'Entertainment', price: '$7.99 / Month', priceValue: 7.99, currency: 'USD', days: 6, active: true },
+  { name: 'GitHub Pro', category: 'Development', price: '$4.00 / Month', priceValue: 4.00, currency: 'USD', days: 7, active: true },
+  // EUR subscriptions
+  { name: 'Netflix EU', category: 'Entertainment', price: '€15.99 / Month', priceValue: 15.99, currency: 'EUR', days: 8, active: true },
+  { name: 'Adobe EU', category: 'Design', price: '€52.99 / Month', priceValue: 52.99, currency: 'EUR', days: 22, active: true },
+  // Inactive subscriptions
+  { name: 'Slack Pro', category: 'Productivity', price: '$8.75 / Month', priceValue: 8.75, currency: 'USD', days: 12, active: false },
+  { name: 'Zoom Pro', category: 'Productivity', price: '$14.99 / Month', priceValue: 14.99, currency: 'USD', days: 15, active: false },
+  { name: 'Dropbox Plus', category: 'Productivity', price: '$9.99 / Month', priceValue: 9.99, currency: 'USD', days: 18, active: false },
+  { name: '1Password', category: 'Security', price: '$2.99 / Month', priceValue: 2.99, currency: 'USD', days: 20, active: false },
+  { name: 'ExpressVPN', category: 'Security', price: '$12.95 / Month', priceValue: 12.95, currency: 'USD', days: 25, active: false },
+  { name: 'Adobe Photoshop', category: 'Design', price: '$20.99 / Month', priceValue: 20.99, currency: 'USD', days: 30, active: false },
+];
+
+// Calculation helper functions
+function getSubscriptionStats() {
+  const total = DEMO_SUBSCRIPTIONS.length;
+  const active = DEMO_SUBSCRIPTIONS.filter(sub => sub.active).length;
+  const inactive = total - active;
+  const activePercent = total > 0 ? Math.round((active / total) * 100) : 0;
+  
+  // Upcoming renewals in next 7 days (only active subscriptions)
+  const upcomingRenewals = DEMO_SUBSCRIPTIONS.filter(sub => 
+    sub.active && sub.days >= 0 && sub.days <= 7
+  ).length;
+  
+  return {
+    total,
+    active,
+    inactive,
+    activePercent,
+    upcomingRenewals,
+  };
+}
+
+// Get active subscriptions only
+function getActiveSubscriptions() {
+  return DEMO_SUBSCRIPTIONS.filter(sub => sub.active);
+}
+
+// Get inactive subscriptions only
+function getInactiveSubscriptions() {
+  return DEMO_SUBSCRIPTIONS.filter(sub => !sub.active);
+}
+
 // Mobile Dashboard Component
 function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile' }) {
+  const stats = getSubscriptionStats();
+  const activeSubs = getActiveSubscriptions();
+  
   return (
     <div className={`w-full ${dark('bg-white', 'bg-slate-900')} pb-4`}>
       {/* Header */}
@@ -119,15 +187,11 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
           </select>
         </div>
         <div className="space-y-2">
-          {[
-            { name: 'Netlify 131', price: '$19.00 / month', days: '0d', icon: getSubscriptionIcon('Netlify', 'Design') },
-            { name: 'DigitalOcean 57', price: '$22.00 / month', days: '0d', icon: getSubscriptionIcon('DigitalOcean', 'Development') },
-            { name: 'Stripe 125', price: '€439 / month', days: '1d', icon: getSubscriptionIcon('Stripe', 'Cloud Services') },
-            { name: 'AWS 184', price: '$43.00 / month', days: '2d', icon: getSubscriptionIcon('AWS', 'Cloud Services') },
-            { name: 'Canva 240', price: '$16.00 / month', days: '3d', icon: getSubscriptionIcon('Canva', 'Design') },
-            { name: 'Disney+ 153', price: '€484 / month', days: '5d', icon: getSubscriptionIcon('Disney+', 'Entertainment') },
-          ].map((sub, i) => {
-            const isRenewingToday = sub.days === '0d';
+          {activeSubs
+            .filter(sub => sub.days <= 7)
+            .sort((a, b) => a.days - b.days)
+            .map((sub, i) => {
+            const isRenewingToday = sub.days === 0;
             return (
               <div key={i} className={`relative rounded-lg p-3 ${dark('bg-white border border-slate-200', 'bg-slate-800 border border-slate-700')} ${isRenewingToday ? 'animate-pulse-glow' : ''}`}>
                 {/* "Today" Badge - Top Right Corner */}
@@ -145,7 +209,7 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
                 )}
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${dark('bg-slate-100', 'bg-slate-700')}`}>
-                    {sub.icon}
+                    {getSubscriptionIcon(sub.name, sub.category)}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -156,7 +220,7 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
                   </div>
                   {!isRenewingToday && (
                     <div className={`px-2 py-1 rounded-full text-xs font-medium ${dark('bg-slate-100 text-slate-700', 'bg-slate-700 text-slate-300')}`}>
-                      {sub.days}
+                      {formatDays(sub.days)}
                     </div>
                   )}
                 </div>
@@ -192,7 +256,7 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm font-semibold ${dark('text-slate-900', 'text-white')}`}>TOTAL SUBSCRIPTIONS</p>
-              <p className={`text-xs ${dark('text-slate-600', 'text-slate-400')}`}>253 (220 active, 33 inactive)</p>
+              <p className={`text-xs ${dark('text-slate-600', 'text-slate-400')}`}>{stats.total} ({stats.active} active, {stats.inactive} inactive)</p>
             </div>
             <svg className={`w-5 h-5 ${dark('text-slate-400', 'text-slate-500')}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -203,7 +267,7 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm font-semibold ${dark('text-slate-900', 'text-white')}`}>ACTIVE SUBSCRIPTIONS</p>
-              <p className={`text-xs ${dark('text-slate-600', 'text-slate-400')}`}>220 (87% of total)</p>
+              <p className={`text-xs ${dark('text-slate-600', 'text-slate-400')}`}>{stats.active} ({stats.activePercent}% of total)</p>
             </div>
             <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +280,7 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm font-semibold ${dark('text-slate-900', 'text-white')}`}>UPCOMING RENEWALS</p>
-              <p className={`text-xs ${dark('text-slate-600', 'text-slate-400')}`}>12 (next 7 days)</p>
+              <p className={`text-xs ${dark('text-slate-600', 'text-slate-400')}`}>{stats.upcomingRenewals} (next 7 days)</p>
             </div>
             <svg className={`w-5 h-5 text-orange-500`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -314,19 +378,8 @@ function MobileSubscriptions({ isDarkMode, dark, viewport }: { isDarkMode: boole
 
       {/* Subscription List */}
       <div className="px-4 mt-4 space-y-2">
-        {[
-          { name: 'Netlify 131', price: '$4.75 / Week', days: '0d', icon: getSubscriptionIcon('Netlify', 'Design') },
-          { name: 'DigitalOcean 67', price: '$5.50 / Week', days: '0d', icon: getSubscriptionIcon('DigitalOcean', 'Development') },
-          { name: 'Stripe 125', price: '£14.39 / Month', days: '1d', icon: getSubscriptionIcon('Stripe', 'Cloud Services') },
-          { name: 'AWS 184', price: '$49.09 / Week', days: '2d', icon: getSubscriptionIcon('AWS', 'Cloud Services') },
-          { name: 'ExpressVPN 255', price: '£4.24 / Week', days: '3d', icon: getSubscriptionIcon('ExpressVPN', 'Security') },
-          { name: 'Canva 240', price: '$3.80 / Week', days: '5d', icon: getSubscriptionIcon('Canva', 'Design') },
-          { name: 'Disney+ 153', price: '€4.84 / Week', days: '7d', icon: getSubscriptionIcon('Disney+', 'Entertainment') },
-          { name: 'Spotify Premium', price: '$9.99 / Month', days: '10d', icon: getSubscriptionIcon('Spotify', 'Entertainment') },
-          { name: 'Adobe Creative Cloud', price: '$52.99 / Month', days: '14d', icon: getSubscriptionIcon('Adobe', 'Design') },
-          { name: 'Microsoft 365', price: '$6.99 / Month', days: '21d', icon: getSubscriptionIcon('Microsoft', 'Productivity') },
-        ].map((sub, i) => {
-          const isRenewingToday = sub.days === '0d';
+        {[...DEMO_SUBSCRIPTIONS].sort((a, b) => a.days - b.days).map((sub, i) => {
+          const isRenewingToday = sub.days === 0;
           return (
             <div key={i} className={`relative overflow-visible ${isRenewingToday ? 'animate-pulse-glow' : ''}`}>
               <div className={`rounded-lg p-3 ${dark('bg-white border border-slate-200', 'bg-slate-800 border border-slate-700')}`}>
@@ -345,7 +398,7 @@ function MobileSubscriptions({ isDarkMode, dark, viewport }: { isDarkMode: boole
                 )}
                 <div className="flex items-center gap-3">
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${dark('bg-slate-100', 'bg-slate-700')}`}>
-                    {sub.icon}
+                    {getSubscriptionIcon(sub.name, sub.category)}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -356,7 +409,7 @@ function MobileSubscriptions({ isDarkMode, dark, viewport }: { isDarkMode: boole
                   </div>
                   {!isRenewingToday && (
                     <div className={`px-2 py-1 rounded-full text-xs font-medium ${dark('bg-slate-100 text-slate-700', 'bg-slate-700 text-slate-300')}`}>
-                      {sub.days}
+                      {formatDays(sub.days)}
                     </div>
                   )}
                 </div>
@@ -619,7 +672,10 @@ export function DemoSection() {
 
             {/* Page Content - Conditional Rendering */}
             <div className={`relative overflow-x-auto ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
-              {activeTab === 'dashboard' && (
+              {activeTab === 'dashboard' && (() => {
+                const stats = getSubscriptionStats();
+                const activeSubs = getActiveSubscriptions();
+                return (
                 <div className={`min-w-[1200px] p-6 ${dark('bg-[#F9FAFB]', 'bg-slate-900')}`}>
                   {/* Top Navigation */}
                   <div className={`flex items-center justify-between mb-6 pb-4 border-b ${dark('border-slate-200', 'border-slate-700')}`}>
@@ -733,14 +789,10 @@ export function DemoSection() {
                     </select>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
-                    {[
-                      { name: 'Netlify 131', category: 'Design', price: '$4.75 / Week', days: 0 },
-                      { name: 'DigitalOcean 67', category: 'Development', price: '$5.50 / Week', days: 0 },
-                      { name: 'Stripe 125', category: 'Cloud Services', price: '£14.39 / Month', days: 1 },
-                      { name: 'AWS 184', category: 'Education', price: '$49.09 / Week', days: 2 },
-                      { name: 'Canva 240', category: 'Finance', price: '$3.80 / Week', days: 3 },
-                      { name: 'Disney+ 153', category: 'Design', price: '€4.84 / Week', days: 5, trial: true },
-                    ].map((sub, i) => {
+                    {activeSubs
+                      .filter(sub => sub.days <= 7)
+                      .sort((a, b) => a.days - b.days)
+                      .map((sub, i) => {
                       const renewal = getRenewalDate(sub.days);
                       const isRenewingToday = sub.days === 0;
                       return (
@@ -822,12 +874,12 @@ export function DemoSection() {
                     </div>
                     <div className="grid grid-cols-2 gap-4 mt-4">
                       <div className={`rounded-lg p-3 ${dark('bg-slate-50', 'bg-slate-700/50')}`}>
-                        <p className={`text-2xl font-bold ${dark('text-slate-900', 'text-white')}`}>253</p>
+                        <p className={`text-2xl font-bold ${dark('text-slate-900', 'text-white')}`}>{stats.total}</p>
                         <p className={dark('text-xs text-slate-600', 'text-xs text-slate-400')}>Total Subscriptions</p>
-                        <p className={dark('text-xs text-slate-500', 'text-xs text-slate-500')}>220 active + 33 inactive</p>
+                        <p className={dark('text-xs text-slate-500', 'text-xs text-slate-500')}>{stats.active} active + {stats.inactive} inactive</p>
                       </div>
                       <div className={`rounded-lg p-3 ${dark('bg-slate-50', 'bg-slate-700/50')}`}>
-                        <p className={`text-2xl font-bold ${dark('text-slate-900', 'text-white')}`}>12</p>
+                        <p className={`text-2xl font-bold ${dark('text-slate-900', 'text-white')}`}>{stats.upcomingRenewals}</p>
                         <p className={dark('text-xs text-slate-600', 'text-xs text-slate-400')}>Upcoming Renewals</p>
                         <p className={dark('text-xs text-slate-500', 'text-xs text-slate-500')}>Next 7 days</p>
                       </div>
@@ -866,9 +918,13 @@ export function DemoSection() {
                   </div>
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
-              {activeTab === 'subscriptions' && (
+              {activeTab === 'subscriptions' && (() => {
+                const stats = getSubscriptionStats();
+                const activeSubs = getActiveSubscriptions();
+                return (
                 <div className={`min-w-[1200px] p-6 ${dark('bg-[#F9FAFB]', 'bg-slate-900')}`}>
                   {/* Top Navigation */}
                   <div className={`flex items-center justify-between mb-6 pb-4 border-b ${dark('border-slate-200', 'border-slate-700')}`}>
@@ -960,13 +1016,13 @@ export function DemoSection() {
                       />
                     </div>
                     <button className={`px-4 py-2 border rounded-lg text-sm ${dark('bg-white border-slate-300 text-slate-700 hover:bg-slate-50', 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700')}`}>
-                      All (253)
+                      All ({stats.total})
                     </button>
                     <button className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-semibold hover:bg-teal-700">
-                      Active (220)
+                      Active ({stats.active})
                     </button>
                     <button className={`px-4 py-2 border rounded-lg text-sm ${dark('bg-white border-slate-300 text-slate-700 hover:bg-slate-50', 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700')}`}>
-                      Inactive (33)
+                      Inactive ({stats.inactive})
                     </button>
                     <select className={`px-4 py-2 border rounded-lg text-sm ${dark('border-slate-300 bg-white', 'border-slate-600 bg-slate-800 text-white')}`}>
                       <option>Renewal Date (Earliest)</option>
@@ -981,14 +1037,7 @@ export function DemoSection() {
 
                   {/* Subscription Cards Grid */}
                   <div className="grid grid-cols-3 gap-4">
-                    {[
-                      { name: 'ExpressVPN 255', category: 'Security', price: '£4.24 /Week', days: 0 },
-                      { name: 'DigitalOcean 67', category: 'Development', price: '$5.50 /Week', days: 0 },
-                      { name: 'Stripe 125', category: 'Cloud Services', price: '£14.39 /Month', days: 1 },
-                      { name: 'AWS 184', category: 'Education', price: '$49.09 /Week', days: 2 },
-                      { name: 'Canva 240', category: 'Finance', price: '$3.80 /Week', days: 3 },
-                      { name: 'Disney+ 153', category: 'Design', price: '€4.84 /Week', days: 5, trial: true },
-                    ].map((sub, i) => {
+                    {[...DEMO_SUBSCRIPTIONS].sort((a, b) => a.days - b.days).map((sub, i) => {
                       const renewal = getRenewalDate(sub.days);
                       const isRenewingToday = sub.days === 0;
                       return (
@@ -1068,7 +1117,8 @@ export function DemoSection() {
                     })}
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {activeTab === 'calendar' && (
                 <div className={`min-w-[1200px] p-6 ${dark('bg-[#F9FAFB]', 'bg-slate-900')}`}>
