@@ -12,6 +12,8 @@ import { SUPPORTED_CURRENCIES } from '@/lib/constants/currencies';
 import { BudgetSettingsForm } from '@/components/settings/BudgetSettingsForm';
 import { useUserSettings } from '@/lib/hooks/useUserSettings';
 import { useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
+import { useEmailConnections, useDisconnectEmail } from '@/lib/hooks/useEmailSync';
 
 // A curated list of common timezones, to avoid pulling in a heavy dependency
 const COMMON_TIMEZONES: { value: string; label: string }[] = [
@@ -39,6 +41,8 @@ export default function ReminderSettingsPage() {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const { data: settings, isLoading: loadingInitial } = useUserSettings();
+  const { data: connections, isLoading: connectionsLoading } = useEmailConnections();
+  const disconnectMutation = useDisconnectEmail();
   const [formData, setFormData] = useState<
     Pick<UpdateSettingsData, 'timezone' | 'notificationTime' | 'defaultCurrency' | 'emailAlertEnabled' | 'pushNotificationEnabled'>
   >({
@@ -302,6 +306,133 @@ export default function ReminderSettingsPage() {
           </div>
 
           <BudgetSettingsForm />
+        </Card>
+
+        <Card id="email-sync" className="p-6 space-y-6">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Email Sync</h2>
+              <Link
+                href="/dashboard/email-sync/audit-log"
+                className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center gap-1"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                View Audit Log
+              </Link>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Connect your Gmail to automatically detect subscriptions from your emails.
+            </p>
+          </div>
+
+          {connectionsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+            </div>
+          ) : connections && connections.length > 0 ? (
+            <div className="space-y-3">
+              {connections.map((conn) => (
+                <div
+                  key={conn.id}
+                  className="flex items-center justify-between p-4 border rounded-lg border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                      <p className="font-medium text-gray-900 dark:text-white">{conn.email_address}</p>
+                      {conn.sync_enabled && (
+                        <span className="px-2 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      Last synced:{' '}
+                      {conn.last_sync_at
+                        ? new Date(conn.last_sync_at).toLocaleString()
+                        : 'Never'}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Link
+                      href="/dashboard/email-sync/sync"
+                      className="px-3 py-1.5 bg-primary-600 dark:bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                    >
+                      Sync Now
+                    </Link>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await disconnectMutation.mutateAsync(conn.id);
+                          showToast('Email account disconnected successfully', 'success');
+                        } catch (err: any) {
+                          showToast(
+                            err?.response?.data?.detail || 'Failed to disconnect email',
+                            'error'
+                          );
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-red-600 dark:bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-700 dark:hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <svg
+                className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                No email accounts connected. Connect your Gmail to automatically detect subscriptions.
+              </p>
+              <Link
+                href="/dashboard/email-sync/connect"
+                className="inline-flex items-center px-4 py-2 bg-primary-600 dark:bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                Connect Gmail
+              </Link>
+            </div>
+          )}
         </Card>
       </div>
     </div>

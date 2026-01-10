@@ -24,6 +24,7 @@ const categories = [
   'Marketing',
   'Communication',
   'Security',
+  'Software',
   'Finance',
   'Education',
   'Other',

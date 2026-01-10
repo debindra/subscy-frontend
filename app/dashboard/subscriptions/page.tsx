@@ -256,6 +256,9 @@ export default function SubscriptionsPage() {
         case 'price':
           comparison = (a.amount || 0) - (b.amount || 0);
           break;
+        case 'addedDate':
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
         default:
           return 0;
       }
@@ -676,6 +679,8 @@ export default function SubscriptionsPage() {
               <option value="name-desc">Name (Z-A)</option>
               <option value="price-asc">Price (Low to High)</option>
               <option value="price-desc">Price (High to Low)</option>
+              <option value="addedDate-asc">Added Date (Oldest First)</option>
+              <option value="addedDate-desc">Added Date (Newest First)</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -1242,6 +1247,8 @@ export default function SubscriptionsPage() {
                   <option value="name-desc">Name (Z-A)</option>
                   <option value="price-asc">Price (Low to High)</option>
                   <option value="price-desc">Price (High to Low)</option>
+                  <option value="addedDate-asc">Added Date (Oldest First)</option>
+                  <option value="addedDate-desc">Added Date (Newest First)</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
