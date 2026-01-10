@@ -23,7 +23,7 @@ export const useSyncEmails = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (params?: { connection_id?: string; months_back?: number; max_results?: number }) =>
+    mutationFn: (params?: { connection_id?: string; months_back?: number; max_results?: number; auto_create?: boolean }) =>
       emailSyncApi.sync(params),
     onSuccess: () => {
       // Invalidate subscriptions to refresh list

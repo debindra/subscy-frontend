@@ -55,7 +55,10 @@ export default function EmailSyncPage() {
   const handleSync = async (connectionId?: string) => {
     try {
       setLoading(true);
-      const res = await emailSyncApi.sync({ connection_id: connectionId });
+      const res = await emailSyncApi.sync({ 
+        connection_id: connectionId,
+        auto_create: true  // Enable automatic subscription creation
+      });
       
       const { new_subscriptions, updates, total_parsed } = res.data;
       let message = `Found ${total_parsed} potential subscriptions.`;
@@ -89,17 +92,12 @@ export default function EmailSyncPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </div>
+          <div className="flex items-center gap-3 mb-3"> 
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Email Sync
             </h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 ml-11">
+          <p className="text-gray-600 dark:text-gray-400 ">
             Connect your email account to automatically detect subscriptions from your billing emails.
           </p>
         </div>
@@ -225,34 +223,22 @@ export default function EmailSyncPage() {
               <Button
                 onClick={() => handleSync()}
                 disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white w-full justify-center min-h-[42px]"
               >
-                <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
                 Sync All Accounts
               </Button>
-              <Link href="/dashboard/email-sync/sync">
-                <Button variant="outline" className="w-full justify-center">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+              <Link href="/dashboard/email-sync/sync" className="block">
+                <Button variant="outline" className="w-full justify-center min-h-[42px]">
                   Review Detected Subscriptions
                 </Button>
               </Link>
-              <Link href="/dashboard/email-sync/audit-log">
-                <Button variant="outline" className="w-full justify-center">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+              <Link href="/dashboard/email-sync/audit-log" className="block">
+                <Button variant="outline" className="w-full justify-center min-h-[42px]">
                   View Audit Log
                 </Button>
               </Link>
-              <Link href="/dashboard/subscriptions">
-                <Button variant="outline" className="w-full justify-center">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-                  </svg>
+              <Link href="/dashboard/subscriptions" className="block">
+                <Button variant="outline" className="w-full justify-center min-h-[42px]">
                   View All Subscriptions
                 </Button>
               </Link>

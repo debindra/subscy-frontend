@@ -59,6 +59,8 @@ export interface AuditLogEntry {
 export interface AuditLogResponse {
   entries: AuditLogEntry[];
   total: number;
+  limit: number;
+  offset: number;
   filters: {
     sync_id?: string;
     connection_id?: string;
@@ -99,7 +101,7 @@ export const emailSyncApi = {
     apiClient.delete(`/email-sync/connections/${connectionId}`),
   
   // Sync emails
-  sync: (params?: { connection_id?: string; months_back?: number; max_results?: number }) =>
+  sync: (params?: { connection_id?: string; months_back?: number; max_results?: number; auto_create?: boolean }) =>
     apiClient.post<SyncResponse>('/email-sync/sync', params || {}),
   
   // Get audit log
@@ -108,6 +110,7 @@ export const emailSyncApi = {
     connection_id?: string;
     operation_type?: string;
     limit?: number;
+    offset?: number;
   }) =>
     apiClient.get<AuditLogResponse>('/email-sync/audit-log', { params }),
   

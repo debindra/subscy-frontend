@@ -29,7 +29,11 @@ export default function SyncEmailPage() {
   const loadDetectedSubscriptions = async () => {
     try {
       setLoading(true);
-      const res = await syncMutation.mutateAsync({ months_back: 3, max_results: 50 });
+      const res = await syncMutation.mutateAsync({ 
+        months_back: 3, 
+        max_results: 50,
+        auto_create: true  // Enable automatic subscription creation
+      });
       setSubscriptions(res.data.new_subscriptions);
       // Auto-select all by default
       setSelected(new Set(res.data.new_subscriptions.map((_, i) => i)));
