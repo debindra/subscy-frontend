@@ -23,6 +23,22 @@ export interface UserSettings {
    * Whether push notifications are enabled for subscription reminders
    */
   pushNotificationEnabled?: boolean;
+  /**
+   * Whether Discord notifications are enabled for subscription reminders
+   */
+  discordEnabled?: boolean;
+  /**
+   * Discord webhook URL for sending notifications
+   */
+  discordWebhookUrl?: string | null;
+  /**
+   * Whether Slack notifications are enabled for subscription reminders
+   */
+  slackEnabled?: boolean;
+  /**
+   * Slack webhook URL for sending notifications
+   */
+  slackWebhookUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +52,10 @@ export interface UpdateSettingsData {
   defaultCurrency?: string | null;
   emailAlertEnabled?: boolean;
   pushNotificationEnabled?: boolean;
+  discordEnabled?: boolean;
+  discordWebhookUrl?: string | null;
+  slackEnabled?: boolean;
+  slackWebhookUrl?: string | null;
 }
 
 export interface BudgetStatus {
@@ -55,6 +75,16 @@ export const settingsApi = {
   getBudgetStatus: (currentSpending: number) =>
     apiClient.get<BudgetStatus>('/settings/budget-status', {
       params: { currentSpending },
+    }),
+  
+  testDiscordWebhook: (webhookUrl: string) =>
+    apiClient.post<{ success: boolean; message: string }>('/settings/test-discord-webhook', null, {
+      params: { webhook_url: webhookUrl },
+    }),
+  
+  testSlackWebhook: (webhookUrl: string) =>
+    apiClient.post<{ success: boolean; message: string }>('/settings/test-slack-webhook', null, {
+      params: { webhook_url: webhookUrl },
     }),
 };
 

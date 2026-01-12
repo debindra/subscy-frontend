@@ -167,7 +167,7 @@ export default function RefundPage() {
               
               <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">8.1 Service Interruptions</h3>
               <p>
-                If our Service experiences significant downtime or technical issues that prevent you from using the Service for an extended period, we may offer credits or refunds on a case-by-case basis. Please contact our support team to discuss your situation.
+                If our Service experiences significant downtime or technical issues that prevent you from using the Service for an extended period, we may offer credits or refunds on a case-by-case basis. Our Service Level Agreement (SLA) terms, as outlined in our <Link href="/terms" className="text-primary-600 hover:underline">Terms of Service</Link>, apply to service availability and uptime commitments. Please contact our support team to discuss your situation.
               </p>
 
               <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">8.2 Billing Errors</h3>

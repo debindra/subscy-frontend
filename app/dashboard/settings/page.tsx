@@ -44,14 +44,20 @@ export default function ReminderSettingsPage() {
   const { data: connections, isLoading: connectionsLoading } = useEmailConnections();
   const disconnectMutation = useDisconnectEmail();
   const [formData, setFormData] = useState<
-    Pick<UpdateSettingsData, 'timezone' | 'notificationTime' | 'defaultCurrency' | 'emailAlertEnabled' | 'pushNotificationEnabled'>
+    Pick<UpdateSettingsData, 'timezone' | 'notificationTime' | 'defaultCurrency' | 'emailAlertEnabled' | 'pushNotificationEnabled' | 'discordEnabled' | 'discordWebhookUrl' | 'slackEnabled' | 'slackWebhookUrl'>
   >({
     timezone: null,
     notificationTime: DEFAULT_NOTIFICATION_TIME,
     defaultCurrency: 'USD',
     emailAlertEnabled: true,
     pushNotificationEnabled: true,
+    discordEnabled: false,
+    discordWebhookUrl: null,
+    slackEnabled: false,
+    slackWebhookUrl: null,
   });
+  const [testingDiscord, setTestingDiscord] = useState(false);
+  const [testingSlack, setTestingSlack] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -65,6 +71,10 @@ export default function ReminderSettingsPage() {
     const currentDefaultCurrency = settings.defaultCurrency ?? 'USD';
     const currentEmailAlertEnabled = settings.emailAlertEnabled ?? true;
     const currentPushNotificationEnabled = settings.pushNotificationEnabled ?? true;
+    const currentDiscordEnabled = settings.discordEnabled ?? false;
+    const currentDiscordWebhookUrl = settings.discordWebhookUrl ?? null;
+    const currentSlackEnabled = settings.slackEnabled ?? false;
+    const currentSlackWebhookUrl = settings.slackWebhookUrl ?? null;
 
     setFormData({
       timezone: currentTimezone,
@@ -72,6 +82,10 @@ export default function ReminderSettingsPage() {
       defaultCurrency: currentDefaultCurrency,
       emailAlertEnabled: currentEmailAlertEnabled,
       pushNotificationEnabled: currentPushNotificationEnabled,
+      discordEnabled: currentDiscordEnabled,
+      discordWebhookUrl: currentDiscordWebhookUrl,
+      slackEnabled: currentSlackEnabled,
+      slackWebhookUrl: currentSlackWebhookUrl,
     });
   }, [settings]);
 
@@ -88,6 +102,10 @@ export default function ReminderSettingsPage() {
       defaultCurrency: formData.defaultCurrency || 'USD',
       emailAlertEnabled: formData.emailAlertEnabled,
       pushNotificationEnabled: formData.pushNotificationEnabled,
+      discordEnabled: formData.discordEnabled,
+      discordWebhookUrl: formData.discordWebhookUrl || null,
+      slackEnabled: formData.slackEnabled,
+      slackWebhookUrl: formData.slackWebhookUrl || null,
     };
 
     try {
@@ -105,6 +123,10 @@ export default function ReminderSettingsPage() {
           defaultCurrency: updatedSettings.defaultCurrency ?? 'USD',
           emailAlertEnabled: updatedSettings.emailAlertEnabled ?? true,
           pushNotificationEnabled: updatedSettings.pushNotificationEnabled ?? true,
+          discordEnabled: updatedSettings.discordEnabled ?? false,
+          discordWebhookUrl: updatedSettings.discordWebhookUrl ?? null,
+          slackEnabled: updatedSettings.slackEnabled ?? false,
+          slackWebhookUrl: updatedSettings.slackWebhookUrl ?? null,
         });
       }
       
@@ -253,6 +275,118 @@ export default function ReminderSettingsPage() {
                   label="Push Notification"
                   helperText="Receive subscription reminders via push notifications"
                 />
+                
+                {/* Discord Integration */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <Switch
+                    checked={formData.discordEnabled ?? false}
+                    onChange={(checked) =>
+                      setFormData({
+                        ...formData,
+                        discordEnabled: checked,
+                      })
+                    }
+                    label="Discord"
+                    helperText="Receive subscription reminders via Discord webhook"
+                  />
+                  {formData.discordEnabled && (
+                    <div className="mt-3 space-y-2">
+                      <Input
+                        label="Discord Webhook URL"
+                        type="url"
+                        placeholder="https://discord.com/api/webhooks/..."
+                        value={formData.discordWebhookUrl || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            discordWebhookUrl: e.target.value || null,
+                          })
+                        }
+                        helperText="Get your webhook URL from Discord Server Settings → Integrations → Webhooks"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={testingDiscord || !formData.discordWebhookUrl}
+                        onClick={async () => {
+                          if (!formData.discordWebhookUrl) return;
+                          setTestingDiscord(true);
+                          try {
+                            const response = await settingsApi.testDiscordWebhook(formData.discordWebhookUrl);
+                            showToast(response.data.message || 'Discord webhook test successful!', 'success');
+                          } catch (err: any) {
+                            const message =
+                              err?.response?.data?.detail ||
+                              err?.response?.data?.message ||
+                              'Failed to test Discord webhook';
+                            showToast(message, 'error');
+                          } finally {
+                            setTestingDiscord(false);
+                          }
+                        }}
+                      >
+                        {testingDiscord ? 'Testing...' : 'Test Webhook'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Slack Integration */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <Switch
+                    checked={formData.slackEnabled ?? false}
+                    onChange={(checked) =>
+                      setFormData({
+                        ...formData,
+                        slackEnabled: checked,
+                      })
+                    }
+                    label="Slack"
+                    helperText="Receive subscription reminders via Slack webhook"
+                  />
+                  {formData.slackEnabled && (
+                    <div className="mt-3 space-y-2">
+                      <Input
+                        label="Slack Webhook URL"
+                        type="url"
+                        placeholder="https://hooks.slack.com/services/..."
+                        value={formData.slackWebhookUrl || ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            slackWebhookUrl: e.target.value || null,
+                          })
+                        }
+                        helperText="Get your webhook URL from Slack App → Incoming Webhooks"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={testingSlack || !formData.slackWebhookUrl}
+                        onClick={async () => {
+                          if (!formData.slackWebhookUrl) return;
+                          setTestingSlack(true);
+                          try {
+                            const response = await settingsApi.testSlackWebhook(formData.slackWebhookUrl);
+                            showToast(response.data.message || 'Slack webhook test successful!', 'success');
+                          } catch (err: any) {
+                            const message =
+                              err?.response?.data?.detail ||
+                              err?.response?.data?.message ||
+                              'Failed to test Slack webhook';
+                            showToast(message, 'error');
+                          } finally {
+                            setTestingSlack(false);
+                          }
+                        }}
+                      >
+                        {testingSlack ? 'Testing...' : 'Test Webhook'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

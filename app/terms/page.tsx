@@ -173,7 +173,7 @@ export default function TermsPage() {
 
               <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">7.2 Payment Terms</h3>
               <ul className="list-disc pl-6 space-y-2 mt-3">
-                <li>All fees are non-refundable except as required by law or as specified in your plan</li>
+                <li>All fees are non-refundable except as required by law or as specified in our <Link href="/refund" className="text-primary-600 hover:underline">Refund Policy</Link></li>
                 <li>We reserve the right to change our pricing with 30 days' notice</li>
                 <li>If payment fails, we may suspend or terminate your access to the Service</li>
                 <li>You are responsible for any taxes, duties, or fees applicable to your subscription</li>
@@ -181,7 +181,7 @@ export default function TermsPage() {
 
               <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">7.3 Cancellation</h3>
               <p>
-                You may cancel your subscription at any time. Cancellation takes effect at the end of your current billing period. You will continue to have access to the Service until the end of your paid period.
+                You may cancel your subscription at any time. Cancellation takes effect at the end of your current billing period. You will continue to have access to the Service until the end of your paid period. For refund eligibility, please refer to our <Link href="/refund" className="text-primary-600 hover:underline">Refund Policy</Link>.
               </p>
             </section>
 
@@ -216,7 +216,42 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">11. Indemnification</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">11. Service Level Agreement (SLA)</h2>
+              
+              <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">11.1 Uptime Commitment</h3>
+              <p>
+                We strive to provide reliable and continuous access to our Service. Our target uptime is 99.5% on a monthly basis, excluding scheduled maintenance windows.
+              </p>
+
+              <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">11.2 Scheduled Maintenance</h3>
+              <p>
+                We may perform scheduled maintenance with at least 48 hours' advance notice. Scheduled maintenance typically occurs during low-usage periods and does not count toward downtime calculations.
+              </p>
+
+              <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">11.3 Service Credits</h3>
+              <p>
+                If we fail to meet our uptime commitment due to unscheduled downtime, we may provide service credits on a case-by-case basis. Service credits are calculated based on the duration and impact of the outage and will be applied to your next billing cycle.
+              </p>
+
+              <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">11.4 Exclusions</h3>
+              <p>The following are excluded from uptime calculations:</p>
+              <ul className="list-disc pl-6 space-y-2 mt-3">
+                <li>Scheduled maintenance windows</li>
+                <li>Force majeure events (natural disasters, war, terrorism, etc.)</li>
+                <li>Issues caused by third-party services or integrations</li>
+                <li>Issues resulting from your equipment, software, or internet connection</li>
+                <li>Issues caused by violations of these Terms or misuse of the Service</li>
+                <li>Issues related to your account suspension or termination</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">11.5 Support Response Times</h3>
+              <p>
+                We aim to respond to support requests within 24-48 hours during business days. Response times may vary during weekends, holidays, and periods of high volume.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">12. Indemnification</h2>
               <p>
                 You agree to indemnify, defend, and hold harmless Subsy, its affiliates, and their respective officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, costs, or expenses (including reasonable attorneys' fees) arising out of or related to:
               </p>
@@ -229,7 +264,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">12. Termination</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">13. Termination</h2>
               
               <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">12.1 Termination by You</h3>
               <p>You may terminate your account at any time by contacting us or using the account deletion feature in the Service.</p>
@@ -251,24 +286,27 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">13. Governing Law and Dispute Resolution</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">14. Governing Law and Dispute Resolution</h2>
               <p>
-                These Terms shall be governed by and construed in accordance with the laws of [Jurisdiction], without regard to its conflict of law provisions.
+                These Terms shall be governed by and construed in accordance with the laws of the State of Delaware, United States, without regard to its conflict of law provisions.
               </p>
               <p className="mt-4">
-                Any disputes arising out of or relating to these Terms or the Service shall be resolved through binding arbitration in accordance with the rules of [Arbitration Organization], except where prohibited by law.
+                Any disputes arising out of or relating to these Terms or the Service shall be resolved through binding arbitration in accordance with the rules of the American Arbitration Association (AAA), except where prohibited by law. The arbitration shall take place in Delaware, United States.
+              </p>
+              <p className="mt-4">
+                You agree to waive any right to a jury trial and to participate in a class action lawsuit. If arbitration is not permitted by law, you agree that any disputes shall be resolved in the state or federal courts located in Delaware, United States.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">14. Changes to Terms</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">15. Changes to Terms</h2>
               <p>
                 We reserve the right to modify these Terms at any time. We will notify you of material changes by posting the updated Terms on this page and updating the "Last updated" date. Your continued use of the Service after such changes constitutes acceptance of the modified Terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">15. Miscellaneous</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">16. Miscellaneous</h2>
               
               <h3 className="text-xl font-semibold text-slate-900 mt-6 mb-3">15.1 Entire Agreement</h3>
               <p>These Terms, together with our Privacy Policy, constitute the entire agreement between you and Subsy regarding the Service.</p>
@@ -284,7 +322,7 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">16. Contact Us</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mt-8 mb-4">17. Contact Us</h2>
               <p>
                 If you have questions about these Terms, please contact us:
               </p>

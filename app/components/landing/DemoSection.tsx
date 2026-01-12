@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { getSubscriptionIcon } from '@/lib/utils/icons';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { useTheme } from '@/lib/context/ThemeContext';
@@ -519,6 +519,30 @@ function MobileCalendar({ isDarkMode, dark, viewport }: { isDarkMode: boolean; d
 export function DemoSection() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'subscriptions' | 'calendar'>('dashboard');
   const [loopCount, setLoopCount] = useState(0);
+  const [showMouseCursor, setShowMouseCursor] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [isDemoInView, setIsDemoInView] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [highlightedSection, setHighlightedSection] = useState<string | null>(null);
+  
+  // Refs for tab buttons to track their positions (desktop)
+  const tabButtonRefs = {
+    dashboard: useRef<HTMLButtonElement>(null),
+    subscriptions: useRef<HTMLButtonElement>(null),
+    calendar: useRef<HTMLButtonElement>(null),
+  };
+  
+  // Refs for mobile tab buttons (bottom navigation)
+  const mobileTabButtonRefs = {
+    dashboard: useRef<HTMLButtonElement>(null),
+    subscriptions: useRef<HTMLButtonElement>(null),
+    calendar: useRef<HTMLButtonElement>(null),
+  };
+  
+  const pageContentRef = useRef<HTMLDivElement>(null);
+  const mobileContentRef = useRef<HTMLDivElement>(null);
+  const demoSectionRef = useRef<HTMLElement>(null);
+  const mobileContainerRef = useRef<HTMLDivElement>(null);
   
   // Detect if user is on mobile device
   const isMobileDevice = useMediaQuery('(max-width: 768px)');
@@ -542,12 +566,205 @@ export function DemoSection() {
   // Helper function for dark mode classes
   const dark = (light: string, dark: string) => isDarkMode ? dark : light;
 
+  // Helper function to get next tab
+  const getNextTab = (currentTab: 'dashboard' | 'subscriptions' | 'calendar'): 'dashboard' | 'subscriptions' | 'calendar' => {
+    if (currentTab === 'dashboard') return 'subscriptions';
+    if (currentTab === 'subscriptions') return 'calendar';
+    return 'dashboard';
+  };
+
+  // Helper function to update cursor position based on next tab
+  const updateCursorPosition = (nextTab: 'dashboard' | 'subscriptions' | 'calendar') => {
+    const buttonRef = tabButtonRefs[nextTab].current;
+    const containerRef = pageContentRef.current;
+    if (buttonRef && containerRef) {
+      const buttonRect = buttonRef.getBoundingClientRect();
+      const containerRect = containerRef.getBoundingClientRect();
+      setCursorPosition({
+        x: buttonRect.left + buttonRect.width / 2 - containerRect.left,
+        y: buttonRect.top + buttonRect.height / 2 - containerRect.top,
+      });
+    }
+  };
+
+  // Helper function to update cursor position for any element
+  const updateCursorPositionForElement = (element: HTMLElement | null) => {
+    if (!element) return;
+    
+    // Determine which container to use (desktop or mobile)
+    const containerRef = effectiveViewport === 'mobile' ? mobileContainerRef.current : pageContentRef.current;
+    if (!containerRef) return;
+    
+    const elementRect = element.getBoundingClientRect();
+    const containerRect = containerRef.getBoundingClientRect();
+    
+    setCursorPosition({
+      x: elementRect.left + elementRect.width / 2 - containerRect.left,
+      y: elementRect.top + elementRect.height / 2 - containerRect.top,
+    });
+  };
+
+  // Handler function for tab clicks with cursor animation
+  const handleTabClick = (tab: 'dashboard' | 'subscriptions' | 'calendar') => {
+    updateCursorPosition(tab);
+    setShowMouseCursor(true);
+    
+    // Change tab after cursor animation (300ms delay for click)
+    setTimeout(() => {
+      setActiveTab(tab);
+      setShowMouseCursor(false);
+    }, 300);
+  };
+
+  // IntersectionObserver to detect when demo section is in view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsDemoInView(true);
+          } else {
+            setIsDemoInView(false);
+          }
+        });
+      },
+      {
+        threshold: 0.3,
+        rootMargin: '0px',
+      }
+    );
+
+    if (demoSectionRef.current) {
+      observer.observe(demoSectionRef.current);
+    }
+
+    return () => {
+      if (demoSectionRef.current) {
+        observer.unobserve(demoSectionRef.current);
+      }
+    };
+  }, []);
+
+  // Animation sequence function using setTimeout chains
+  const runAnimationSequence = useCallback(() => {
+    const containerRef = effectiveViewport === 'mobile' ? mobileContentRef.current : pageContentRef.current;
+    if (isAnimating || !isDemoInView || !containerRef) return;
+    
+    setIsAnimating(true);
+    setShowMouseCursor(true);
+    
+    // Get key sections based on current tab and viewport
+    let sections: Array<{ selector: string; id: string }> = [];
+    
+    if (activeTab === 'dashboard') {
+      if (effectiveViewport === 'mobile') {
+        sections = [
+          { selector: 'h1', id: 'welcome-section' },
+          { selector: '[class*="bg-green"]', id: 'spending-card' },
+          { selector: 'h2', id: 'upcoming-renewals' },
+          { selector: 'h3', id: 'budget-tracking' },
+        ];
+      } else {
+        sections = [
+          { selector: 'h1', id: 'welcome-section' },
+          { selector: '[class*="bg-green"]', id: 'spending-card' },
+          { selector: '.mb-6', id: 'upcoming-renewals' },
+          { selector: 'h3', id: 'budget-tracking' },
+        ];
+      }
+    } else if (activeTab === 'subscriptions') {
+      if (effectiveViewport === 'mobile') {
+        sections = [
+          { selector: 'h1', id: 'subscriptions-header' },
+          { selector: '.px-4.mt-4.flex', id: 'action-buttons' },
+          { selector: '.px-4.mt-4.space-y-2', id: 'subscriptions-list' },
+        ];
+      } else {
+        sections = [
+          { selector: 'h1', id: 'subscriptions-header' },
+          { selector: '.mb-4.flex.items-center.justify-end', id: 'action-buttons' },
+          { selector: '.grid.grid-cols-3', id: 'subscriptions-grid' },
+        ];
+      }
+    } else if (activeTab === 'calendar') {
+      sections = [
+        { selector: 'h1', id: 'calendar-header' },
+        { selector: '.grid.grid-cols-7', id: 'calendar-grid' },
+      ];
+    }
+    
+    let currentSectionIndex = 0;
+    
+    const processNextSection = () => {
+      if (currentSectionIndex >= sections.length) {
+        // All sections processed, scroll to top
+        if (containerRef) {
+          containerRef.scrollTop = 0;
+          containerRef.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        setTimeout(() => {
+          // Move cursor to next tab button
+          const nextTab = getNextTab(activeTab);
+          const buttonRef = effectiveViewport === 'mobile' 
+            ? mobileTabButtonRefs[nextTab].current 
+            : tabButtonRefs[nextTab].current;
+          updateCursorPositionForElement(buttonRef);
+          setHighlightedSection(null);
+          
+          setTimeout(() => {
+            // Click the tab
+            setActiveTab(nextTab);
+            setShowMouseCursor(false);
+            setIsAnimating(false);
+            setHighlightedSection(null);
+          }, 800);
+        }, 600);
+        return;
+      }
+      
+      const section = sections[currentSectionIndex];
+      const element = containerRef.querySelector(section.selector) as HTMLElement;
+      
+      if (element) {
+        // Scroll element into view
+        element.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        });
+        
+        setTimeout(() => {
+          // Move cursor to section
+          updateCursorPositionForElement(element);
+          setHighlightedSection(section.id);
+          
+          // Process next section after delay
+          setTimeout(() => {
+            currentSectionIndex++;
+            processNextSection();
+          }, 1200);
+        }, 400);
+      } else {
+        // Element not found, skip to next
+        currentSectionIndex++;
+        processNextSection();
+      }
+    };
+    
+    // Start sequence after initial delay
+    setTimeout(() => {
+      processNextSection();
+    }, 1000);
+  }, [activeTab, isAnimating, isDemoInView, effectiveViewport]);
+
   // Helper function to render navigation (avoids TypeScript type narrowing issues)
   const renderNav = (currentTab: 'dashboard' | 'subscriptions' | 'calendar') => (
     <>
       <button
-        onClick={() => setActiveTab('dashboard')}
-        className={`flex items-center gap-1 pb-1 transition-all ${
+        ref={tabButtonRefs.dashboard}
+        onClick={() => handleTabClick('dashboard')}
+        className={`flex items-center gap-1 pb-1 transition-all active:scale-95 ${
           currentTab === 'dashboard'
             ? 'text-teal-600 font-semibold border-b-2 border-teal-600'
             : dark('text-slate-600 hover:text-slate-900', 'text-slate-400 hover:text-slate-200')
@@ -559,8 +776,9 @@ export function DemoSection() {
         Dashboard
       </button>
       <button
-        onClick={() => setActiveTab('subscriptions')}
-        className={`flex items-center gap-1 pb-1 transition-all ${
+        ref={tabButtonRefs.subscriptions}
+        onClick={() => handleTabClick('subscriptions')}
+        className={`flex items-center gap-1 pb-1 transition-all active:scale-95 ${
           currentTab === 'subscriptions'
             ? 'text-teal-600 font-semibold border-b-2 border-teal-600'
             : dark('text-slate-600 hover:text-slate-900', 'text-slate-400 hover:text-slate-200')
@@ -572,8 +790,9 @@ export function DemoSection() {
         Subscriptions
       </button>
       <button
-        onClick={() => setActiveTab('calendar')}
-        className={`flex items-center gap-1 pb-1 transition-all ${
+        ref={tabButtonRefs.calendar}
+        onClick={() => handleTabClick('calendar')}
+        className={`flex items-center gap-1 pb-1 transition-all active:scale-95 ${
           currentTab === 'calendar'
             ? 'text-teal-600 font-semibold border-b-2 border-teal-600'
             : dark('text-slate-600 hover:text-slate-900', 'text-slate-400 hover:text-slate-200')
@@ -587,27 +806,19 @@ export function DemoSection() {
     </>
   );
 
-  // Auto-rotate tabs every 5 seconds
+  // Auto-rotate tabs every 10 seconds with animation sequence
   useEffect(() => {
+    if (!isDemoInView || isAnimating) return;
+    
     const interval = setInterval(() => {
-      setActiveTab((prev) => {
-        if (prev === 'dashboard') {
-          return 'subscriptions';
-        }
-        if (prev === 'subscriptions') {
-          return 'calendar';
-        }
-        // When returning to dashboard, we've completed a loop
-        setLoopCount((count) => count + 1);
-        return 'dashboard';
-      });
-    }, 5000);
+      runAnimationSequence();
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isDemoInView, isAnimating, runAnimationSequence]);
 
   return (
-    <section id="demo" className="py-12 sm:py-16 md:py-24 bg-white" aria-labelledby="demo-heading">
+    <section ref={demoSectionRef} id="demo" className="py-12 sm:py-16 md:py-24 bg-white" aria-labelledby="demo-heading">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center mb-10 sm:mb-12 md:mb-16">
           <span className="inline-flex items-center justify-center rounded-full bg-primary-50 border border-primary-100 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-medium uppercase tracking-wider text-primary-700">
@@ -671,7 +882,37 @@ export function DemoSection() {
             </div>
 
             {/* Page Content - Conditional Rendering */}
-            <div className={`relative overflow-x-auto ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
+            <div ref={pageContentRef} className={`relative overflow-x-auto overflow-y-auto ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`} style={{ maxHeight: '800px' }}>
+              {/* Mouse Cursor Animation */}
+              {showMouseCursor && (
+                <div
+                  className="absolute z-50 pointer-events-none transition-all duration-500 ease-out"
+                  style={{
+                    left: `${cursorPosition.x}px`,
+                    top: `${cursorPosition.y}px`,
+                    transform: 'translate(-50%, -50%)',
+                    opacity: showMouseCursor ? 1 : 0,
+                  }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="drop-shadow-lg"
+                  >
+                    <path
+                      d="M3 3L10.07 19.97L12.58 12.58L19.97 10.07L3 3Z"
+                      fill="black"
+                      stroke="white"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              )}
               {activeTab === 'dashboard' && (() => {
                 const stats = getSubscriptionStats();
                 const activeSubs = getActiveSubscriptions();
@@ -1283,7 +1524,7 @@ export function DemoSection() {
           </div>
           ) : (
             // Mobile View - iPhone 17 Frame
-            <div className="relative rounded-[3rem] bg-gradient-to-br from-slate-900 to-black border-[3px] border-slate-800 overflow-hidden shadow-2xl max-w-[375px] mx-auto">
+            <div ref={mobileContainerRef} className="relative rounded-[3rem] bg-gradient-to-br from-slate-900 to-black border-[3px] border-slate-800 overflow-hidden shadow-2xl max-w-[375px] mx-auto">
               {/* iPhone 17 Dynamic Island and Status Bar */}
               <div className={`${dark('bg-slate-900', 'bg-black')} rounded-t-[3rem] pt-2 pb-3 px-5 flex items-center justify-center relative`}>
                 {/* Dynamic Island - iPhone 17 style (pill-shaped) */}
@@ -1324,6 +1565,7 @@ export function DemoSection() {
 
               {/* Mobile Content - iPhone 17 */}
               <div 
+                ref={mobileContentRef}
                 className={`relative overflow-y-auto ${dark('bg-white', 'bg-slate-900')}`} 
                 style={{ 
                   height: '800px',
@@ -1331,6 +1573,36 @@ export function DemoSection() {
                   touchAction: 'pan-y'
                 }}
               >
+                {/* Mouse Cursor Animation for Mobile */}
+                {showMouseCursor && (
+                  <div
+                    className="absolute z-50 pointer-events-none transition-all duration-500 ease-out"
+                    style={{
+                      left: `${cursorPosition.x}px`,
+                      top: `${cursorPosition.y}px`,
+                      transform: 'translate(-50%, -50%)',
+                      opacity: showMouseCursor ? 1 : 0,
+                    }}
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="drop-shadow-lg"
+                    >
+                      <path
+                        d="M3 3L10.07 19.97L12.58 12.58L19.97 10.07L3 3Z"
+                        fill="black"
+                        stroke="white"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                )}
                 {activeTab === 'dashboard' && (
                   <MobileDashboard isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} />
                 )}
@@ -1346,7 +1618,8 @@ export function DemoSection() {
               <div className={`border-t ${dark('bg-white border-slate-200', 'bg-slate-900 border-slate-700')} px-4 py-2.5 rounded-b-[3rem]`} style={{ touchAction: 'manipulation' }}>
                 <div className="flex items-center justify-around">
                   <button 
-                    onClick={() => setActiveTab('dashboard')}
+                    ref={mobileTabButtonRefs.dashboard}
+                    onClick={() => handleTabClick('dashboard')}
                     className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${activeTab === 'dashboard' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
                     style={{ touchAction: 'manipulation' }}
                   >
@@ -1356,7 +1629,8 @@ export function DemoSection() {
                     <span className="text-xs">Dashboard</span>
                   </button>
                   <button 
-                    onClick={() => setActiveTab('subscriptions')}
+                    ref={mobileTabButtonRefs.subscriptions}
+                    onClick={() => handleTabClick('subscriptions')}
                     className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${activeTab === 'subscriptions' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
                     style={{ touchAction: 'manipulation' }}
                   >
@@ -1366,7 +1640,8 @@ export function DemoSection() {
                     <span className="text-xs">Subscriptions</span>
                   </button>
                   <button 
-                    onClick={() => setActiveTab('calendar')}
+                    ref={mobileTabButtonRefs.calendar}
+                    onClick={() => handleTabClick('calendar')}
                     className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${activeTab === 'calendar' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
                     style={{ touchAction: 'manipulation' }}
                   >
