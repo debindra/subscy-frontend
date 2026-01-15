@@ -83,6 +83,7 @@ import { businessApi, PlanResponse } from '@/lib/api/business';
 import { usePlanFeatures } from '@/lib/hooks/usePlanFeatures';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
 import { Modal } from '@/components/ui/Modal';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { SubscriptionForm } from '@/components/dashboard/SubscriptionForm';
 import {
   useCreateSubscription,
@@ -124,6 +125,8 @@ export default function DashboardPage() {
   // Edit modal state for upcoming renewals
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | undefined>();
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isQuickAddModalOpen, setIsQuickAddModalOpen] = useState(false);
   const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
   const { showToast } = useToast();
@@ -398,16 +401,28 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUpcomingDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this subscription?')) return;
+  const handleUpcomingDelete = (id: string) => {
+    setDeleteTargetId(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return false;
 
     try {
-      await deleteSubscription.mutateAsync(id);
+      await deleteSubscription.mutateAsync(deleteTargetId);
       showToast('Subscription deleted successfully', 'success');
+      return true;
     } catch (error) {
       logger.error('Error deleting subscription from dashboard', error);
       showToast('Failed to delete subscription', 'error');
+      return false;
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setDeleteTargetId(null);
   };
 
   const renderCurrencyIcon = (currency: string) => {
@@ -956,6 +971,14 @@ export default function DashboardPage() {
           />
         </Modal>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Delete subscription"
+        confirmLabel="Delete subscription"
+      />
 
       {/* Quick Add Subscription Modal */}
       {isQuickAddModalOpen && (

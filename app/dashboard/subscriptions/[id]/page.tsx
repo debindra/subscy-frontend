@@ -9,6 +9,7 @@ import { SubscriptionForm } from '@/components/dashboard/SubscriptionForm';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { formatCurrency, formatDate, getDaysUntil } from '@/lib/utils/format';
 import { getSubscriptionIcon, getSubscriptionColor } from '@/lib/utils/icons';
 import { useToast } from '@/lib/context/ToastContext';
@@ -54,6 +55,7 @@ export default function SubscriptionDetailPage() {
   const updateMutation = useUpdateSubscription();
   const deleteMutation = useDeleteSubscription();
   const [showEditForm, setShowEditForm] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState<Date>(startOfMonth(new Date()));
   const { showToast } = useToast();
 
@@ -95,17 +97,22 @@ export default function SubscriptionDetailPage() {
   const monthName = calendarMonth.toLocaleString(undefined, { month: 'long', year: 'numeric' });
   const matrix = useMemo(() => getMonthMatrix(year, month), [year, month]);
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!subscription) return;
+    setIsDeleteModalOpen(true);
+  };
 
-    if (confirm(`Are you sure you want to delete "${subscription.name}"?`)) {
-      try {
-        await deleteMutation.mutateAsync(subscription.id);
-        showToast('Subscription deleted successfully', 'success');
-        router.push('/dashboard/subscriptions');
-      } catch (error) {
-        showToast('Failed to delete subscription', 'error');
-      }
+  const handleConfirmDelete = async () => {
+    if (!subscription) return false;
+
+    try {
+      await deleteMutation.mutateAsync(subscription.id);
+      showToast('Subscription deleted successfully', 'success');
+      router.push('/dashboard/subscriptions');
+      return true;
+    } catch (error) {
+      showToast('Failed to delete subscription', 'error');
+      return false;
     }
   };
 
@@ -572,6 +579,15 @@ export default function SubscriptionDetailPage() {
           onCancel={() => setShowEditForm(false)}
         />
       </Modal>
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        itemName={subscription?.name}
+        title="Delete subscription"
+        confirmLabel="Delete subscription"
+      />
     </div>
   );
 }

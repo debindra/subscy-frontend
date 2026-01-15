@@ -80,6 +80,51 @@ export interface SyncSummary {
   completed_at?: string;
 }
 
+export interface ForwardedEmail {
+  id: string;
+  message_id: string;
+  provider_message_id: string;
+  subject: string;
+  sender_email: string;
+  sender_name?: string;
+  received_at: string;
+  processing_status: 'pending' | 'processed' | 'failed' | 'skipped';
+  processing_reason?: string;
+  parsed_data?: Record<string, any>;
+  subscription_id?: string;
+  created_at: string;
+  processed_at?: string;
+}
+
+export interface ForwardedEmailsResponse {
+  emails: ForwardedEmail[];
+  total: number;
+  limit: number;
+  offset: number;
+  forwarding_email: string;
+}
+
+export interface HostingerPollResponse {
+  success: boolean;
+  emails_found: number;
+  emails_processed: number;
+  emails: Array<{
+    id: string;
+    message_id: string;
+    sender_email: string;
+    sender_name?: string;
+    subject: string;
+    receiver_email: string;
+    received_at: string;
+    status: string;
+    subscriptions_created?: number;
+    subscriptions_updated?: number;
+    user_id?: string;
+    error?: string;
+  }>;
+  message: string;
+}
+
 export const emailSyncApi = {
   // Get OAuth URL
   getAuthUrl: () => 
@@ -117,5 +162,13 @@ export const emailSyncApi = {
   // Get sync summary
   getSyncSummary: (syncId: string) =>
     apiClient.get<SyncSummary>(`/email-sync/audit-log/${syncId}/summary`),
+  
+  // Get forwarded emails
+  getForwardedEmails: (params?: { limit?: number; offset?: number }) =>
+    apiClient.get<ForwardedEmailsResponse>('/email-sync/forwarded-emails', { params }),
+  
+  // Trigger Hostinger IMAP poll
+  pollHostinger: () =>
+    apiClient.post<HostingerPollResponse>('/email-sync/poll-hostinger'),
 };
 

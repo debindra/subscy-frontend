@@ -66,6 +66,11 @@ export interface BudgetStatus {
   alertTriggered: boolean;
 }
 
+export interface EmailForwardingSettings {
+  forwardingEmail: string;
+  autoCreate: boolean;
+}
+
 export const settingsApi = {
   getSettings: () => apiClient.get<UserSettings>('/settings/'),
   
@@ -86,5 +91,11 @@ export const settingsApi = {
     apiClient.post<{ success: boolean; message: string }>('/settings/test-slack-webhook', null, {
       params: { webhook_url: webhookUrl },
     }),
+  
+  getEmailForwarding: () =>
+    apiClient.get<EmailForwardingSettings>('/settings/email-forwarding'),
+  
+  regenerateEmailForwarding: () =>
+    apiClient.post<EmailForwardingSettings>('/settings/email-forwarding/regenerate'),
 };
 

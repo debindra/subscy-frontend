@@ -238,6 +238,11 @@ export default function EmailSyncPage() {
                   View Audit Log
                 </Button>
               </Link>
+              <Link href="/dashboard/email-sync/forwarded" className="block">
+                <Button variant="outline" className="w-full h-[56px] flex items-center justify-center px-4 py-0">
+                  View Forwarded Emails
+                </Button>
+              </Link>
               <Link href="/dashboard/subscriptions" className="block">
                 <Button variant="outline" className="w-full h-[56px] flex items-center justify-center px-4 py-0">
                   View All Subscriptions

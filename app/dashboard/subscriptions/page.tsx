@@ -6,6 +6,7 @@ import { SubscriptionCard } from '@/components/dashboard/SubscriptionCard';
 import { SubscriptionForm } from '@/components/dashboard/SubscriptionForm';
 import { ExportButton } from '@/components/dashboard/ExportButton';
 import { Modal } from '@/components/ui/Modal';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/lib/context/ToastContext';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -46,6 +47,8 @@ export default function SubscriptionsPage() {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Subscription | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { viewMode, setViewMode } = useViewMode();
   const isMobile = useIsMobile();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -170,21 +173,30 @@ export default function SubscriptionsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     const subscription = subscriptions.find(s => s.id === id);
     if (!subscription) return;
+    setDeleteTarget(subscription);
+    setIsDeleteModalOpen(true);
+  };
 
-    if (!confirm(`Are you sure you want to delete "${subscription.name}" subscription?`)) {
-      return;
-    }
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return false;
 
     try {
-      await deleteSubscription.mutateAsync(id);
-      showToast(`"${subscription.name}" subscription deleted successfully`, 'success');
+      await deleteSubscription.mutateAsync(deleteTarget.id);
+      showToast(`"${deleteTarget.name}" subscription deleted successfully`, 'success');
+      return true;
     } catch (error) {
-      showToast(`Failed to delete "${subscription.name}" subscription`, 'error');
+      showToast(`Failed to delete "${deleteTarget.name}" subscription`, 'error');
       logger.error('Error deleting subscription', error);
+      return false;
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setDeleteTarget(null);
   };
 
   const handleEdit = (subscription: Subscription) => {
@@ -951,6 +963,15 @@ export default function SubscriptionsPage() {
           onCancel={handleCloseModal}
         />
       </Modal>
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        itemName={deleteTarget?.name}
+        title="Delete subscription"
+        confirmLabel="Delete subscription"
+      />
 
       {/* Mobile Filter Drawer */}
       {isMobileFiltersOpen && (

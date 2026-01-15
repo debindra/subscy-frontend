@@ -10,6 +10,7 @@ import { useToast } from '@/lib/context/ToastContext';
 import { usePageTitle } from '@/lib/hooks/usePageTitle';
 import { SUPPORTED_CURRENCIES } from '@/lib/constants/currencies';
 import { BudgetSettingsForm } from '@/components/settings/BudgetSettingsForm';
+import { EmailForwardingSection } from '@/components/settings/EmailForwardingSection';
 import { useUserSettings } from '@/lib/hooks/useUserSettings';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -442,10 +443,12 @@ export default function ReminderSettingsPage() {
           <BudgetSettingsForm />
         </Card>
 
+        <EmailForwardingSection />
+
         <Card id="email-sync" className="p-6 space-y-6">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Email Sync</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Email Sync (OAuth)</h2>
               <Link
                 href="/dashboard/email-sync/audit-log"
                 className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center gap-1"
@@ -467,7 +470,7 @@ export default function ReminderSettingsPage() {
               </Link>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Connect your Gmail to automatically detect subscriptions from your emails.
+              Connect your Gmail via OAuth to automatically sync and detect subscriptions from your inbox.
             </p>
           </div>
 
