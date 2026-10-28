@@ -3,15 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getSubscriptionIcon } from '@/lib/utils/icons';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
-import { useTheme } from '@/lib/context/ThemeContext';
 import { addDays, format } from 'date-fns';
-
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
-}
 
 // Helper function to get renewal date based on days
 function getRenewalDate(days: number): string {
@@ -19,6 +11,10 @@ function getRenewalDate(days: number): string {
   today.setHours(0, 0, 0, 0);
   const renewalDate = addDays(today, days);
   return format(renewalDate, 'MMM dd, yyyy');
+}
+
+function formatDaysLeft(days: number): string {
+  return days === 1 ? '1 day' : `${days} days`;
 }
 
 // Helper function to format days as string (e.g., "0d", "5d")
@@ -86,8 +82,55 @@ function getInactiveSubscriptions() {
   return DEMO_SUBSCRIPTIONS.filter(sub => !sub.active);
 }
 
+// Spending figures are derived from DEMO_SUBSCRIPTIONS so the preview stays self-consistent
+const EUR_TO_USD = 1.08;
+const DEMO_MONTHLY_BUDGET = 400;
+const CATEGORY_COLORS = ['#0D9488', '#F97316', '#0EA5E9'];
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * 40;
+
+const usdFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const eurFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' });
+
+function getSpendingSummary() {
+  const active = getActiveSubscriptions();
+  const sum = (currency: string) =>
+    active.filter((sub) => sub.currency === currency).reduce((total, sub) => total + sub.priceValue, 0);
+  const usdMonthly = sum('USD');
+  const eurMonthly = sum('EUR');
+  const totalMonthly = usdMonthly + eurMonthly * EUR_TO_USD;
+  return {
+    usdMonthly,
+    eurMonthly,
+    totalMonthly,
+    budgetUsedPercent: (totalMonthly / DEMO_MONTHLY_BUDGET) * 100,
+  };
+}
+
+// Top three categories by monthly spend, as shares of the total
+function getCategoryShares() {
+  const totals = new Map<string, number>();
+  for (const sub of getActiveSubscriptions()) {
+    const usd = sub.currency === 'EUR' ? sub.priceValue * EUR_TO_USD : sub.priceValue;
+    totals.set(sub.category, (totals.get(sub.category) ?? 0) + usd);
+  }
+  const grandTotal = Array.from(totals.values()).reduce((a, b) => a + b, 0);
+  let offset = 0;
+  return Array.from(totals.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([category, amount], i) => {
+      const share = amount / grandTotal;
+      const slice = { category, share, color: CATEGORY_COLORS[i], offset };
+      offset += share;
+      return slice;
+    });
+}
+
+const DEMO_SPENDING = getSpendingSummary();
+const DEMO_CATEGORY_SHARES = getCategoryShares();
+
 // Mobile Dashboard Component
-function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile' }) {
+function MobileDashboard({ isDarkMode, dark, viewport, onToggleTheme }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile'; onToggleTheme: () => void }) {
   const stats = getSubscriptionStats();
   const activeSubs = getActiveSubscriptions();
   
@@ -113,7 +156,7 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
             }}
           />
           <div className="flex items-center gap-3">
-            <button className={`p-2 rounded-lg ${viewport === 'mobile' ? dark('active:bg-slate-100', 'active:bg-slate-800') : dark('hover:bg-slate-100', 'hover:bg-slate-800')} active:opacity-70 transition-colors`} style={{ touchAction: 'manipulation' }}>
+            <button type="button" onClick={onToggleTheme} aria-label={isDarkMode ? 'Show light preview' : 'Show dark preview'} className={`p-2 rounded-lg ${viewport === 'mobile' ? dark('active:bg-slate-100', 'active:bg-slate-800') : dark('hover:bg-slate-100', 'hover:bg-slate-800')} active:opacity-70 transition-colors`} style={{ touchAction: 'manipulation' }}>
               {isDarkMode ? (
                 <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -131,11 +174,11 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
         </div>
         <div className="mb-4">
           <p className={`text-xs font-semibold uppercase tracking-wider mb-2 ${dark('text-primary-700', 'text-primary-300')}`}>
-            {getGreeting()}
+            Welcome back
           </p>
-          <h1 className={`text-2xl font-extrabold mb-1 ${dark('text-slate-900', 'text-white')}`}>
+          <p className={`text-2xl font-extrabold mb-1 ${dark('text-slate-900', 'text-white')}`}>
             John Doe! 👋
-          </h1>
+          </p>
           <p className={`text-sm mt-2 ${dark('text-slate-600', 'text-slate-400')}`}>
             Here's your subscription overview
           </p>
@@ -154,21 +197,21 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
           TOTAL SPENDING (CONVERTED TO USD)
         </h2>
         <div className="mb-3">
-          <p className={`text-3xl font-bold ${dark('text-slate-900', 'text-white')}`}>$8,672.66</p>
+          <p className={`text-3xl font-bold ${dark('text-slate-900', 'text-white')}`}>{usdFormatter.format(DEMO_SPENDING.totalMonthly)}</p>
           <p className={dark('text-sm text-slate-600', 'text-sm text-slate-400')}>per month</p>
-          <p className={`text-xl font-semibold mt-1 ${dark('text-slate-900', 'text-white')}`}>$104,133 per year</p>
+          <p className={`text-xl font-semibold mt-1 ${dark('text-slate-900', 'text-white')}`}>{usdFormatter.format(DEMO_SPENDING.totalMonthly * 12)} per year</p>
         </div>
         <p className={`text-xs mb-3 ${dark('text-slate-600', 'text-slate-400')}`}>
           Based on all active subscriptions, converted using your base currency.
         </p>
         <div className="space-y-2 text-xs">
           <div className="flex justify-between">
-            <span className={dark('text-slate-700', 'text-slate-300')}>EUR: €3,001.27 / month</span>
-            <span className={dark('text-slate-600', 'text-slate-400')}>€36,015.24 / year</span>
+            <span className={dark('text-slate-700', 'text-slate-300')}>EUR: {eurFormatter.format(DEMO_SPENDING.eurMonthly)} / month</span>
+            <span className={dark('text-slate-600', 'text-slate-400')}>{eurFormatter.format(DEMO_SPENDING.eurMonthly * 12)} / year</span>
           </div>
           <div className="flex justify-between">
-            <span className={dark('text-slate-700', 'text-slate-300')}>USD: $2,449.22 / month</span>
-            <span className={dark('text-slate-600', 'text-slate-400')}>$29,390.64 / year</span>
+            <span className={dark('text-slate-700', 'text-slate-300')}>USD: {usdFormatter.format(DEMO_SPENDING.usdMonthly)} / month</span>
+            <span className={dark('text-slate-600', 'text-slate-400')}>{usdFormatter.format(DEMO_SPENDING.usdMonthly * 12)} / year</span>
           </div>
         </div>
       </div>
@@ -239,10 +282,10 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
         <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
             <span className={dark('text-slate-600', 'text-slate-400')}>Monthly Budget</span>
-            <span className={`font-semibold ${dark('text-slate-900', 'text-white')}`}>8.1% used</span>
+            <span className={`font-semibold ${dark('text-slate-900', 'text-white')}`}>{DEMO_SPENDING.budgetUsedPercent.toFixed(0)}% used</span>
           </div>
           <div className={`w-full rounded-full h-2 ${dark('bg-slate-200', 'bg-slate-700')}`}>
-            <div className="bg-green-500 h-2 rounded-full" style={{ width: '8.1%' }}></div>
+            <div className="bg-green-500 h-2 rounded-full" style={{ width: `${Math.min(DEMO_SPENDING.budgetUsedPercent, 100)}%` }}></div>
           </div>
           <p className={`text-xs mt-1 text-right ${dark('text-slate-600', 'text-slate-400')}`}>
             16,301,327.24 remaining
@@ -293,7 +336,7 @@ function MobileDashboard({ isDarkMode, dark, viewport }: { isDarkMode: boolean; 
 }
 
 // Mobile Subscriptions Component
-function MobileSubscriptions({ isDarkMode, dark, viewport }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile' }) {
+function MobileSubscriptions({ isDarkMode, dark, viewport, onToggleTheme }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile'; onToggleTheme: () => void }) {
   return (
     <div className={`w-full ${dark('bg-white', 'bg-slate-900')} pb-4`}>
       {/* Header */}
@@ -316,7 +359,7 @@ function MobileSubscriptions({ isDarkMode, dark, viewport }: { isDarkMode: boole
             }}
           />
           <div className="flex items-center gap-3">
-            <button className={`p-2 rounded-lg ${viewport === 'mobile' ? dark('active:bg-slate-100', 'active:bg-slate-800') : dark('hover:bg-slate-100', 'hover:bg-slate-800')} active:opacity-70 transition-colors`} style={{ touchAction: 'manipulation' }}>
+            <button type="button" onClick={onToggleTheme} aria-label={isDarkMode ? 'Show light preview' : 'Show dark preview'} className={`p-2 rounded-lg ${viewport === 'mobile' ? dark('active:bg-slate-100', 'active:bg-slate-800') : dark('hover:bg-slate-100', 'hover:bg-slate-800')} active:opacity-70 transition-colors`} style={{ touchAction: 'manipulation' }}>
               {isDarkMode ? (
                 <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -332,7 +375,7 @@ function MobileSubscriptions({ isDarkMode, dark, viewport }: { isDarkMode: boole
             </svg>
           </div>
         </div>
-        <h1 className={`text-2xl font-bold ${dark('text-slate-900', 'text-white')}`}>Subscriptions</h1>
+        <p className={`text-2xl font-bold ${dark('text-slate-900', 'text-white')}`}>Subscriptions</p>
         <p className={`text-sm ${dark('text-slate-600', 'text-slate-400')}`}>Manage all your subscriptions</p>
       </div>
 
@@ -423,7 +466,7 @@ function MobileSubscriptions({ isDarkMode, dark, viewport }: { isDarkMode: boole
 }
 
 // Mobile Calendar Component
-function MobileCalendar({ isDarkMode, dark, viewport }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile' }) {
+function MobileCalendar({ isDarkMode, dark, viewport, onToggleTheme }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile'; onToggleTheme: () => void }) {
   return (
     <div className={`w-full ${dark('bg-white', 'bg-slate-900')} pb-4`}>
       {/* Header */}
@@ -446,7 +489,7 @@ function MobileCalendar({ isDarkMode, dark, viewport }: { isDarkMode: boolean; d
             }}
           />
           <div className="flex items-center gap-3">
-            <button className={`p-2 rounded-lg ${viewport === 'mobile' ? dark('active:bg-slate-100', 'active:bg-slate-800') : dark('hover:bg-slate-100', 'hover:bg-slate-800')} active:opacity-70 transition-colors`} style={{ touchAction: 'manipulation' }}>
+            <button type="button" onClick={onToggleTheme} aria-label={isDarkMode ? 'Show light preview' : 'Show dark preview'} className={`p-2 rounded-lg ${viewport === 'mobile' ? dark('active:bg-slate-100', 'active:bg-slate-800') : dark('hover:bg-slate-100', 'hover:bg-slate-800')} active:opacity-70 transition-colors`} style={{ touchAction: 'manipulation' }}>
               {isDarkMode ? (
                 <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -462,7 +505,7 @@ function MobileCalendar({ isDarkMode, dark, viewport }: { isDarkMode: boolean; d
             </svg>
           </div>
         </div>
-        <h1 className={`text-2xl font-bold ${dark('text-slate-900', 'text-white')}`}>Calendar</h1>
+        <p className={`text-2xl font-bold ${dark('text-slate-900', 'text-white')}`}>Calendar</p>
         <p className={`text-sm ${dark('text-slate-600', 'text-slate-400')}`}>Renewals and trial end dates</p>
       </div>
 
@@ -518,26 +561,24 @@ function MobileCalendar({ isDarkMode, dark, viewport }: { isDarkMode: boolean; d
 
 export function DemoSection() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'subscriptions' | 'calendar'>('dashboard');
-  const [loopCount, setLoopCount] = useState(0);
+  // Tabs rotate on their own until the visitor picks one
+  const [autoRotate, setAutoRotate] = useState(true);
   
   // Detect if user is on mobile device
   const isMobileDevice = useMediaQuery('(max-width: 768px)');
   
   // On mobile devices, always use mobile viewport with no option to change
   // On desktop, default to desktop but allow switching
-  const [viewport, setViewport] = useState<'desktop' | 'mobile'>(() => {
-    // Check if we're on mobile on initial render
-    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-      return 'mobile';
-    }
-    return 'desktop';
-  });
+  // Starts as 'desktop' on both server and client; isMobileDevice switches it after mount
+  const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop');
   
   // Lock viewport to mobile on mobile devices
   const effectiveViewport = isMobileDevice ? 'mobile' : viewport;
   
-  const { theme, toggleTheme } = useTheme();
-  const isDarkMode = theme === 'dark';
+  // Preview-only theme: the mock's moon button shows the dark UI without changing the
+  // visitor's saved app theme, and starting from light keeps server and client renders equal.
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const toggleTheme = () => setIsDarkMode((current) => !current);
 
   // Helper function for dark mode classes
   const dark = (light: string, dark: string) => isDarkMode ? dark : light;
@@ -546,7 +587,7 @@ export function DemoSection() {
   const renderNav = (currentTab: 'dashboard' | 'subscriptions' | 'calendar') => (
     <>
       <button
-        onClick={() => setActiveTab('dashboard')}
+        onClick={() => selectTab('dashboard')}
         className={`flex items-center gap-1 pb-1 transition-all ${
           currentTab === 'dashboard'
             ? 'text-teal-600 font-semibold border-b-2 border-teal-600'
@@ -559,7 +600,7 @@ export function DemoSection() {
         Dashboard
       </button>
       <button
-        onClick={() => setActiveTab('subscriptions')}
+        onClick={() => selectTab('subscriptions')}
         className={`flex items-center gap-1 pb-1 transition-all ${
           currentTab === 'subscriptions'
             ? 'text-teal-600 font-semibold border-b-2 border-teal-600'
@@ -572,7 +613,7 @@ export function DemoSection() {
         Subscriptions
       </button>
       <button
-        onClick={() => setActiveTab('calendar')}
+        onClick={() => selectTab('calendar')}
         className={`flex items-center gap-1 pb-1 transition-all ${
           currentTab === 'calendar'
             ? 'text-teal-600 font-semibold border-b-2 border-teal-600'
@@ -587,8 +628,16 @@ export function DemoSection() {
     </>
   );
 
-  // Auto-rotate tabs every 5 seconds
+  const selectTab = (tab: 'dashboard' | 'subscriptions' | 'calendar') => {
+    setAutoRotate(false);
+    setActiveTab(tab);
+  };
+
+  // Auto-rotate tabs every 5 seconds, unless the visitor has chosen a tab or prefers reduced motion
   useEffect(() => {
+    if (!autoRotate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
     const interval = setInterval(() => {
       setActiveTab((prev) => {
         if (prev === 'dashboard') {
@@ -597,17 +646,15 @@ export function DemoSection() {
         if (prev === 'subscriptions') {
           return 'calendar';
         }
-        // When returning to dashboard, we've completed a loop
-        setLoopCount((count) => count + 1);
         return 'dashboard';
       });
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [autoRotate]);
 
   return (
-    <section id="demo" className="py-12 sm:py-16 md:py-24 bg-white" aria-labelledby="demo-heading">
+    <section id="demo" className="scroll-mt-20 py-16 sm:py-20 md:py-24 bg-white" aria-labelledby="demo-heading">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center mb-10 sm:mb-12 md:mb-16">
           <span className="inline-flex items-center justify-center rounded-full bg-primary-50 border border-primary-100 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-medium uppercase tracking-wider text-primary-700">
@@ -671,7 +718,7 @@ export function DemoSection() {
             </div>
 
             {/* Page Content - Conditional Rendering */}
-            <div className={`relative overflow-x-auto ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
+            <div className={`relative h-[720px] overflow-auto ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
               {activeTab === 'dashboard' && (() => {
                 const stats = getSubscriptionStats();
                 const activeSubs = getActiveSubscriptions();
@@ -741,11 +788,11 @@ export function DemoSection() {
                   {/* Welcome Section */}
                   <div className="mb-6">
                     <p className={`text-xs font-semibold uppercase tracking-wider mb-2 ${dark('text-primary-700', 'text-primary-300')}`}>
-                      {getGreeting()}
+                      Welcome back
                     </p>
-                    <h1 className={`text-2xl sm:text-3xl md:text-4xl font-extrabold mb-1 ${dark('text-slate-900', 'text-white')}`}>
+                    <p className={`text-2xl sm:text-3xl md:text-4xl font-extrabold mb-1 ${dark('text-slate-900', 'text-white')}`}>
                       John Doe! 👋
-                    </h1>
+                    </p>
                     <p className={`text-base sm:text-sm mt-2 ${dark('text-slate-600', 'text-slate-400')}`}>
                       Here's your subscription overview
                     </p>
@@ -756,23 +803,23 @@ export function DemoSection() {
                   <h2 className={`text-lg font-semibold mb-4 ${dark('text-slate-900', 'text-white')}`}>TOTAL SPENDING (CONVERTED TO USD)</h2>
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                      <p className={`text-3xl font-bold ${dark('text-slate-900', 'text-white')}`}>$8,672.66</p>
+                      <p className={`text-3xl font-bold ${dark('text-slate-900', 'text-white')}`}>{usdFormatter.format(DEMO_SPENDING.totalMonthly)}</p>
                       <p className={dark('text-sm text-slate-600', 'text-sm text-slate-400')}>Monthly</p>
                     </div>
                     <div>
-                      <p className={`text-3xl font-bold ${dark('text-slate-900', 'text-white')}`}>$104,131.39</p>
+                      <p className={`text-3xl font-bold ${dark('text-slate-900', 'text-white')}`}>{usdFormatter.format(DEMO_SPENDING.totalMonthly * 12)}</p>
                       <p className={dark('text-sm text-slate-600', 'text-sm text-slate-400')}>Annual</p>
                     </div>
                   </div>
                   <p className={dark('text-xs text-slate-600', 'text-xs text-slate-400')}>Based on all active subscriptions, converted using your base currency.</p>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className={dark('text-slate-700', 'text-slate-300')}>EUR: €3,051.27/month</span>
-                      <span className={dark('text-slate-600', 'text-slate-400')}>€36,538.28/year</span>
+                      <span className={dark('text-slate-700', 'text-slate-300')}>EUR: {eurFormatter.format(DEMO_SPENDING.eurMonthly)}/month</span>
+                      <span className={dark('text-slate-600', 'text-slate-400')}>{eurFormatter.format(DEMO_SPENDING.eurMonthly * 12)}/year</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className={dark('text-slate-700', 'text-slate-300')}>USD: $2,449.22/month</span>
-                      <span className={dark('text-slate-600', 'text-slate-400')}>$29,406.22/year</span>
+                      <span className={dark('text-slate-700', 'text-slate-300')}>USD: {usdFormatter.format(DEMO_SPENDING.usdMonthly)}/month</span>
+                      <span className={dark('text-slate-600', 'text-slate-400')}>{usdFormatter.format(DEMO_SPENDING.usdMonthly * 12)}/year</span>
                     </div>
                   </div>
                   </div>
@@ -784,7 +831,7 @@ export function DemoSection() {
                       <h2 className={`text-xl font-bold ${dark('text-slate-900', 'text-white')}`}>Upcoming renewals</h2>
                       <p className={dark('text-sm text-slate-600', 'text-sm text-slate-400')}>Subscriptions renewing and trials expiring in the next 7 days.</p>
                     </div>
-                    <select className={`px-3 py-2 border rounded-lg text-sm ${dark('border-slate-300 bg-white', 'border-slate-600 bg-slate-800 text-white')}`}>
+                    <select aria-label="Time range" className={`px-3 py-2 border rounded-lg text-sm ${dark('border-slate-300 bg-white', 'border-slate-600 bg-slate-800 text-white')}`}>
                       <option>Time range: 7 Days</option>
                     </select>
                   </div>
@@ -826,12 +873,12 @@ export function DemoSection() {
                             </div>
                             <div className="flex justify-between">
                               <span className={dark('text-slate-600', 'text-slate-400')}>Renewal:</span>
-                              <span className={dark('text-slate-900', 'text-white')}>{renewal}</span>
+                              <span className={dark('text-slate-900', 'text-white')} suppressHydrationWarning>{renewal}</span>
                             </div>
                             {!isRenewingToday && (
                               <div className="flex justify-between">
                                 <span className={dark('text-slate-600', 'text-slate-400')}>Remaining:</span>
-                                <span className="text-orange-600 font-semibold">{sub.days} days</span>
+                                <span className="text-orange-600 font-semibold">{formatDaysLeft(sub.days)}</span>
                               </div>
                             )}
                           </div>
@@ -862,14 +909,14 @@ export function DemoSection() {
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-2">
                         <span className={dark('text-slate-600', 'text-slate-400')}>Monthly Budget</span>
-                        <span className={`font-semibold ${dark('text-slate-900', 'text-white')}`}>$8,672.66 of $9,000,000.00</span>
+                        <span className={`font-semibold ${dark('text-slate-900', 'text-white')}`}>{usdFormatter.format(DEMO_SPENDING.totalMonthly)} of {usdFormatter.format(DEMO_MONTHLY_BUDGET)}</span>
                       </div>
                       <div className={`w-full rounded-full h-2 ${dark('bg-slate-200', 'bg-slate-700')}`}>
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '0.1%' }}></div>
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: `${Math.min(DEMO_SPENDING.budgetUsedPercent, 100)}%` }}></div>
                       </div>
                       <div className={`flex justify-between text-xs mt-2 ${dark('text-slate-600', 'text-slate-400')}`}>
-                        <span>0.1% used</span>
-                        <span>$8,991,327.34 remaining</span>
+                        <span>{DEMO_SPENDING.budgetUsedPercent.toFixed(0)}% used</span>
+                        <span>{usdFormatter.format(DEMO_MONTHLY_BUDGET - DEMO_SPENDING.totalMonthly)} remaining</span>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 mt-4">
@@ -893,27 +940,32 @@ export function DemoSection() {
                         <div className="w-32 h-32 mx-auto mb-2 relative">
                           <svg viewBox="0 0 100 100" className="transform -rotate-90">
                             <circle cx="50" cy="50" r="40" fill="none" stroke={dark('#E5E7EB', '#374151')} strokeWidth="8"/>
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="#6366F1" strokeWidth="8" strokeDasharray={`${25.12 * 0.3} ${25.12 * 0.7}`} strokeDashoffset="0"/>
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="#10B981" strokeWidth="8" strokeDasharray={`${25.12 * 0.2} ${25.12 * 0.8}`} strokeDashoffset={`-${25.12 * 0.3}`}/>
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="#F59E0B" strokeWidth="8" strokeDasharray={`${25.12 * 0.15} ${25.12 * 0.85}`} strokeDashoffset={`-${25.12 * 0.5}`}/>
+                            {DEMO_CATEGORY_SHARES.map((slice) => (
+                              <circle
+                                key={slice.category}
+                                cx="50"
+                                cy="50"
+                                r="40"
+                                fill="none"
+                                stroke={slice.color}
+                                strokeWidth="8"
+                                strokeDasharray={`${slice.share * DONUT_CIRCUMFERENCE} ${DONUT_CIRCUMFERENCE}`}
+                                strokeDashoffset={-slice.offset * DONUT_CIRCUMFERENCE}
+                              />
+                            ))}
                           </svg>
                         </div>
                         <p className={dark('text-xs text-slate-600', 'text-xs text-slate-400')}>Spending by Category</p>
                       </div>
                     </div>
                     <div className="space-y-2 text-xs">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-                        <span className={dark('text-slate-600', 'text-slate-400')}>Finance</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className={dark('text-slate-600', 'text-slate-400')}>Development</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                        <span className={dark('text-slate-600', 'text-slate-400')}>Cloud Services</span>
-                      </div>
+                      {DEMO_CATEGORY_SHARES.map((slice) => (
+                        <div key={slice.category} className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: slice.color }}></div>
+                          <span className={dark('text-slate-600', 'text-slate-400')}>{slice.category}</span>
+                          <span className={`ml-auto font-medium ${dark('text-slate-900', 'text-white')}`}>{Math.round(slice.share * 100)}%</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   </div>
@@ -989,7 +1041,7 @@ export function DemoSection() {
 
                   {/* Page Header */}
                   <div className="mb-6">
-                    <h1 className={`text-3xl font-bold mb-1 ${dark('text-slate-900', 'text-white')}`}>Subscriptions</h1>
+                    <p className={`text-3xl font-bold mb-1 ${dark('text-slate-900', 'text-white')}`}>Subscriptions</p>
                     <p className={dark('text-slate-600', 'text-slate-400')}>Manage all your subscriptions</p>
                   </div>
 
@@ -1082,9 +1134,9 @@ export function DemoSection() {
                               </button>
                             </div>
                             <div className={dark('text-xs text-slate-600', 'text-xs text-slate-400')}>
-                              <p>Next renewal {renewal}</p>
+                              <p suppressHydrationWarning>Next renewal {renewal}</p>
                               {!isRenewingToday && (
-                                <p className="text-orange-600 font-semibold mt-1">{sub.days} days remaining</p>
+                                <p className="text-orange-600 font-semibold mt-1">{formatDaysLeft(sub.days)} remaining</p>
                               )}
                             </div>
                             <div className={dark('text-xs text-slate-500', 'text-xs text-slate-500')}>
@@ -1185,7 +1237,7 @@ export function DemoSection() {
 
                   {/* Page Header */}
                   <div className="mb-6">
-                    <h1 className={`text-3xl font-bold mb-1 ${dark('text-slate-900', 'text-white')}`}>Calendar</h1>
+                    <p className={`text-3xl font-bold mb-1 ${dark('text-slate-900', 'text-white')}`}>Calendar</p>
                     <p className={dark('text-slate-600', 'text-slate-400')}>Renewals and trial end dates</p>
                   </div>
 
@@ -1204,7 +1256,7 @@ export function DemoSection() {
                       <button className={`px-4 py-2 border rounded-lg text-sm ${dark('border-slate-300 text-slate-700 hover:bg-slate-50', 'border-slate-600 text-slate-300 hover:bg-slate-700')}`}>
                         Today
                       </button>
-                      <select className={`px-4 py-2 border rounded-lg text-sm ${dark('border-slate-300 bg-white', 'border-slate-600 bg-slate-800 text-white')}`}>
+                      <select aria-label="Calendar view" className={`px-4 py-2 border rounded-lg text-sm ${dark('border-slate-300 bg-white', 'border-slate-600 bg-slate-800 text-white')}`}>
                         <option>Month View</option>
                         <option>Week View</option>
                         <option>Day View</option>
@@ -1332,13 +1384,13 @@ export function DemoSection() {
                 }}
               >
                 {activeTab === 'dashboard' && (
-                  <MobileDashboard isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} />
+                  <MobileDashboard isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} onToggleTheme={toggleTheme} />
                 )}
                 {activeTab === 'subscriptions' && (
-                  <MobileSubscriptions isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} />
+                  <MobileSubscriptions isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} onToggleTheme={toggleTheme} />
                 )}
                 {activeTab === 'calendar' && (
-                  <MobileCalendar isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} />
+                  <MobileCalendar isDarkMode={isDarkMode} dark={dark} viewport={effectiveViewport} onToggleTheme={toggleTheme} />
                 )}
               </div>
 
@@ -1346,7 +1398,7 @@ export function DemoSection() {
               <div className={`border-t ${dark('bg-white border-slate-200', 'bg-slate-900 border-slate-700')} px-4 py-2.5 rounded-b-[3rem]`} style={{ touchAction: 'manipulation' }}>
                 <div className="flex items-center justify-around">
                   <button 
-                    onClick={() => setActiveTab('dashboard')}
+                    onClick={() => selectTab('dashboard')}
                     className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${activeTab === 'dashboard' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
                     style={{ touchAction: 'manipulation' }}
                   >
@@ -1356,7 +1408,7 @@ export function DemoSection() {
                     <span className="text-xs">Dashboard</span>
                   </button>
                   <button 
-                    onClick={() => setActiveTab('subscriptions')}
+                    onClick={() => selectTab('subscriptions')}
                     className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${activeTab === 'subscriptions' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
                     style={{ touchAction: 'manipulation' }}
                   >
@@ -1366,7 +1418,7 @@ export function DemoSection() {
                     <span className="text-xs">Subscriptions</span>
                   </button>
                   <button 
-                    onClick={() => setActiveTab('calendar')}
+                    onClick={() => selectTab('calendar')}
                     className={`flex flex-col items-center gap-1 active:opacity-70 active:scale-95 transition-transform ${activeTab === 'calendar' ? 'text-teal-600' : dark('text-slate-600', 'text-slate-400')}`}
                     style={{ touchAction: 'manipulation' }}
                   >
@@ -1395,10 +1447,10 @@ export function DemoSection() {
           </p>
           <a
             href="/auth/signup"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-accent-500 to-brand-accent-600 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-bold text-white shadow-lg shadow-brand-accent-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-brand-accent-500/50 hover:scale-105"
+            className="group inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-brand-accent-500 px-7 text-base font-semibold text-white shadow-sm transition-colors hover:bg-brand-accent-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-500 focus-visible:ring-offset-2"
           >
-            Start Free Trial
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            Get started free
+            <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </a>
