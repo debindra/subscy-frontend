@@ -1,12 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { FEATURES, PRICING } from '@/lib/constants/landing';
+import { FEATURES } from '@/lib/constants/landing';
 import { getFeatureIcon } from '@/lib/utils/icons';
 
 export function FeaturesSection() {
-  const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
-
   // DISABLED: Plan comparison data - can be re-enabled if comparison section is restored
   // const comparisonFeatures = [
   //   { name: 'Unlimited Subscription Tracking', starter: false, pro: true },
@@ -17,7 +14,7 @@ export function FeaturesSection() {
   // ];
 
   return (
-    <section id="tour" className="py-12 sm:py-16 md:py-24" aria-labelledby="features-heading">
+    <section id="features" className="scroll-mt-20 bg-white py-16 sm:py-20 md:py-24" aria-labelledby="features-heading">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-10 sm:mb-12 md:mb-16">
           <span className="inline-flex items-center rounded-full bg-primary-50 border border-primary-100 px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-medium uppercase tracking-wider text-primary-700">
@@ -32,42 +29,18 @@ export function FeaturesSection() {
         </div>
         
         {/* Feature Cards */}
-        <div className="grid gap-6 sm:gap-8 md:grid-cols-3 mb-16 sm:mb-20 md:mb-24">
+        <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
           {FEATURES.map((feature) => (
             <article
               key={feature.title}
-              className="group relative rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 transition-all duration-300 hover:border-primary-300 hover:shadow-xl hover:-translate-y-1"
-              onMouseEnter={() => setHoveredFeature(feature.title)}
-              onMouseLeave={() => setHoveredFeature(null)}
+              className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8"
             >
-              {/* Icon with gradient background */}
-              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-primary-50 to-brand-accent-50 text-primary-600 mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary-50 text-primary-600" aria-hidden="true">
                 {getFeatureIcon(feature.iconName)}
               </div>
-              
-              {/* Title */}
-              <h3 className="text-xl font-bold text-slate-900 mb-2">{feature.title}</h3>
-              
-              {/* Benefit headline */}
-              <p className="text-base sm:text-lg font-semibold text-primary-600 mb-4">
-                {feature.benefit}
-              </p>
-              
-              {/* Description */}
-              <p className="text-base leading-relaxed text-slate-600">{feature.description}</p>
-              
-              {/* Mini-demo preview on hover */}
-              {hoveredFeature === feature.title && feature.hoverImage && (
-                <div className="absolute top-full left-0 right-0 mt-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                  <div className="rounded-lg shadow-2xl border border-slate-200 overflow-hidden bg-white">
-                    <img 
-                      src={feature.hoverImage} 
-                      alt={`${feature.title} preview`}
-                      className="w-full h-auto"
-                    />
-                  </div>
-                </div>
-              )}
+              <h3 className="text-xl font-bold text-slate-900">{feature.title}</h3>
+              <p className="mt-1 text-base font-semibold text-primary-700">{feature.benefit}</p>
+              <p className="mt-4 text-base leading-relaxed text-slate-600">{feature.description}</p>
             </article>
           ))}
         </div>

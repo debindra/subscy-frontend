@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
-import Script from 'next/script';
 import { FAQ_ITEMS } from '@/lib/constants/landing';
 import { Navigation } from '@/app/components/landing/Navigation';
 import { HeroSection } from '@/app/components/landing/HeroSection';
@@ -18,57 +17,10 @@ import { Footer } from '@/components/layout/Footer';
 // import { ContactSection } from '@/app/components/landing/ContactSection';
 
 export default function Home() {
-  const { user, loading } = useAuth();
+  // The page renders the signed-out variant on the server and while auth resolves,
+  // so visitors and crawlers get real content instead of a loading spinner.
+  const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isSticky, setIsSticky] = useState(false);
-
-  const scrollToPricing = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const pricingSection = document.getElementById('pricing');
-    if (pricingSection) {
-      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const scrollToFaq = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const faqSection = document.getElementById('faq');
-    if (faqSection) {
-      faqSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const scrollToDemo = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const demoSection = document.getElementById('demo');
-    if (demoSection) {
-      demoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-
-  // Sticky navigation effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsSticky(window.scrollY > 100);
-    };
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', handleScroll);
-      return () => window.removeEventListener('scroll', handleScroll);
-    }
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F9FAFB] text-slate-900">
-        <div className="text-center">
-          <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary-600" />
-          <p className="mt-4 text-sm text-slate-600">Preparing your workspace…</p>
-        </div>
-      </div>
-    );
-  }
 
   // Enhanced structured data for SEO
   const structuredData = {
@@ -93,13 +45,6 @@ export default function Home() {
           value: '1'
         }
       }
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      ratingCount: '127',
-      bestRating: '5',
-      worstRating: '1',
     },
     featureList: [
       'Unified Subscription Dashboard',
@@ -245,27 +190,27 @@ export default function Home() {
 
   return (
     <>
-      <Script
+      <script
         id="structured-data-software"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <Script
+      <script
         id="structured-data-organization"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
       />
-      <Script
+      <script
         id="structured-data-faq"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
       />
-      <Script
+      <script
         id="structured-data-breadcrumb"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbStructuredData) }}
       />
-      <Script
+      <script
         id="structured-data-pricing"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingStructuredData) }}
@@ -281,10 +226,6 @@ export default function Home() {
           user={user}
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
-          scrollToPricing={scrollToPricing}
-          scrollToFaq={scrollToFaq}
-          scrollToDemo={scrollToDemo}
-          isSticky={isSticky}
         />
 
         <main className="relative z-10">

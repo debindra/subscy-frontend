@@ -172,7 +172,7 @@ export function Footer({ showNewsletter = true }: FooterProps) {
                 <span itemProp="name">Home</span>
               </Link>
               <Link
-                href="#tour"
+                href="#features"
                 title="Features - Subscription Management Features and Capabilities"
                 className="group flex items-center gap-2 text-sm font-medium text-slate-700 transition-all duration-200 hover:text-primary-600 hover:translate-x-1"
                 itemProp="url"

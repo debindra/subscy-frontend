@@ -66,7 +66,7 @@ export function Footer() {
                 Home
               </Link>
               <Link
-                href="#tour"
+                href="#features"
                 className="block text-sm text-slate-600 transition hover:text-primary-600"
               >
                 Features

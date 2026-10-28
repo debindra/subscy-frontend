@@ -58,7 +58,7 @@ export const FEATURES: Feature[] = [
     description:
       'Track unlimited subscriptions with Pro plan. Organize everything in one centralized dashboard with smart categorization and advanced analytics.',
     iconName: 'tracking',
-    benefit: 'Save $240/year',
+    benefit: 'Everything in one place',
   },
   {
     title: 'Customizable Alerts & Notifications',
@@ -72,7 +72,7 @@ export const FEATURES: Feature[] = [
     description:
       'Monitor spending with advanced analytics, category-wise budgeting, and smart renewal management.',
     iconName: 'analytics',
-    benefit: 'Get 2 hours back every month',
+    benefit: 'See where your money goes',
   },
 ];
 
@@ -85,18 +85,18 @@ export const METRICS: Metric[] = [
 export const STEPS: Step[] = [
   {
     number: '01',
-    title: 'Add Form',
-    description: 'Quickly add subscriptions with a simple form. Enter name, amount, billing cycle, and renewal date.',
+    title: 'Add your subscriptions',
+    description: 'Enter a name, amount, billing cycle, and renewal date. Subsy works out every future renewal for you.',
   },
   {
     number: '02',
-    title: 'Configure Timezone & Time',
-    description: 'Set your timezone and preferred notification time. Get reminders exactly when you need them.',
+    title: 'Choose when to be reminded',
+    description: 'Set your timezone and the time of day you want alerts, so reminders arrive when you can act on them.',
   },
   {
     number: '03',
-    title: 'Get Notifications',
-    description: 'Receive timely email and push notifications before your subscriptions renew. Never miss a payment again.',
+    title: 'Get alerted before you pay',
+    description: 'Receive email and push notifications ahead of each renewal, with time to cancel or switch plans.',
   },
 ];
 
@@ -265,7 +265,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'Is there a free trial?',
     answer:
-      'Yes! All paid plans come with a 14-day free trial. No credit card required to start. You can explore all features risk-free and cancel anytime during the trial period.',
+      'Yes. The Starter plan is free forever and needs no credit card. Pro comes with a 14-day free trial: add a card at checkout, and cancel any time before the trial ends to avoid being charged.',
   },
   {
     question: 'Can I cancel anytime?',
@@ -280,12 +280,12 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'How reliable are the subscription alerts?',
     answer:
-      'Our alert system has a 99.9% delivery rate. We use multiple notification channels (email, push notifications) to ensure you never miss a renewal. If one channel fails, we automatically try the others.',
+      'Subsy checks for upcoming renewals every few minutes and sends each reminder at your chosen time of day. Alerts go to every channel you turn on, email and push notifications, and each channel is sent independently, so a problem with one does not stop the other.',
   },
   {
     question: 'Can I customize when I receive alerts?',
     answer:
-      'Yes! Pro plan allows you to set custom alert windows—get notified 30, 14, 7, or 1 day before renewals. You can also set different preferences for each subscription.',
+      'Yes. On Pro you choose, for each subscription, how many days before renewal you are reminded, anywhere from 1 to 30. The free Starter plan reminds you 7 days before each renewal.',
   },
   {
     question: 'What happens if I miss an alert?',

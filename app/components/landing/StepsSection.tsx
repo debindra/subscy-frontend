@@ -37,7 +37,7 @@ export function StepsSection() {
   return (
     <section 
       ref={sectionRef}
-      className="py-12 sm:py-16 md:py-24 bg-slate-50" 
+      className="py-16 sm:py-20 md:py-24 bg-slate-50" 
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -67,7 +67,7 @@ export function StepsSection() {
             // Visual illustrations for each step
             const stepVisuals = [
               // Step 1: Add Form - Realistic subscription form
-              <svg key="step1" className="w-full h-full" fill="none" viewBox="0 0 280 240" xmlns="http://www.w3.org/2000/svg">
+              <svg key="step1" className="w-full h-full" fill="none" viewBox="0 0 280 280" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
                 {/* Form container with shadow */}
                 <defs>
                   <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -82,11 +82,11 @@ export function StepsSection() {
                     </feMerge>
                   </filter>
                   <linearGradient id="buttonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#4F46E5"/>
-                    <stop offset="100%" stopColor="#6366F1"/>
+                    <stop offset="0%" stopColor="#0D9488"/>
+                    <stop offset="100%" stopColor="#14B8A6"/>
                   </linearGradient>
                 </defs>
-                <rect x="20" y="20" width="240" height="200" rx="12" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="2" filter="url(#shadow)"/>
+                <rect x="20" y="20" width="240" height="256" rx="12" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="2" filter="url(#shadow)"/>
                 
                 {/* Form header */}
                 <rect x="20" y="20" width="240" height="45" rx="12" fill="#F8FAFC"/>
@@ -112,7 +112,7 @@ export function StepsSection() {
                 {/* Renewal Date */}
                 <rect x="30" y="178" width="80" height="6" rx="3" fill="#64748B"/>
                 <rect x="30" y="188" width="220" height="28" rx="6" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.5"/>
-                <text x="38" y="206" fill="#64748B" fontSize="11">2024-02-15</text>
+                <text x="38" y="206" fill="#64748B" fontSize="11">Nov 15</text>
                 
                 {/* Add button - animated */}
                 <rect x="30" y="228" width="220" height="36" rx="8" fill="url(#buttonGrad)">
@@ -120,15 +120,10 @@ export function StepsSection() {
                 </rect>
                 <text x="140" y="248" textAnchor="middle" fill="white" fontSize="12" fontWeight="600">Add Subscription</text>
                 
-                {/* Floating success icon - appears on hover */}
-                <g opacity="0" className="group-hover:opacity-100 transition-opacity duration-300">
-                  <circle cx="220" cy="45" r="12" fill="#10B981"/>
-                  <path d="M215 45l3 3 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </g>
               </svg>,
               
               // Step 2: Configure Timezone & Time - Realistic settings panel
-              <svg key="step2" className="w-full h-full" fill="none" viewBox="0 0 280 240" xmlns="http://www.w3.org/2000/svg">
+              <svg key="step2" className="w-full h-full" fill="none" viewBox="0 0 280 280" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <filter id="shadow2" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
@@ -142,21 +137,21 @@ export function StepsSection() {
                     </feMerge>
                   </filter>
                 </defs>
-                <rect x="20" y="20" width="240" height="200" rx="12" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="2" filter="url(#shadow2)"/>
+                <rect x="20" y="20" width="240" height="240" rx="12" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="2" filter="url(#shadow2)"/>
                 
                 {/* Settings header */}
                 <rect x="20" y="20" width="240" height="42" rx="12" fill="#F8FAFC"/>
-                <circle cx="38" cy="41" r="9" fill="#6366F1"/>
+                <circle cx="38" cy="41" r="9" fill="#14B8A6"/>
                 <path d="M38 35v12M32 41h12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
                 <rect x="54" y="36" width="90" height="10" rx="5" fill="#475569"/>
                 
                 {/* Timezone selector */}
                 <rect x="30" y="78" width="65" height="6" rx="3" fill="#64748B"/>
-                <rect x="30" y="88" width="220" height="32" rx="6" fill="#FFFFFF" stroke="#6366F1" strokeWidth="2"/>
+                <rect x="30" y="88" width="220" height="32" rx="6" fill="#FFFFFF" stroke="#14B8A6" strokeWidth="2"/>
                 <rect x="38" y="97" width="140" height="6" rx="3" fill="#475569"/>
                 {/* Dropdown arrow */}
-                <path d="M235 104l-4-4 4-4" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                <circle cx="230" cy="104" r="1.5" fill="#6366F1">
+                <path d="M235 104l-4-4 4-4" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                <circle cx="230" cy="104" r="1.5" fill="#14B8A6">
                   <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
                 </circle>
                 
@@ -194,7 +189,7 @@ export function StepsSection() {
               </svg>,
               
               // Step 3: Get Notifications - Realistic email and push notifications
-              <svg key="step3" className="w-full h-full" fill="none" viewBox="0 0 280 240" xmlns="http://www.w3.org/2000/svg">
+              <svg key="step3" className="w-full h-full" fill="none" viewBox="0 -40 280 280" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <filter id="shadow3" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
@@ -219,7 +214,7 @@ export function StepsSection() {
                   
                   {/* Email header */}
                   <rect width="110" height="28" rx="10" fill="#F1F5F9"/>
-                  <circle cx="22" cy="14" r="5" fill="#6366F1"/>
+                  <circle cx="22" cy="14" r="5" fill="#14B8A6"/>
                   <path d="M19 14l2.5 2.5 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <rect x="32" y="10" width="60" height="6" rx="3" fill="#475569"/>
                   <rect x="32" y="18" width="50" height="4" rx="2" fill="#94A3B8"/>
@@ -255,7 +250,7 @@ export function StepsSection() {
                   
                   {/* Notification banner */}
                   <rect x="8" y="25" width="94" height="52" rx="8" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1.5"/>
-                  <circle cx="22" cy="40" r="5" fill="#6366F1"/>
+                  <circle cx="22" cy="40" r="5" fill="#14B8A6"/>
                   <rect x="32" y="36" width="55" height="5" rx="2.5" fill="#1E293B" fontWeight="600"/>
                   <rect x="32" y="44" width="50" height="4" rx="2" fill="#475569"/>
                   <rect x="32" y="51" width="45" height="3" rx="1.5" fill="#64748B"/>
@@ -304,49 +299,28 @@ export function StepsSection() {
             return (
               <article
                 key={step.title}
-                className={`group relative rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 transition-all duration-300 hover:border-primary-300 hover:shadow-xl hover:-translate-y-2 ${
-                  isVisible 
-                    ? `animate-fade-in-up ${delayClasses[index]}` 
+                className={`relative rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 ${
+                  isVisible
+                    ? `animate-fade-in-up ${delayClasses[index]}`
                     : 'opacity-0'
                 }`}
               >
-                {/* Large visual illustration container */}
-                <div className="mb-6 relative h-48 sm:h-56 sm:h-64 flex items-center justify-center rounded-xl bg-gradient-to-br from-primary-50 via-brand-accent-50 to-primary-50 overflow-hidden group-hover:from-primary-100 group-hover:via-brand-accent-100 group-hover:to-primary-100 transition-all duration-300 p-4">
-                  {/* Animated background pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.1),transparent_50%)]"></div>
-                  </div>
-                  {/* Step number badge - outline style */}
-                  <div className="absolute top-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary-600 bg-white text-xs font-bold text-primary-600 shadow-sm group-hover:scale-110 group-hover:border-primary-700 group-hover:text-primary-700 transition-all duration-300 z-20">
-                    {step.number}
-                  </div>
-                  {/* Main visual illustration */}
-                  <div className="relative z-10 w-full h-full max-w-[220px] max-h-[180px] mx-auto transform group-hover:scale-105 transition-all duration-500">
+                {/* Illustration */}
+                <div className="relative mb-6 flex h-52 items-center justify-center rounded-xl bg-slate-50 p-4 sm:h-60">
+                  <span className="absolute left-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-600 text-xs font-bold text-white">
+                    <span className="sr-only">Step </span>{index + 1}
+                  </span>
+                  <div className="h-full w-full max-w-[220px]">
                     {stepVisuals[index]}
                   </div>
-                  {/* Shimmer effect on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </div>
-                
-                {/* Title and description */}
-                <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary-600 transition-colors duration-300 text-center">
+
+                <h3 className="text-center text-lg font-bold text-slate-900 sm:text-xl">
                   {step.title}
                 </h3>
-                <p className="text-sm leading-relaxed text-slate-600 group-hover:text-slate-700 transition-colors duration-300 text-center">
+                <p className="mt-2 text-center text-sm leading-relaxed text-slate-600">
                   {step.description}
                 </p>
-                
-                {/* Decorative arrow on hover */}
-                <div className="mt-4 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <svg 
-                    className="w-5 h-5 text-primary-600 transform translate-x-0 group-hover:translate-x-2 transition-transform duration-300" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </div>
               </article>
             );
           })}

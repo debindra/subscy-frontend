@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     default: 'Subsy - Track & Manage Your Subscriptions',
     template: '%s | Subsy',
   },
-  description: 'Track and manage all your subscriptions in one place. Get timely alerts via email and push notifications, never miss a renewal, and optimize your recurring spend. Free plan available. Start your 14-day free trial today - no credit card required.',
+  description: 'Track and manage all your subscriptions in one place. Get timely alerts via email and push notifications, never miss a renewal, and optimize your recurring spend. Free plan with no credit card needed, and a 14-day free trial of Pro.',
   keywords: [
     'subscription management',
     'recurring spend tracking',
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     url: '/',
     siteName: 'Subsy',
     title: 'Subsy - Track & Manage Your Subscriptions',
-    description: 'Track and manage all your subscriptions in one place. Get timely alerts via email and push notifications, never miss a renewal, and optimize your recurring spend. Free plan available. Start your 14-day free trial today - no credit card required.',
+    description: 'Track and manage all your subscriptions in one place. Get timely alerts via email and push notifications, never miss a renewal, and optimize your recurring spend. Free plan with no credit card needed, and a 14-day free trial of Pro.',
     images: [
       {
         url: '/og-image.png',
