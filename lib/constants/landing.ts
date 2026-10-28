@@ -85,18 +85,18 @@ export const METRICS: Metric[] = [
 export const STEPS: Step[] = [
   {
     number: '01',
-    title: 'Add Form',
-    description: 'Quickly add subscriptions with a simple form. Enter name, amount, billing cycle, and renewal date.',
+    title: 'Add your subscriptions',
+    description: 'Enter a name, amount, billing cycle, and renewal date. Subsy works out every future renewal for you.',
   },
   {
     number: '02',
-    title: 'Configure Timezone & Time',
-    description: 'Set your timezone and preferred notification time. Get reminders exactly when you need them.',
+    title: 'Choose when to be reminded',
+    description: 'Set your timezone and the time of day you want alerts, so reminders arrive when you can act on them.',
   },
   {
     number: '03',
-    title: 'Get Notifications',
-    description: 'Receive timely email and push notifications before your subscriptions renew. Never miss a payment again.',
+    title: 'Get alerted before you pay',
+    description: 'Receive email and push notifications ahead of each renewal, with time to cancel or switch plans.',
   },
 ];
 
@@ -265,7 +265,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'Is there a free trial?',
     answer:
-      'Yes! All paid plans come with a 14-day free trial. No credit card required to start. You can explore all features risk-free and cancel anytime during the trial period.',
+      'Yes. The Starter plan is free forever and needs no credit card. Pro comes with a 14-day free trial: add a card at checkout, and cancel any time before the trial ends to avoid being charged.',
   },
   {
     question: 'Can I cancel anytime?',
