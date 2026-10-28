@@ -7,9 +7,9 @@ interface HeroSectionProps {
 }
 
 const STATS = [
-  { value: '99.9%', label: 'Alert delivery rate' },
   { value: '24/7', label: 'Renewal monitoring' },
-  { value: '3+', label: 'Notification channels' },
+  { value: '1–30', label: 'Days of advance notice' },
+  { value: '2', label: 'Alert channels: email & push' },
 ];
 
 // Signing up creates a free Starter account; the 14-day trial applies to Pro and

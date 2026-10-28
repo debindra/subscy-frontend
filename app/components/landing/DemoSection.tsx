@@ -51,6 +51,55 @@ const DEMO_SUBSCRIPTIONS = [
   { name: 'Adobe Photoshop', category: 'Design', price: '$20.99 / Month', priceValue: 20.99, currency: 'USD', days: 30, active: false },
 ];
 
+interface CalendarDay {
+  day: number;
+  inMonth: boolean;
+  isToday: boolean;
+  renewals: string[];
+  trials: string[];
+}
+
+// Builds a Monday-first month grid for the month containing `today`. Every demo
+// subscription bills monthly, so it renews on the same day of month as its next
+// renewal date; a trial ends only once, so it is shown only if it ends this month.
+// Only call this on the client: the calendar tab is never the server-rendered tab.
+function getDemoCalendar(today: Date): { label: string; days: CalendarDay[] } {
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+  const leading = (new Date(year, month, 1).getDay() + 6) % 7;
+  const trailing = (7 - ((leading + daysInMonth) % 7)) % 7;
+
+  const monthDays: CalendarDay[] = Array.from({ length: daysInMonth }, (_, i) => ({
+    day: i + 1,
+    inMonth: true,
+    isToday: i + 1 === today.getDate(),
+    renewals: [],
+    trials: [],
+  }));
+
+  for (const sub of DEMO_SUBSCRIPTIONS) {
+    if (!sub.active) continue;
+    const next = addDays(today, sub.days);
+    if (sub.trial) {
+      if (next.getMonth() === month && next.getFullYear() === year) monthDays[next.getDate() - 1].trials.push(sub.name);
+    } else {
+      monthDays[Math.min(next.getDate(), daysInMonth) - 1].renewals.push(sub.name);
+    }
+  }
+
+  const outside = (day: number): CalendarDay => ({ day, inMonth: false, isToday: false, renewals: [], trials: [] });
+  return {
+    label: format(today, 'MMMM yyyy'),
+    days: [
+      ...Array.from({ length: leading }, (_, i) => outside(daysInPrevMonth - leading + 1 + i)),
+      ...monthDays,
+      ...Array.from({ length: trailing }, (_, i) => outside(i + 1)),
+    ],
+  };
+}
+
 // Calculation helper functions
 function getSubscriptionStats() {
   const total = DEMO_SUBSCRIPTIONS.length;
@@ -467,6 +516,7 @@ function MobileSubscriptions({ isDarkMode, dark, viewport, onToggleTheme }: { is
 
 // Mobile Calendar Component
 function MobileCalendar({ isDarkMode, dark, viewport, onToggleTheme }: { isDarkMode: boolean; dark: (light: string, dark: string) => string; viewport: 'desktop' | 'mobile'; onToggleTheme: () => void }) {
+  const calendar = getDemoCalendar(new Date());
   return (
     <div className={`w-full ${dark('bg-white', 'bg-slate-900')} pb-4`}>
       {/* Header */}
@@ -514,7 +564,7 @@ function MobileCalendar({ isDarkMode, dark, viewport, onToggleTheme }: { isDarkM
         <button className={`px-3 py-2 border rounded-lg text-sm active:opacity-70 active:scale-95 transition-all ${dark('border-slate-300 text-slate-700', 'border-slate-600 text-slate-300')}`} style={{ touchAction: 'manipulation' }}>
           Prev
         </button>
-        <h2 className={`text-lg font-bold ${dark('text-slate-900', 'text-white')}`}>January 2026</h2>
+        <p className={`text-lg font-bold ${dark('text-slate-900', 'text-white')}`}>{calendar.label}</p>
         <button className={`px-3 py-2 border rounded-lg text-sm active:opacity-70 active:scale-95 transition-all ${dark('border-slate-300 text-slate-700', 'border-slate-600 text-slate-300')}`} style={{ touchAction: 'manipulation' }}>
           Next
         </button>
@@ -533,16 +583,16 @@ function MobileCalendar({ isDarkMode, dark, viewport, onToggleTheme }: { isDarkM
 
         {/* Calendar Days */}
         <div className="grid grid-cols-7 gap-1">
-          {[29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28].map((day, i) => {
-            const hasRenewal = [1, 5, 10, 15, 20].includes(day);
-            const hasTrial = [3, 7, 13].includes(day);
+          {calendar.days.map(({ day, inMonth, isToday, renewals, trials }, i) => {
+            const hasRenewal = renewals.length > 0;
+            const hasTrial = trials.length > 0;
             return (
               <div
                 key={i}
-                className={`min-h-[50px] p-1 border rounded text-xs ${dark('border-slate-200', 'border-slate-700')} ${hasRenewal || hasTrial ? dark('bg-slate-50', 'bg-slate-700/50') : ''}`}
+                className={`min-h-[50px] p-1 border rounded text-xs ${isToday ? 'border-teal-500' : dark('border-slate-200', 'border-slate-700')} ${hasRenewal || hasTrial ? dark('bg-slate-50', 'bg-slate-700/50') : ''}`}
               >
-                <div className={`text-xs font-semibold mb-1 ${day < 1 ? dark('text-slate-400', 'text-slate-600') : dark('text-slate-900', 'text-white')}`}>
-                  {day > 0 ? day : ''}
+                <div className={`text-xs font-semibold mb-1 ${!inMonth ? dark('text-slate-400', 'text-slate-600') : isToday ? 'text-teal-600' : dark('text-slate-900', 'text-white')}`}>
+                  {day}
                 </div>
                 {hasRenewal && (
                   <div className={`w-full h-1 rounded mb-1 ${dark('bg-green-500', 'bg-green-600')}`}></div>
@@ -627,6 +677,9 @@ export function DemoSection() {
       </button>
     </>
   );
+
+  // Uses the visitor's clock; safe because the calendar tab only renders after hydration.
+  const calendar = activeTab === 'calendar' ? getDemoCalendar(new Date()) : null;
 
   const selectTab = (tab: 'dashboard' | 'subscriptions' | 'calendar') => {
     setAutoRotate(false);
@@ -1247,7 +1300,7 @@ export function DemoSection() {
                       <button className={`px-4 py-2 border rounded-lg text-sm ${dark('border-slate-300 text-slate-700 hover:bg-slate-50', 'border-slate-600 text-slate-300 hover:bg-slate-700')}`}>
                         Prev
                       </button>
-                      <h2 className={`text-xl font-bold ${dark('text-slate-900', 'text-white')}`}>January 2026</h2>
+                      <p className={`text-xl font-bold ${dark('text-slate-900', 'text-white')}`}>{calendar?.label}</p>
                       <button className={`px-4 py-2 border rounded-lg text-sm ${dark('border-slate-300 text-slate-700 hover:bg-slate-50', 'border-slate-600 text-slate-300 hover:bg-slate-700')}`}>
                         Next
                       </button>
@@ -1277,56 +1330,40 @@ export function DemoSection() {
 
                     {/* Calendar Days */}
                     <div className="grid grid-cols-7 gap-2">
-                      {/* Empty cells for days before month starts */}
-                      {[29, 30, 31].map((day) => (
-                        <div key={`prev-${day}`} className={`min-h-[100px] p-2 border rounded-lg ${dark('border-slate-100 bg-slate-50', 'border-slate-700 bg-slate-800/50')}`}>
-                          <div className="text-xs text-slate-400 mb-2">{day}</div>
-                        </div>
-                      ))}
-                      
-                      {/* January days */}
-                      {[
-                        { day: 1, subs: ['Trello 100', 'NordVPN 29'], trials: ['AWS 31'] },
-                        { day: 2, subs: ['Netflix 228'] },
-                        { day: 3, subs: [], trials: ['Spotify Premium'] },
-                        { day: 4, subs: [] },
-                        { day: 5, subs: ['Adobe Creative Cloud'] },
-                        { day: 6, subs: [] },
-                        { day: 7, subs: ['Google Cloud'], trials: ['Figma Pro'], more: 4 },
-                        { day: 8, subs: [] },
-                        { day: 9, subs: [], trials: ['Notion Plus'] },
-                        { day: 10, subs: ['Microsoft 365'] },
-                        { day: 11, subs: [] },
-                        { day: 12, subs: [] },
-                        { day: 13, subs: ['Amazon Prime'], trials: ['Canva Pro'] },
-                        { day: 14, subs: [] },
-                        { day: 15, subs: ['Disney+'], trials: ['Zoom Pro'], more: 1 },
-                      ].map(({ day, subs, trials = [], more }) => (
-                        <div key={day} className={`min-h-[100px] p-2 border rounded-lg transition-colors ${dark('border-slate-200 hover:bg-slate-50', 'border-slate-700 hover:bg-slate-700/50')}`}>
-                          <div className={`text-sm font-semibold mb-2 ${dark('text-slate-900', 'text-white')}`}>{day}</div>
-                          <div className="space-y-1">
-                            {subs.map((sub, i) => (
-                              <div
-                                key={`sub-${i}`}
-                                className={`px-2 py-1 text-xs rounded cursor-pointer ${dark('bg-green-100 text-green-800 hover:bg-green-200', 'bg-green-900/50 text-green-300 hover:bg-green-900/70')}`}
-                              >
-                                {sub}
-                              </div>
-                            ))}
-                            {trials.map((trial, i) => (
-                              <div
-                                key={`trial-${i}`}
-                                className={`px-2 py-1 text-xs rounded cursor-pointer ${dark('bg-blue-100 text-blue-800 hover:bg-blue-200', 'bg-blue-900/50 text-blue-300 hover:bg-blue-900/70')}`}
-                              >
-                                {trial} (Trial)
-                              </div>
-                            ))}
-                            {more && (
-                              <div className={dark('text-xs text-slate-500', 'text-xs text-slate-400')}>+{more} more</div>
-                            )}
+                      {calendar?.days.map(({ day, inMonth, isToday, renewals, trials }, i) => {
+                        // Show at most two entries per day, as the real calendar does.
+                        const entries = [
+                          ...renewals.map((name) => ({ name, trial: false })),
+                          ...trials.map((name) => ({ name, trial: true })),
+                        ];
+                        const more = entries.length - 2;
+                        return inMonth ? (
+                          <div key={i} className={`min-h-[100px] p-2 border rounded-lg transition-colors ${isToday ? 'border-teal-500' : dark('border-slate-200', 'border-slate-700')} ${dark('hover:bg-slate-50', 'hover:bg-slate-700/50')}`}>
+                            <div className={`text-sm font-semibold mb-2 ${isToday ? 'text-teal-600' : dark('text-slate-900', 'text-white')}`}>{day}</div>
+                            <div className="space-y-1">
+                              {entries.slice(0, 2).map(({ name, trial }) => (
+                                <div
+                                  key={name}
+                                  className={`truncate px-2 py-1 text-xs rounded ${
+                                    trial
+                                      ? dark('bg-blue-100 text-blue-800', 'bg-blue-900/50 text-blue-300')
+                                      : dark('bg-green-100 text-green-800', 'bg-green-900/50 text-green-300')
+                                  }`}
+                                >
+                                  {trial ? `${name} (Trial)` : name}
+                                </div>
+                              ))}
+                              {more > 0 && (
+                                <div className={dark('text-xs text-slate-500', 'text-xs text-slate-400')}>+{more} more</div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ) : (
+                          <div key={i} className={`min-h-[100px] p-2 border rounded-lg ${dark('border-slate-100 bg-slate-50', 'border-slate-700 bg-slate-800/50')}`}>
+                            <div className="text-xs text-slate-400 mb-2">{day}</div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

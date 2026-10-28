@@ -267,7 +267,7 @@ export default function PlansPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       <p className="text-xs text-slate-600 dark:text-gray-400">
-                        14-day free trial • No credit card required
+                        14-day free trial • Cancel anytime
                       </p>
                     </div>
                   )}

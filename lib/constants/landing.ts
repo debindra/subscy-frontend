@@ -58,7 +58,7 @@ export const FEATURES: Feature[] = [
     description:
       'Track unlimited subscriptions with Pro plan. Organize everything in one centralized dashboard with smart categorization and advanced analytics.',
     iconName: 'tracking',
-    benefit: 'Save $240/year',
+    benefit: 'Everything in one place',
   },
   {
     title: 'Customizable Alerts & Notifications',
@@ -72,7 +72,7 @@ export const FEATURES: Feature[] = [
     description:
       'Monitor spending with advanced analytics, category-wise budgeting, and smart renewal management.',
     iconName: 'analytics',
-    benefit: 'Get 2 hours back every month',
+    benefit: 'See where your money goes',
   },
 ];
 
@@ -280,12 +280,12 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'How reliable are the subscription alerts?',
     answer:
-      'Our alert system has a 99.9% delivery rate. We use multiple notification channels (email, push notifications) to ensure you never miss a renewal. If one channel fails, we automatically try the others.',
+      'Subsy checks for upcoming renewals every few minutes and sends each reminder at your chosen time of day. Alerts go to every channel you turn on, email and push notifications, and each channel is sent independently, so a problem with one does not stop the other.',
   },
   {
     question: 'Can I customize when I receive alerts?',
     answer:
-      'Yes! Pro plan allows you to set custom alert windows—get notified 30, 14, 7, or 1 day before renewals. You can also set different preferences for each subscription.',
+      'Yes. On Pro you choose, for each subscription, how many days before renewal you are reminded, anywhere from 1 to 30. The free Starter plan reminds you 7 days before each renewal.',
   },
   {
     question: 'What happens if I miss an alert?',
